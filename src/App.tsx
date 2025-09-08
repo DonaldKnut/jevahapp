@@ -4,6 +4,7 @@ import Hero from "./sections/Hero";
 import Nav from "./sections/Nav";
 import Partners from "./sections/Partners";
 import Reviews from "./sections/Reviews";
+import WhatWeDo from "./sections/WhatWeDo";
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
       <Nav />
       <Hero />
       <Features />
+      <WhatWeDo />
       <Partners />
       <Reviews />
       <Footer />

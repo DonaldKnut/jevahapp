@@ -5,5 +5,82 @@ html {
 }
 body {
   font-family: "inter";
+  background-color: #0f4c3a; /* Dark teal background */
+  color: #f5f5dc; /* Cream text */
 }
 @tailwind utilities;
+
+/* JEVAH Custom Colors */
+.text-cream-50 {
+  color: #f5f5dc;
+}
+.bg-teal-800 {
+  background-color: #0f4c3a;
+}
+.bg-teal-700 {
+  background-color: #134e4a;
+}
+.bg-teal-600 {
+  background-color: #0d9488;
+}
+.text-orange-400 {
+  color: #fb923c;
+}
+.bg-orange-400 {
+  background-color: #fb923c;
+}
+.bg-orange-300 {
+  background-color: #fdba74;
+}
+.text-orange-300 {
+  color: #fdba74;
+}
+
+/* JEVAH Custom Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.8s ease-out forwards;
+  opacity: 0;
+}
+
+.animate-fade-in-left {
+  animation: fadeInLeft 0.8s ease-out forwards;
+  opacity: 0;
+}
+
+.animate-fade-in-right {
+  animation: fadeInRight 0.8s ease-out forwards;
+  opacity: 0;
+}

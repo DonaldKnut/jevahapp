@@ -11,20 +11,34 @@ import Mobile from "../assets/logo-wall/mobile.png";
 import Ikeja from "../assets/logo-wall/ikeja.png";
 import Dstv from "../assets/logo-wall/dstv.png";
 import LogoWall from "../common/LogoWall";
+import { useIntersectionObserver } from "../hooks/useIntersectionObserver";
 
 function Partners() {
+  const { ref, isIntersecting } = useIntersectionObserver({ threshold: 0.1 });
+
   return (
-    <section id="partners" className="mt-20 flex flex-col bg-gray-50 py-20">
-      <article className="mb-10 w-full px-8 text-center lg:px-12">
-        <h2 className="mb-4 text-4xl font-semibold text-gray-800">
-          Transact seamlessly with...
+    <section
+      ref={ref}
+      id="partners"
+      className="mt-20 flex flex-col bg-teal-700 py-20"
+    >
+      <article
+        className={`mb-10 w-full px-8 text-center lg:px-12 ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
+      >
+        <h2
+          className={`text-cream-50 mb-4 text-4xl font-semibold ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
+          style={{ animationDelay: "0.2s" }}
+        >
+          Trusted by Ministries Worldwide
         </h2>
-        <p>
-          Connect your other accounts to Kobodrop seamlessly. Kobodrop supports
-          200+
+        <p
+          className={`text-cream-50 ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
+          style={{ animationDelay: "0.4s" }}
+        >
+          JEVAH partners with churches, ministries, and Christian organizations
           <br />
-          integrations with other payment platforms like stripe, paypal,
-          payoneer and others
+          globally to bring you authentic gospel content and community
+          connections
         </p>
       </article>
       <div className="xl:flex xl:justify-center">
