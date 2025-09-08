@@ -4,7 +4,7 @@ import JevahLogo from "../components/JevahLogo";
 
 function Sermons() {
   const { ref, isIntersecting } = useIntersectionObserver({ threshold: 0.1 });
-  const [selectedSermon, setSelectedSermon] = useState(0);
+  const [selectedSermon] = useState(0);
 
   const featuredSermons = [
     {

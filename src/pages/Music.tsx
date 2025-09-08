@@ -1,10 +1,8 @@
-import { useState } from "react";
 import { useIntersectionObserver } from "../hooks/useIntersectionObserver";
 import JevahLogo from "../components/JevahLogo";
 
 function Music() {
   const { ref, isIntersecting } = useIntersectionObserver({ threshold: 0.1 });
-  const [activeTab, setActiveTab] = useState("trending");
 
   const trendingSongs = [
     {
