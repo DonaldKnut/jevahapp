@@ -1,7 +1,9 @@
 import StoreLinks, { BtnTypes } from "../common/StoreLinks";
 import Phone from "../assets/mockup.svg";
-import HeroImage from "../assets/hero.png";
 import { useIntersectionObserver } from "../hooks/useIntersectionObserver";
+
+const HeroImage =
+  "https://res.cloudinary.com/dxojy40bv/image/upload/v1758720851/Content_detail_-_Audio_or_Video_zmkqhj.png";
 
 function Hero() {
   const { ref, isIntersecting } = useIntersectionObserver({ threshold: 0.1 });
@@ -18,15 +20,16 @@ function Hero() {
           className={`text-cream-50 mx-auto mb-8 w-[12ch] text-center text-4xl font-semibold sm:text-5xl md:mx-0 md:text-left ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
           style={{ animationDelay: "0.2s" }}
         >
-          Connect with Your Faith Community
+          Jingles Conglomerate
         </h1>
         <p
           className={`text-cream-50 m-auto w-[34ch] text-center md:m-0 md:text-left ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
           style={{ animationDelay: "0.4s" }}
         >
-          Join JEVAH - Your Centralized Gospel Platform. Access music, sermons,
-          videos, devotionals, live streams, and connect with believers
-          worldwide.
+          A Household Brand of Trust, Taste & Value. A dynamic multi-sector
+          brand built on excellence, precision, and trust. With a strong
+          presence in food, fashion, and real estate, Jingles delivers premium
+          services and products that add value to everyday living.
         </p>
         <div
           className={`${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}

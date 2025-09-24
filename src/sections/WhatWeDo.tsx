@@ -5,39 +5,22 @@ function WhatWeDo() {
 
   const services = [
     {
-      icon: "🎵",
-      title: "Gospel Music Streaming",
+      icon: "🍽️",
+      title: "Jingles Catering & Event Planning",
       description:
-        "Access thousands of uplifting gospel songs and hymns from artists worldwide",
+        "We bring flavors, elegance, and flawless coordination to your celebrations. From delicious meals and snacks to the professional planning of events and parties, Jingles Catering ensures every occasion is memorable and stress-free.",
     },
     {
-      icon: "📖",
-      title: "Sermons & Teachings",
+      icon: "✂️",
+      title: "Jingles Fulcrums",
       description:
-        "Watch inspiring sermons and biblical teachings from pastors and ministers",
+        "The one-stop hub for the fashion industry. Deals in all types of sewing machines, spare parts, and accessories, alongside mannequins and sewing essentials. Whether for small tailoring shops or large fashion houses, Jingles Fulcrums powers creativity with reliable tools.",
     },
     {
-      icon: "👥",
-      title: "Community Features",
+      icon: "🏠",
+      title: "Jingles Properties",
       description:
-        "Connect with believers through prayer walls, group chats, and forums",
-    },
-    {
-      icon: "📱",
-      title: "Live Streaming",
-      description: "Join live worship services, conferences, and Bible studies",
-    },
-    {
-      icon: "🎮",
-      title: "Children's Ministry",
-      description:
-        "Educational games and activities designed to teach children about faith",
-    },
-    {
-      icon: "🛒",
-      title: "Christian Marketplace",
-      description:
-        "Discover Christian books, devotionals, and faith-based products",
+        "Your trusted partner in real estate. We specialize in selling verified, high-yielding properties; both buildings and lands. Through land banking and other smart real estate investments, Jingles Properties helps you secure wealth and build financial stability with confidence.",
     },
   ];
 
@@ -52,12 +35,13 @@ function WhatWeDo() {
           className={`mb-16 text-center ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
         >
           <h2 className="text-cream-50 mb-6 text-4xl font-bold md:text-5xl">
-            What We Do at JEVAH
+            Our Business Divisions
           </h2>
           <p className="text-cream-50 mx-auto max-w-3xl text-xl leading-relaxed">
-            We're building the ultimate gospel community platform that brings
-            believers together through music, worship, learning, and fellowship.
-            Join thousands growing in faith.
+            At Jingles Conglomerate, we don't just do business, we build
+            experiences, empower industries, and create wealth opportunities. We
+            are your household brand for celebrations, creativity, and
+            investments.
           </p>
         </div>
 
@@ -89,29 +73,34 @@ function WhatWeDo() {
         >
           <div className="rounded-3xl bg-gradient-to-r from-orange-400 to-orange-300 p-8 md:p-12">
             <h3 className="mb-4 text-2xl font-bold text-white md:text-3xl">
-              Ready to Join Our Gospel Community?
+              Ready to Experience Excellence?
             </h3>
             <p className="mx-auto mb-6 max-w-2xl text-lg text-white">
-              Download JEVAH today and start your spiritual journey with
-              thousands of believers worldwide.
+              A trusted household brand redefining lifestyles through food,
+              fashion, and real estate. From catering and flawless event
+              planning, to sewing machines and accessories, and verified
+              high-yield properties, Jingles delivers excellence, empowers
+              industries, and creates wealth opportunities.
             </p>
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
               <a
-                href="https://play.google.com"
+                href="mailto:info@jinglesconglomerate.com"
                 className="rounded-xl bg-white px-8 py-4 font-bold text-orange-400 transition-colors duration-200 hover:scale-105 hover:bg-gray-100"
               >
-                Download Now
+                Get In Touch
               </a>
               <a
-                href="mailto:support@jevahapp.com"
+                href="tel:+1234567890"
                 className="rounded-xl border-2 border-white px-8 py-4 font-bold text-white transition-all duration-200 hover:scale-105 hover:bg-white hover:text-orange-400"
               >
-                Contact Support
+                Call Us Now
               </a>
             </div>
             <p className="mt-4 text-sm text-white/80">
               Need help? Email us at{" "}
-              <span className="font-semibold">support@jevahapp.com</span>
+              <span className="font-semibold">
+                info@jinglesconglomerate.com
+              </span>
             </p>
           </div>
         </div>
