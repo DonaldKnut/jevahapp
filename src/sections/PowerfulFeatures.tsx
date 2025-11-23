@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import ButtonLink from "../common/ButtonLink";
 import { useIntersectionObserver } from "../hooks/useIntersectionObserver";
 import LivePreview from "../assets/logos/live-preview.png";
@@ -152,13 +153,13 @@ function PowerfulFeatures() {
               <p className="mb-6 text-lg leading-relaxed text-gray-700">
                 {feature.description}
               </p>
-              <ButtonLink
-                href={feature.buttonHref}
+              <Link
+                to={feature.buttonHref}
                 className="inline-block rounded-full px-8 py-4 text-white transition-all duration-300 hover:opacity-90 hover:shadow-lg"
                 style={{ backgroundColor: "#090E24" }}
               >
                 {feature.buttonText}
-              </ButtonLink>
+              </Link>
             </div>
 
             {/* Phone Image */}
@@ -196,27 +197,44 @@ function PowerfulFeatures() {
 
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {quickFeatures.map((feature, index) => (
-              <div
-                key={index}
-                className={`group rounded-2xl bg-white p-6 shadow-md transition-all duration-300 hover:scale-105 hover:shadow-xl ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
-                style={{ animationDelay: `${0.1 * index}s` }}
-              >
-                <div className="mb-4 text-5xl transition-transform duration-300 group-hover:scale-110">
-                  {feature.icon}
-                </div>
-                <h4 className="mb-2 text-xl font-bold text-gray-900">
-                  {feature.title}
-                </h4>
-                <p className="mb-4 text-gray-600">{feature.description}</p>
-                <a
-                  href={feature.href}
-                  className="inline-flex items-center gap-2 text-sm font-semibold transition-colors"
-                  style={{ color: '#256E63' }}
+              feature.href !== "#" ? (
+                <Link
+                  key={index}
+                  to={feature.href}
+                  className={`group block rounded-2xl bg-white p-6 shadow-md transition-all duration-300 hover:scale-105 hover:shadow-xl ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
+                  style={{ animationDelay: `${0.1 * index}s` }}
                 >
-                  Learn More
-                  <span>→</span>
-                </a>
-              </div>
+                  <div className="mb-4 text-5xl transition-transform duration-300 group-hover:scale-110">
+                    {feature.icon}
+                  </div>
+                  <h4 className="mb-2 text-xl font-bold text-gray-900">
+                    {feature.title}
+                  </h4>
+                  <p className="mb-4 text-gray-600">{feature.description}</p>
+                  <div className="inline-flex items-center gap-2 text-sm font-semibold transition-colors" style={{ color: '#256E63' }}>
+                    Learn More
+                    <span>→</span>
+                  </div>
+                </Link>
+              ) : (
+                <div
+                  key={index}
+                  className={`group rounded-2xl bg-white p-6 shadow-md transition-all duration-300 ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
+                  style={{ animationDelay: `${0.1 * index}s` }}
+                >
+                  <div className="mb-4 text-5xl">
+                    {feature.icon}
+                  </div>
+                  <h4 className="mb-2 text-xl font-bold text-gray-900">
+                    {feature.title}
+                  </h4>
+                  <p className="mb-4 text-gray-600">{feature.description}</p>
+                  <span className="inline-flex items-center gap-2 text-sm font-semibold text-gray-400">
+                    Learn More
+                    <span>→</span>
+                  </span>
+                </div>
+              )
             ))}
           </div>
         </div>

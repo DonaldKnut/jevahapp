@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { useIntersectionObserver } from "../hooks/useIntersectionObserver";
 import VectorIcon from "../assets/logos/Vector.png";
 import InclusiveIcon from "../assets/logos/inclusive.png";
@@ -60,13 +61,13 @@ function AboutUs() {
               through games and stories. Our mission is simple: to make faith
               accessible, engaging, and interactive in today's digital world.
             </p>
-            <a
-              href="/about"
+            <Link
+              to="/music"
               className="inline-block rounded-full px-6 py-3 text-white transition-all duration-300 hover:shadow-lg hover:opacity-90"
               style={{ backgroundColor: '#090E24' }}
             >
               Read More
-            </a>
+            </Link>
           </div>
 
           {/* Right Side - Feature Cards */}

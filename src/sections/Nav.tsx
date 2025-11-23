@@ -70,36 +70,71 @@ function Nav() {
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <div className="fixed inset-0 top-[15vh] z-30 bg-black/50 sm:hidden" />
+            <div className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm sm:hidden" />
           </Transition>
           <Transition
             show={open}
-            enter="transition-transform duration-300 ease-out"
+            enter="transition-transform duration-500 ease-out"
             enterFrom="translate-x-full"
             enterTo="translate-x-0"
             leave="transition-transform duration-300 ease-in"
             leaveFrom="translate-x-0"
             leaveTo="translate-x-full"
           >
-            <Disclosure.Panel className="fixed inset-y-0 right-0 top-[15vh] z-40 w-80 bg-white/95 backdrop-blur-md px-8 pt-8 shadow-2xl sm:hidden">
-              <div className="space-y-4">
-                {navLinks.map((link, index) => (
-                  <Disclosure.Button
-                    key={index}
-                    as={Link}
-                    to={link.href}
-                    className="block py-4 text-lg font-medium text-gray-900 transition-all duration-300 hover:text-[#FFA500] hover:translate-x-2"
-                  >
-                    {link.children}
-                  </Disclosure.Button>
-                ))}
-                <Disclosure.Button
-                  as={Link}
-                  to="#download"
-                  className="mt-6 block w-full rounded-full bg-jevah-green px-6 py-3 text-center text-white transition-all duration-300 hover:bg-jevah-green-hover hover:shadow-lg"
+            <Disclosure.Panel className="fixed inset-y-0 right-0 z-[70] w-80 bg-white shadow-2xl sm:hidden">
+              {/* Header with Logo and Close Button */}
+              <div className="flex items-center justify-between border-b border-gray-200 bg-gradient-to-br from-blue-100 via-teal-50 to-green-100 px-6 py-6">
+                <Disclosure.Button 
+                  as={Link} 
+                  to="/" 
+                  className="flex items-center opacity-0 transition-all duration-500"
+                  style={{ 
+                    animation: open ? 'slideInFromRight 0.5s ease-out 0.15s forwards' : 'none'
+                  }}
                 >
-                  Download App
+                  <JevahLogo width={100} height={50} />
                 </Disclosure.Button>
+                <Disclosure.Button 
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-white/80 text-gray-900 transition-all duration-300 hover:bg-white hover:scale-110 opacity-0"
+                  style={{ 
+                    animation: open ? 'slideInFromRight 0.5s ease-out 0.15s forwards' : 'none'
+                  }}
+                >
+                  <XMarkIcon className="h-6 w-6" />
+                </Disclosure.Button>
+              </div>
+
+              {/* Menu Items */}
+              <div className="flex h-[calc(100vh-15vh-80px)] flex-col justify-between px-6 py-8">
+                <div className="space-y-2">
+                  {navLinks.map((link, index) => (
+                    <Disclosure.Button
+                      key={index}
+                      as={Link}
+                      to={link.href}
+                      className="block rounded-lg px-4 py-4 text-left text-lg font-medium text-gray-900 transition-all duration-300 hover:bg-gray-50 hover:text-[#FFA500] hover:translate-x-2 opacity-0"
+                      style={{ 
+                        animation: open ? `slideInFromRight 0.5s ease-out ${0.3 + index * 0.1}s forwards` : 'none'
+                      }}
+                    >
+                      {link.children}
+                    </Disclosure.Button>
+                  ))}
+                </div>
+
+                {/* Download App Button */}
+                <div className="mt-auto pt-6">
+                  <Disclosure.Button
+                    as={Link}
+                    to="#download"
+                    className="block w-full rounded-full bg-jevah-green px-6 py-4 text-center text-lg font-semibold text-white transition-all duration-300 hover:bg-jevah-green-hover hover:shadow-lg hover:scale-105 opacity-0"
+                    style={{ 
+                      animation: open ? 'slideInFromRight 0.5s ease-out 0.7s forwards' : 'none'
+                    }}
+                  >
+                    Download App
+                  </Disclosure.Button>
+                </div>
               </div>
             </Disclosure.Panel>
           </Transition>
