@@ -1,78 +1,236 @@
-import JevahLogo from "../components/JevahLogo";
-import StoreLinks, { BtnTypes } from "../common/StoreLinks";
-import Twitter from "../assets/logos/icons8-twitterx.svg";
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import ButtonLink from "../common/ButtonLink";
 import Facebook from "../assets/logos/icons8-facebook.svg";
-import Linkedin from "../assets/logos/icons8-linkedin.svg";
+import FooterLogo from "../assets/logos/Jevah Logo.png";
+import AppStore from "../assets/logos/app_store.png";
+import PlayStore from "../assets/logos/play_store.png";
 
 function Footer() {
+  const [email, setEmail] = useState("");
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Handle newsletter subscription
+    console.log("Newsletter subscription:", email);
+    setEmail("");
+  };
+
   return (
-    <section className="bg-teal-800">
-      <div className="text-cream-50 flex max-w-7xl flex-col px-8 py-12 lg:px-12 xl:m-auto">
-        <div className="flex flex-col justify-between gap-12 md:flex-row md:gap-0">
-          <div>
+    <footer className="py-12 px-8 lg:px-12" style={{ backgroundColor: '#090E24' }}>
+      <div className="mx-auto max-w-7xl">
+        <div className="grid gap-8 md:grid-cols-4">
+          {/* Left Column - Logo, Download Button, App Store Buttons, Newsletter */}
+          <div className="md:col-span-1">
             <div className="mb-4">
-              <JevahLogo width={120} height={60} />
+              <img
+                src={FooterLogo}
+                alt="Jevah Logo"
+                className="h-auto w-32 object-contain"
+              />
             </div>
-            <p>A Household Brand of Trust, Taste & Value</p>
-          </div>
-          <div className="flex gap-10">
-            <div className="flex flex-col gap-2">
-              <p className="text-orange-300">Services</p>
-              <a href="#catering">Catering & Events</a>
-              <a href="#fulcrums">Fulcrums</a>
-              <a href="#properties">Properties</a>
-              <a href="#about">About Us</a>
-              <a href="#contact">Contact</a>
-            </div>
-            <div className="flex flex-col gap-2">
-              <p className="text-orange-300">Business</p>
-              <a href="#food">Food Industry</a>
-              <a href="#fashion">Fashion Industry</a>
-              <a href="#realestate">Real Estate</a>
-              <a href="#investments">Investments</a>
-              <a href="mailto:info@jinglesconglomerate.com">Support</a>
-            </div>
-          </div>
-          <div className="w-fit">
-            <h2 className="text-orange-300">Contact Jingles</h2>
-            <div className="mt-4">
-              <p className="text-cream-50 mb-2 text-sm">Get In Touch</p>
-              <a
-                href="mailto:info@jinglesconglomerate.com"
-                className="text-orange-300 transition-colors duration-200 hover:text-orange-400"
+            
+            {/* Download App Button */}
+            <div className="mb-4">
+              <ButtonLink
+                href="#download"
+                className="inline-block rounded-full bg-jevah-green px-5 py-3 text-white transition-all duration-300 hover:scale-105 hover:bg-jevah-green-hover hover:shadow-lg"
               >
-                info@jinglesconglomerate.com
+                Download App
+              </ButtonLink>
+            </div>
+
+            {/* Newsletter Subscription */}
+            <div className="mb-6">
+              <form onSubmit={handleSubmit} className="space-y-2">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Subscribe to newsletter"
+                  required
+                  className="w-full rounded-lg border border-gray-600 bg-transparent px-4 py-2 text-white placeholder-gray-400 focus:border-white focus:outline-none focus:ring-2 focus:ring-white/50"
+                />
+                <button
+                  type="submit"
+                  className="w-full rounded-full bg-white px-4 py-2 text-gray-900 transition-all duration-300 hover:bg-gray-100"
+                >
+                  Send
+                </button>
+              </form>
+            </div>
+
+            {/* App Store Buttons */}
+            <div className="mb-6 flex gap-2">
+              <a
+                href="https://www.apple.com/app-store"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="transition-transform duration-300 hover:scale-105"
+              >
+                <img
+                  src={AppStore}
+                  alt="Download on the App Store"
+                  className="h-10 w-auto"
+                />
+              </a>
+              <a
+                href="https://play.google.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="transition-transform duration-300 hover:scale-105"
+              >
+                <img
+                  src={PlayStore}
+                  alt="Get it on Google Play"
+                  className="h-10 w-auto"
+                />
               </a>
             </div>
-            <div className="mt-4">
-              <p className="text-cream-50 mb-2 text-sm">Call Us</p>
-              <a
-                href="tel:+1234567890"
-                className="text-orange-300 transition-colors duration-200 hover:text-orange-400"
-              >
-                +1 (234) 567-890
-              </a>
-            </div>
+
+            <p className="text-sm text-white">
+              © Jevah App 2024. All rights reserved.
+            </p>
           </div>
-        </div>
-        <div className="mt-14 flex justify-between border-t-2 border-t-teal-600 pt-10">
-          <p className="w-[16ch] text-orange-300 md:w-full">
-            &copy; 2024 Jingles Conglomerate. All rights reserved.
-          </p>
-          <div className="flex gap-6">
-            <a href="https://twitter.com" target="_blank">
-              <img src={Twitter} alt="Twitter logo" />
-            </a>
-            <a href="https://www.facebook.com" target="_blank">
-              <img src={Facebook} alt="Facebook logo" />
-            </a>
-            <a href="https://www.linkedin.com" target="_blank">
-              <img src={Linkedin} alt="Linkedin logo" />
-            </a>
+
+          {/* Product Column */}
+          <div>
+            <h3 className="mb-4 font-semibold text-white">Product</h3>
+            <ul className="space-y-2">
+              <li>
+                <Link
+                  to="/#features"
+                  className="text-gray-300 hover:text-white transition-colors"
+                >
+                  Features
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/sermons"
+                  className="text-gray-300 hover:text-white transition-colors"
+                >
+                  Sermons
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/music"
+                  className="text-gray-300 hover:text-white transition-colors"
+                >
+                  Music
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/ebooks"
+                  className="text-gray-300 hover:text-white transition-colors"
+                >
+                  E-books
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/children"
+                  className="text-gray-300 hover:text-white transition-colors"
+                >
+                  Children's Zone
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Information Column */}
+          <div>
+            <h3 className="mb-4 font-semibold text-white">Information</h3>
+            <ul className="space-y-2">
+              <li>
+                <Link
+                  to="/privacy"
+                  className="text-gray-300 hover:text-white transition-colors"
+                >
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/terms"
+                  className="text-gray-300 hover:text-white transition-colors"
+                >
+                  Terms & Conditions
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/about"
+                  className="text-gray-300 hover:text-white transition-colors"
+                >
+                  About Us
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/contact"
+                  className="text-gray-300 hover:text-white transition-colors"
+                >
+                  Contact
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/#faq"
+                  className="text-gray-300 hover:text-white transition-colors"
+                >
+                  FAQ
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Community Column */}
+          <div>
+            <h3 className="mb-4 font-semibold text-white">Community</h3>
+            <ul className="space-y-2">
+              <li>
+                <Link
+                  to="/blog"
+                  className="text-gray-300 hover:text-white transition-colors"
+                >
+                  Blog
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/forum"
+                  className="text-gray-300 hover:text-white transition-colors"
+                >
+                  Forum
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/events"
+                  className="text-gray-300 hover:text-white transition-colors"
+                >
+                  Events
+                </Link>
+              </li>
+              <li>
+                <a
+                  href="https://www.facebook.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-300 hover:text-white transition-colors flex items-center gap-2"
+                >
+                  <img src={Facebook} alt="Facebook" className="w-5 h-5" />
+                  Facebook
+                </a>
+              </li>
+            </ul>
           </div>
         </div>
       </div>
-    </section>
+    </footer>
   );
 }
 

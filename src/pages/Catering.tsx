@@ -188,7 +188,7 @@ function Catering() {
           </div>
 
           <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-            {packages.map((pkg, index) => (
+            {packages.map((pkg) => (
               <div
                 key={pkg.id}
                 className={`relative rounded-2xl bg-white p-8 shadow-lg transition-all duration-300 hover:scale-105 ${

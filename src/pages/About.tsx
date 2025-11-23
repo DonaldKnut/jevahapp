@@ -1,388 +1,158 @@
-import { useState } from "react";
 import { useIntersectionObserver } from "../hooks/useIntersectionObserver";
+import ButtonLink from "../common/ButtonLink";
 
 function About() {
   const { ref, isIntersecting } = useIntersectionObserver({ threshold: 0.1 });
-  const [activeTab, setActiveTab] = useState("story");
-
-  const tabs = [
-    { id: "story", name: "Our Story", icon: "📖" },
-    { id: "mission", name: "Mission", icon: "🎯" },
-    { id: "values", name: "Values", icon: "💎" },
-    { id: "team", name: "Team", icon: "👥" },
-  ];
-
-  const milestones = [
-    {
-      year: "2015",
-      title: "Foundation",
-      description:
-        "Jingles Conglomerate was founded with a vision to create a household brand of trust, taste, and value.",
-    },
-    {
-      year: "2017",
-      title: "Catering Launch",
-      description:
-        "Launched Jingles Catering & Event Planning, bringing elegance and flavor to celebrations.",
-    },
-    {
-      year: "2019",
-      title: "Fulcrums Expansion",
-      description:
-        "Established Jingles Fulcrums as the premier hub for fashion industry equipment and supplies.",
-    },
-    {
-      year: "2021",
-      title: "Properties Division",
-      description:
-        "Introduced Jingles Properties, specializing in verified, high-yielding real estate investments.",
-    },
-    {
-      year: "2023",
-      title: "Market Leadership",
-      description:
-        "Achieved market leadership across all three sectors with thousands of satisfied customers.",
-    },
-    {
-      year: "2024",
-      title: "Future Vision",
-      description:
-        "Continuing to expand and innovate, building experiences and creating wealth opportunities.",
-    },
-  ];
-
-  const values = [
-    {
-      icon: "🤝",
-      title: "Trust",
-      description:
-        "We build lasting relationships through transparency, reliability, and consistent delivery of excellence.",
-    },
-    {
-      icon: "🎨",
-      title: "Taste",
-      description:
-        "We bring elegance, sophistication, and quality to everything we do, from food to fashion to real estate.",
-    },
-    {
-      icon: "💡",
-      title: "Value",
-      description:
-        "We deliver exceptional value through innovative solutions, competitive pricing, and superior service.",
-    },
-    {
-      icon: "⚡",
-      title: "Excellence",
-      description:
-        "We strive for excellence in every interaction, product, and service we provide.",
-    },
-    {
-      icon: "🌱",
-      title: "Innovation",
-      description:
-        "We embrace innovation and continuously evolve to meet changing market needs and customer expectations.",
-    },
-    {
-      icon: "🤲",
-      title: "Integrity",
-      description:
-        "We conduct business with the highest ethical standards and maintain integrity in all our dealings.",
-    },
-  ];
-
-  const teamMembers = [
-    {
-      name: "Sarah Jingles",
-      position: "Founder & CEO",
-      image: "👩‍💼",
-      bio: "Visionary leader with 15+ years in business development and brand building.",
-      expertise: "Strategic Planning, Brand Development",
-    },
-    {
-      name: "Michael Chen",
-      position: "Head of Catering",
-      image: "👨‍🍳",
-      bio: "Culinary expert with international experience in fine dining and event planning.",
-      expertise: "Culinary Arts, Event Management",
-    },
-    {
-      name: "Emily Rodriguez",
-      position: "Fulcrums Director",
-      image: "👩‍💻",
-      bio: "Fashion industry veteran with deep knowledge of equipment and supply chain management.",
-      expertise: "Fashion Industry, Supply Chain",
-    },
-    {
-      name: "David Thompson",
-      position: "Properties Manager",
-      image: "👨‍💼",
-      bio: "Real estate investment specialist with proven track record in property development.",
-      expertise: "Real Estate, Investment Analysis",
-    },
-    {
-      name: "Lisa Wang",
-      position: "Operations Director",
-      image: "👩‍🔧",
-      bio: "Operations expert ensuring seamless delivery across all business divisions.",
-      expertise: "Operations, Process Optimization",
-    },
-    {
-      name: "James Wilson",
-      position: "Customer Relations",
-      image: "👨‍💬",
-      bio: "Customer satisfaction specialist dedicated to building lasting client relationships.",
-      expertise: "Customer Service, Relationship Management",
-    },
-  ];
-
-  const achievements = [
-    {
-      number: "10,000+",
-      label: "Satisfied Customers",
-      icon: "😊",
-    },
-    {
-      number: "500+",
-      label: "Events Catered",
-      icon: "🎉",
-    },
-    {
-      number: "1,000+",
-      label: "Machines Sold",
-      icon: "🪡",
-    },
-    {
-      number: "200+",
-      label: "Properties Sold",
-      icon: "🏠",
-    },
-    {
-      number: "15%",
-      label: "Average ROI",
-      icon: "📈",
-    },
-    {
-      number: "99%",
-      label: "Customer Satisfaction",
-      icon: "⭐",
-    },
-  ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50">
+    <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-r from-purple-800 to-pink-600 py-20">
-        <div className="absolute inset-0 bg-black/20"></div>
-        <div className="relative mx-auto max-w-7xl px-8 lg:px-12">
-          <div className="text-center text-white">
-            <h1 className="mb-6 text-5xl font-bold md:text-6xl">
-              About Jingles Conglomerate
+      <section className="relative bg-gradient-to-br from-blue-100 via-teal-50 to-green-100 py-20 px-8 pt-[20vh] lg:px-12">
+        <div className="mx-auto max-w-7xl">
+          <div
+            className={`text-center ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
+          >
+            <h1
+              className={`mb-6 text-5xl font-bold text-gray-900 md:text-6xl lg:text-7xl ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
+              style={{ animationDelay: "0.2s" }}
+            >
+              About Jevah
             </h1>
-            <p className="mx-auto mb-8 max-w-3xl text-xl leading-relaxed">
-              A trusted household brand redefining lifestyles through food,
-              fashion, and real estate. From catering and flawless event
-              planning, to sewing machines and accessories, and verified
-              high-yield properties, Jingles delivers excellence, empowers
-              industries, and creates wealth opportunities.
+            <p
+              className={`mx-auto mb-8 max-w-3xl text-lg text-gray-700 md:text-xl ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
+              style={{ animationDelay: "0.4s" }}
+            >
+              The Jevah App was created to help believers draw closer to God
+              through digital fellowship. Inspired by the name Jehovah, Jevah
+              represents faith, connection, and divine guidance.
             </p>
           </div>
         </div>
       </section>
 
-      {/* Tab Navigation */}
-      <section className="bg-white py-12">
-        <div className="mx-auto max-w-7xl px-8 lg:px-12">
-          <div className="flex flex-wrap justify-center gap-4">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-3 rounded-xl px-6 py-4 font-semibold transition-all duration-300 ${
-                  activeTab === tab.id
-                    ? "bg-purple-400 text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
+      {/* Mission Section */}
+      <section
+        ref={ref}
+        className="bg-white py-20 px-8 lg:px-12"
+      >
+        <div className="mx-auto max-w-7xl">
+          <div className="grid gap-12 md:grid-cols-2 md:items-center">
+            <div
+              className={`${isIntersecting ? "animate-fade-in-left" : "opacity-0"}`}
+            >
+              <h2 className="mb-6 text-4xl font-bold text-gray-900">
+                Our Mission
+              </h2>
+              <p className="mb-6 text-lg" style={{ color: "#090E24" }}>
+                To make faith accessible, engaging, and interactive in today's
+                digital world. We're building a gospel-centric mobile ecosystem
+                designed for everyone from adults deepening their spiritual life
+                to children discovering God's love through games and stories.
+              </p>
+              <p className="mb-6 text-lg text-gray-700">
+                Every feature is built to strengthen your walk with God, from
+                prayer walls to gospel content hubs, blending modern technology
+                with timeless faith.
+              </p>
+            </div>
+            <div
+              className={`${isIntersecting ? "animate-fade-in-right" : "opacity-0"}`}
+            >
+              <div className="rounded-2xl bg-gray-50 p-8">
+                <h3 className="mb-4 text-2xl font-bold text-gray-900">
+                  What We Stand For
+                </h3>
+                <ul className="space-y-4">
+                  <li className="flex items-start gap-3">
+                    <span className="text-2xl">✨</span>
+                    <div>
+                      <h4 className="font-semibold text-gray-900">
+                        Christ-Centered Innovation
+                      </h4>
+                      <p className="text-gray-600">
+                        Technology designed to deepen your faith journey
+                      </p>
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-2xl">👨‍👩‍👧‍👦</span>
+                    <div>
+                      <h4 className="font-semibold text-gray-900">
+                        Inclusive for All Generations
+                      </h4>
+                      <p className="text-gray-600">
+                        Content and features for every age group
+                      </p>
+                    </div>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-2xl">🎮</span>
+                    <div>
+                      <h4 className="font-semibold text-gray-900">
+                        Interactive Faith Experience
+                      </h4>
+                      <p className="text-gray-600">
+                        Engage with your faith in meaningful ways
+                      </p>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Values Section */}
+      <section className="bg-gray-50 py-20 px-8 lg:px-12">
+        <div className="mx-auto max-w-7xl">
+          <h2
+            className={`mb-12 text-center text-4xl font-bold text-gray-900 ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
+          >
+            Our Core Values
+          </h2>
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+            {[
+              {
+                title: "Faith",
+                description:
+                  "We center everything around strengthening your relationship with God.",
+              },
+              {
+                title: "Community",
+                description:
+                  "Building connections and fostering fellowship among believers worldwide.",
+              },
+              {
+                title: "Innovation",
+                description:
+                  "Blending modern technology with timeless faith principles.",
+              },
+              {
+                title: "Accessibility",
+                description:
+                  "Making faith resources available to everyone, everywhere.",
+              },
+              {
+                title: "Excellence",
+                description:
+                  "Delivering quality content and experiences that honor God.",
+              },
+              {
+                title: "Purpose",
+                description:
+                  "Every feature designed with intention to serve your spiritual growth.",
+              },
+            ].map((value, index) => (
+              <div
+                key={index}
+                className={`rounded-lg bg-white p-6 shadow-md transition-all duration-300 hover:shadow-lg ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
+                style={{ animationDelay: `${0.1 * index}s` }}
               >
-                <span className="text-2xl">{tab.icon}</span>
-                {tab.name}
-              </button>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Tab Content */}
-      <section ref={ref} className="py-20">
-        <div className="mx-auto max-w-7xl px-8 lg:px-12">
-          {activeTab === "story" && (
-            <div
-              className={`${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
-            >
-              <div className="mb-16 text-center">
-                <h2 className="mb-4 text-4xl font-bold text-gray-800">
-                  Our Journey
-                </h2>
-                <p className="mx-auto max-w-2xl text-lg text-gray-600">
-                  From humble beginnings to market leadership across multiple
-                  industries
-                </p>
-              </div>
-
-              <div className="space-y-8">
-                {milestones.map((milestone, index) => (
-                  <div
-                    key={index}
-                    className={`flex flex-col items-center gap-8 md:flex-row ${
-                      index % 2 === 1 ? "md:flex-row-reverse" : ""
-                    }`}
-                  >
-                    <div className="flex-1">
-                      <div className="mb-2 text-2xl font-bold text-purple-400">
-                        {milestone.year}
-                      </div>
-                      <h3 className="mb-3 text-xl font-bold text-gray-800">
-                        {milestone.title}
-                      </h3>
-                      <p className="text-gray-600">{milestone.description}</p>
-                    </div>
-                    <div className="flex h-32 w-32 items-center justify-center rounded-full bg-gradient-to-r from-purple-400 to-pink-400 text-4xl text-white">
-                      {milestone.year.slice(-2)}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {activeTab === "mission" && (
-            <div
-              className={`${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
-            >
-              <div className="mb-16 text-center">
-                <h2 className="mb-4 text-4xl font-bold text-gray-800">
-                  Our Mission
-                </h2>
-                <p className="mx-auto max-w-2xl text-lg text-gray-600">
-                  Empowering industries and creating wealth opportunities
-                  through excellence
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-                <div className="rounded-2xl bg-white p-8 shadow-lg">
-                  <h3 className="mb-4 text-2xl font-bold text-gray-800">
-                    Vision Statement
-                  </h3>
-                  <p className="leading-relaxed text-gray-600">
-                    To be the leading household brand that redefines lifestyles
-                    through innovative solutions in food, fashion, and real
-                    estate, creating lasting value for our customers and
-                    communities.
-                  </p>
-                </div>
-                <div className="rounded-2xl bg-white p-8 shadow-lg">
-                  <h3 className="mb-4 text-2xl font-bold text-gray-800">
-                    Mission Statement
-                  </h3>
-                  <p className="leading-relaxed text-gray-600">
-                    We don't just do business, we build experiences, empower
-                    industries, and create wealth opportunities. We are your
-                    household brand for celebrations, creativity, and
-                    investments.
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === "values" && (
-            <div
-              className={`${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
-            >
-              <div className="mb-16 text-center">
-                <h2 className="mb-4 text-4xl font-bold text-gray-800">
-                  Our Core Values
-                </h2>
-                <p className="mx-auto max-w-2xl text-lg text-gray-600">
-                  The principles that guide everything we do
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-                {values.map((value, index) => (
-                  <div
-                    key={index}
-                    className="rounded-2xl bg-white p-8 text-center shadow-lg"
-                  >
-                    <div className="mb-4 text-4xl">{value.icon}</div>
-                    <h3 className="mb-3 text-xl font-bold text-gray-800">
-                      {value.title}
-                    </h3>
-                    <p className="text-gray-600">{value.description}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {activeTab === "team" && (
-            <div
-              className={`${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
-            >
-              <div className="mb-16 text-center">
-                <h2 className="mb-4 text-4xl font-bold text-gray-800">
-                  Meet Our Team
-                </h2>
-                <p className="mx-auto max-w-2xl text-lg text-gray-600">
-                  The passionate professionals driving our success
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-                {teamMembers.map((member, index) => (
-                  <div
-                    key={index}
-                    className="rounded-2xl bg-white p-8 text-center shadow-lg"
-                  >
-                    <div className="mb-4 text-6xl">{member.image}</div>
-                    <h3 className="mb-2 text-xl font-bold text-gray-800">
-                      {member.name}
-                    </h3>
-                    <div className="mb-3 font-semibold text-purple-400">
-                      {member.position}
-                    </div>
-                    <p className="mb-4 text-sm text-gray-600">{member.bio}</p>
-                    <div className="text-sm text-gray-500">
-                      {member.expertise}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Achievements */}
-      <section className="bg-gray-100 py-20">
-        <div className="mx-auto max-w-7xl px-8 lg:px-12">
-          <div className="mb-16 text-center">
-            <h2 className="mb-4 text-4xl font-bold text-gray-800">
-              Our Achievements
-            </h2>
-            <p className="mx-auto max-w-2xl text-lg text-gray-600">
-              Numbers that speak to our success and customer satisfaction
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 gap-8 md:grid-cols-3 lg:grid-cols-6">
-            {achievements.map((achievement, index) => (
-              <div key={index} className="text-center">
-                <div className="mb-2 text-4xl">{achievement.icon}</div>
-                <div className="mb-2 text-3xl font-bold text-purple-400">
-                  {achievement.number}
-                </div>
-                <div className="text-sm text-gray-600">{achievement.label}</div>
+                <h3 className="mb-3 text-xl font-bold text-gray-900">
+                  {value.title}
+                </h3>
+                <p className="text-gray-600">{value.description}</p>
               </div>
             ))}
           </div>
@@ -390,21 +160,31 @@ function About() {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-gradient-to-r from-purple-400 to-pink-400 py-20">
-        <div className="mx-auto max-w-4xl px-8 text-center lg:px-12">
-          <h2 className="mb-6 text-4xl font-bold text-white">
-            Ready to Experience Excellence?
+      <section className="bg-white py-20 px-8 lg:px-12">
+        <div className="mx-auto max-w-4xl text-center">
+          <h2
+            className={`mb-6 text-4xl font-bold text-gray-900 ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
+          >
+            Join the Jevah Community
           </h2>
-          <p className="mb-8 text-xl text-white">
-            Join thousands of satisfied customers who trust Jingles Conglomerate
+          <p
+            className={`mb-8 text-lg text-gray-700 ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
+            style={{ animationDelay: "0.2s" }}
+          >
+            Experience faith in a whole new way. Download Jevah today and
+            connect with believers worldwide.
           </p>
-          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <button className="rounded-xl bg-white px-8 py-4 font-bold text-purple-400 transition-all duration-300 hover:scale-105 hover:bg-gray-100">
-              Get Started
-            </button>
-            <button className="rounded-xl border-2 border-white px-8 py-4 font-bold text-white transition-all duration-300 hover:bg-white hover:text-purple-400">
-              Contact Us
-            </button>
+          <div
+            className={`${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
+            style={{ animationDelay: "0.4s" }}
+          >
+            <ButtonLink
+              href="#download"
+              className="inline-block rounded-full px-8 py-4 text-white transition-all duration-300 hover:opacity-90 hover:shadow-lg"
+              style={{ backgroundColor: "#090E24" }}
+            >
+              Download App
+            </ButtonLink>
           </div>
         </div>
       </section>
@@ -413,4 +193,3 @@ function About() {
 }
 
 export default About;
-

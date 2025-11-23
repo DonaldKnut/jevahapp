@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useIntersectionObserver } from "../hooks/useIntersectionObserver";
-import JevahLogo from "../components/JevahLogo";
+import ButtonLink from "../common/ButtonLink";
 
 function Sermons() {
   const { ref, isIntersecting } = useIntersectionObserver({ threshold: 0.1 });
@@ -91,101 +91,80 @@ function Sermons() {
     },
   ];
 
-  const sermonSeries = [
-    {
-      title: "Faith in Action",
-      speaker: "Pastor Michael Johnson",
-      episodes: 8,
-      progress: 5,
-      thumbnail:
-        "https://images.unsplash.com/photo-1542816417-0983c9c9ad53?q=80&w=400&auto=format&fit=crop",
-      description:
-        "A comprehensive study on putting faith into practice in daily life",
-    },
-    {
-      title: "The Book of Psalms",
-      speaker: "Rev. Sarah Williams",
-      episodes: 12,
-      progress: 3,
-      thumbnail:
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=400&auto=format&fit=crop",
-      description:
-        "Deep dive into the poetic prayers and praises of King David",
-    },
-    {
-      title: "Walking with God",
-      speaker: "Bishop David Thompson",
-      episodes: 6,
-      progress: 6,
-      thumbnail:
-        "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=400&auto=format&fit=crop",
-      description:
-        "Learning to cultivate a closer relationship with our Heavenly Father",
-    },
-  ];
-
   return (
-    <div className="min-h-screen bg-teal-800">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-teal-800 to-teal-700 py-16">
-        <div className="mx-auto max-w-7xl px-8 text-center lg:px-12">
-          <JevahLogo width={120} height={60} className="mx-auto mb-8" />
-          <h1 className="text-cream-50 mb-6 text-5xl font-bold md:text-6xl">
-            📖 Inspiring Sermons & Teachings
-          </h1>
-          <p className="text-cream-50 mx-auto mb-8 max-w-3xl text-xl leading-relaxed">
-            Watch thousands of powerful sermons, Bible studies, and spiritual
-            teachings from pastors worldwide. Grow in faith through God's word
-            with HD video streaming.
-          </p>
-          <div className="flex flex-col justify-center gap-4 sm:flex-row">
-            <a
-              href="https://play.google.com"
-              className="rounded-xl bg-orange-400 px-8 py-4 font-bold text-white transition-colors duration-200 hover:scale-105 hover:bg-orange-300"
+    <div className="min-h-screen bg-white">
+      {/* Hero Section */}
+      <section className="relative bg-gradient-to-br from-blue-100 via-teal-50 to-green-100 py-20 px-8 pt-[20vh] lg:px-12">
+        <div className="mx-auto max-w-7xl">
+          <div
+            className={`text-center ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
+          >
+            <h1
+              className={`mb-6 text-5xl font-bold text-gray-900 md:text-6xl lg:text-7xl ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
+              style={{ animationDelay: "0.2s" }}
             >
-              📺 Watch Sermons
-            </a>
-            <a
-              href="mailto:support@jevahapp.com"
-              className="rounded-xl border-2 border-orange-400 px-8 py-4 font-bold text-orange-400 transition-all duration-200 hover:scale-105 hover:bg-orange-400 hover:text-white"
+              Inspiring Sermons & Teachings
+            </h1>
+            <p
+              className={`mx-auto mb-8 max-w-3xl text-lg text-gray-700 md:text-xl ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
+              style={{ animationDelay: "0.4s" }}
             >
-              📧 Sermon Support
-            </a>
+              Watch thousands of powerful sermons, Bible studies, and spiritual
+              teachings from pastors worldwide. Grow in faith through God's word
+              with HD video streaming.
+            </p>
+            <div
+              className={`${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
+              style={{ animationDelay: "0.6s" }}
+            >
+              <ButtonLink
+                href="#download"
+                className="inline-block rounded-full px-8 py-4 text-white transition-all duration-300 hover:opacity-90 hover:shadow-lg"
+                style={{ backgroundColor: "#090E24" }}
+              >
+                Watch Sermons
+              </ButtonLink>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Featured Sermon Player */}
-      <section className="bg-teal-700 py-20">
-        <div className="mx-auto max-w-7xl px-8 lg:px-12">
-          <div className="mb-16 text-center">
-            <h2 className="text-cream-50 mb-6 text-4xl font-bold">
-              🎬 Featured Sermon
+      {/* Featured Sermon */}
+      <section ref={ref} className="bg-white py-20 px-8 lg:px-12">
+        <div className="mx-auto max-w-7xl">
+          <div
+            className={`mb-12 text-center ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
+          >
+            <h2 className="mb-4 text-4xl font-bold text-gray-900">
+              Featured Sermon
             </h2>
-            <p className="text-cream-50 mx-auto max-w-3xl text-xl">
+            <p className="mx-auto max-w-3xl text-lg text-gray-600">
               Watch our most popular sermon this week
             </p>
           </div>
 
           <div className="mx-auto max-w-5xl">
-            <div className="overflow-hidden rounded-3xl border border-white/20 bg-white/10 backdrop-blur-sm">
+            <div
+              className={`overflow-hidden rounded-2xl bg-gray-50 shadow-lg transition-all duration-300 hover:shadow-xl ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
+              style={{ animationDelay: "0.2s" }}
+            >
               <div className="relative">
                 <img
                   src={featuredSermons[selectedSermon].thumbnail}
                   alt={featuredSermons[selectedSermon].title}
-                  className="h-64 w-full object-cover"
+                  className="h-64 w-full object-cover md:h-96"
                 />
-                <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-                  <button className="flex h-16 w-16 items-center justify-center rounded-full bg-orange-400 text-white transition-colors hover:bg-orange-300">
-                    <span className="text-2xl">▶️</span>
+                <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                  <button className="flex h-16 w-16 items-center justify-center rounded-full bg-white/90 text-gray-900 transition-all duration-300 hover:scale-110 hover:bg-white">
+                    <span className="text-2xl">▶</span>
                   </button>
                 </div>
                 <div className="absolute bottom-4 left-4 right-4">
                   <div className="mb-2 flex items-center gap-2">
-                    <span className="rounded bg-red-500 px-2 py-1 text-sm font-bold text-white">
+                    <span className="rounded-full bg-red-500 px-3 py-1 text-sm font-semibold text-white">
                       LIVE
                     </span>
-                    <span className="rounded bg-black/50 px-2 py-1 text-sm text-white">
+                    <span className="rounded-full bg-black/50 px-3 py-1 text-sm text-white">
                       2.3K watching
                     </span>
                   </div>
@@ -193,20 +172,20 @@ function Sermons() {
               </div>
 
               <div className="p-8">
-                <h3 className="text-cream-50 mb-2 text-2xl font-bold">
+                <h3 className="mb-2 text-2xl font-bold text-gray-900">
                   {featuredSermons[selectedSermon].title}
                 </h3>
-                <p className="mb-2 text-lg text-orange-300">
+                <p className="mb-2 text-lg" style={{ color: "#256E63" }}>
                   {featuredSermons[selectedSermon].speaker}
                 </p>
-                <p className="text-cream-50/80 mb-4 text-sm">
+                <p className="mb-4 text-sm text-gray-600">
                   {featuredSermons[selectedSermon].church}
                 </p>
-                <p className="text-cream-50 mb-4">
+                <p className="mb-4 text-gray-700">
                   {featuredSermons[selectedSermon].description}
                 </p>
 
-                <div className="text-cream-50/80 flex items-center gap-6 text-sm">
+                <div className="flex flex-wrap items-center gap-6 text-sm text-gray-600">
                   <span>📅 {featuredSermons[selectedSermon].date}</span>
                   <span>⏱️ {featuredSermons[selectedSermon].duration}</span>
                   <span>👀 {featuredSermons[selectedSermon].views} views</span>
@@ -219,15 +198,15 @@ function Sermons() {
       </section>
 
       {/* Live Events */}
-      <section ref={ref} className="py-20">
-        <div className="mx-auto max-w-7xl px-8 lg:px-12">
+      <section className="bg-gray-50 py-20 px-8 lg:px-12">
+        <div className="mx-auto max-w-7xl">
           <div
-            className={`mb-16 text-center ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
+            className={`mb-12 text-center ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
           >
-            <h2 className="text-cream-50 mb-6 text-4xl font-bold">
-              🔴 Live Events
+            <h2 className="mb-4 text-4xl font-bold text-gray-900">
+              Live Events
             </h2>
-            <p className="text-cream-50 mx-auto max-w-3xl text-xl">
+            <p className="mx-auto max-w-3xl text-lg text-gray-600">
               Join live worship services and Bible studies happening now
             </p>
           </div>
@@ -236,10 +215,8 @@ function Sermons() {
             {liveEvents.map((event, index) => (
               <div
                 key={index}
-                className={`overflow-hidden rounded-2xl border border-white/20 bg-white/10 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:bg-white/20 ${
-                  isIntersecting ? "animate-fade-in-up" : "opacity-0"
-                }`}
-                style={{ animationDelay: `${index * 0.1}s` }}
+                className={`overflow-hidden rounded-2xl bg-white shadow-md transition-all duration-300 hover:scale-105 hover:shadow-lg ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
+                style={{ animationDelay: `${0.1 * index}s` }}
               >
                 <div className="relative">
                   <img
@@ -249,90 +226,30 @@ function Sermons() {
                   />
                   <div className="absolute left-4 top-4">
                     <span
-                      className={`rounded-full px-3 py-1 text-sm font-bold ${
+                      className={`rounded-full px-3 py-1 text-sm font-semibold ${
                         event.status === "Live Now"
                           ? "bg-red-500 text-white"
-                          : "bg-orange-400 text-white"
+                          : "bg-[#256E63] text-white"
                       }`}
                     >
-                      {event.status === "Live Now"
-                        ? "🔴 LIVE"
-                        : "⏰ Starting Soon"}
+                      {event.status === "Live Now" ? "🔴 LIVE" : "⏰ Starting Soon"}
                     </span>
                   </div>
                   <div className="absolute bottom-4 left-4 right-4">
-                    <p className="rounded bg-black/50 px-2 py-1 text-sm text-white">
+                    <p className="rounded-full bg-black/50 px-3 py-1 text-sm text-white">
                       {event.viewers}
                     </p>
                   </div>
                 </div>
 
                 <div className="p-6">
-                  <h3 className="text-cream-50 mb-2 text-xl font-bold">
+                  <h3 className="mb-2 text-xl font-bold text-gray-900">
                     {event.title}
                   </h3>
-                  <p className="mb-2 text-orange-300">{event.speaker}</p>
-                  <p className="text-cream-50/80 text-sm">🕐 {event.time}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Sermon Series */}
-      <section className="bg-teal-700 py-20">
-        <div className="mx-auto max-w-7xl px-8 lg:px-12">
-          <div className="mb-16 text-center">
-            <h2 className="text-cream-50 mb-6 text-4xl font-bold">
-              📚 Sermon Series
-            </h2>
-            <p className="text-cream-50 mx-auto max-w-3xl text-xl">
-              Follow comprehensive teaching series from start to finish
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-            {sermonSeries.map((series, index) => (
-              <div
-                key={index}
-                className="overflow-hidden rounded-2xl border border-white/20 bg-white/10 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:bg-white/20"
-              >
-                <img
-                  src={series.thumbnail}
-                  alt={series.title}
-                  className="h-48 w-full object-cover"
-                />
-
-                <div className="p-6">
-                  <h3 className="text-cream-50 mb-2 text-xl font-bold">
-                    {series.title}
-                  </h3>
-                  <p className="mb-3 text-orange-300">{series.speaker}</p>
-                  <p className="text-cream-50/80 mb-4 text-sm">
-                    {series.description}
+                  <p className="mb-2" style={{ color: "#256E63" }}>
+                    {event.speaker}
                   </p>
-
-                  <div className="mb-4">
-                    <div className="text-cream-50/80 mb-2 flex justify-between text-sm">
-                      <span>Progress</span>
-                      <span>
-                        {series.progress}/{series.episodes} episodes
-                      </span>
-                    </div>
-                    <div className="h-2 w-full rounded-full bg-white/20">
-                      <div
-                        className="h-2 rounded-full bg-orange-400 transition-all duration-300"
-                        style={{
-                          width: `${(series.progress / series.episodes) * 100}%`,
-                        }}
-                      ></div>
-                    </div>
-                  </div>
-
-                  <button className="w-full rounded-lg bg-orange-400 py-2 font-bold text-white transition-colors hover:bg-orange-300">
-                    Continue Series
-                  </button>
+                  <p className="text-sm text-gray-600">🕐 {event.time}</p>
                 </div>
               </div>
             ))}
@@ -341,13 +258,15 @@ function Sermons() {
       </section>
 
       {/* Recent Sermons */}
-      <section className="py-20">
-        <div className="mx-auto max-w-7xl px-8 lg:px-12">
-          <div className="mb-16 text-center">
-            <h2 className="text-cream-50 mb-6 text-4xl font-bold">
-              📺 Recent Sermons
+      <section className="bg-white py-20 px-8 lg:px-12">
+        <div className="mx-auto max-w-7xl">
+          <div
+            className={`mb-12 text-center ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
+          >
+            <h2 className="mb-4 text-4xl font-bold text-gray-900">
+              Recent Sermons
             </h2>
-            <p className="text-cream-50 mx-auto max-w-3xl text-xl">
+            <p className="mx-auto max-w-3xl text-lg text-gray-600">
               Latest teachings from our community of pastors
             </p>
           </div>
@@ -356,32 +275,36 @@ function Sermons() {
             {featuredSermons.map((sermon, index) => (
               <div
                 key={index}
-                className="flex items-center gap-6 rounded-2xl border border-white/20 bg-white/10 p-6 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:bg-white/20"
+                className={`flex flex-col items-center gap-6 rounded-2xl bg-gray-50 p-6 shadow-md transition-all duration-300 hover:shadow-lg md:flex-row ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
+                style={{ animationDelay: `${0.1 * index}s` }}
               >
                 <img
                   src={sermon.thumbnail}
                   alt={sermon.title}
-                  className="h-24 w-24 rounded-xl object-cover"
+                  className="h-32 w-full rounded-xl object-cover md:h-24 md:w-32"
                 />
                 <div className="flex-1">
-                  <h3 className="text-cream-50 mb-1 text-xl font-bold">
+                  <h3 className="mb-1 text-xl font-bold text-gray-900">
                     {sermon.title}
                   </h3>
-                  <p className="mb-2 text-orange-300">
+                  <p className="mb-2" style={{ color: "#256E63" }}>
                     {sermon.speaker} • {sermon.church}
                   </p>
-                  <p className="text-cream-50/80 mb-2 text-sm">
+                  <p className="mb-2 text-sm text-gray-600">
                     {sermon.description}
                   </p>
-                  <div className="text-cream-50/60 flex items-center gap-4 text-sm">
+                  <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
                     <span>📅 {sermon.date}</span>
                     <span>⏱️ {sermon.duration}</span>
                     <span>👀 {sermon.views}</span>
                     <span>📖 {sermon.scripture}</span>
                   </div>
                 </div>
-                <button className="text-cream-50 transition-colors hover:text-orange-400">
-                  <span className="text-3xl">▶️</span>
+                <button
+                  className="flex h-12 w-12 items-center justify-center rounded-full transition-all duration-300 hover:scale-110"
+                  style={{ backgroundColor: "#090E24" }}
+                >
+                  <span className="text-xl text-white">▶</span>
                 </button>
               </div>
             ))}
@@ -390,31 +313,32 @@ function Sermons() {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-teal-700 py-20">
-        <div className="mx-auto max-w-7xl px-8 text-center lg:px-12">
-          <div className="rounded-3xl bg-gradient-to-r from-orange-400 to-orange-300 p-12">
-            <h2 className="mb-6 text-3xl font-bold text-white md:text-4xl">
-              📖 Start Growing in Faith Today
-            </h2>
-            <p className="mx-auto mb-8 max-w-2xl text-xl text-white">
-              Download JEVAH and access thousands of inspiring sermons, live
-              events, and Bible studies. Join thousands of believers deepening
-              their faith through God's word.
-            </p>
-            <div className="flex flex-col justify-center gap-4 sm:flex-row">
-              <a
-                href="https://play.google.com"
-                className="rounded-xl bg-white px-8 py-4 font-bold text-orange-400 transition-colors duration-200 hover:scale-105 hover:bg-gray-100"
-              >
-                📺 Download Sermon App
-              </a>
-              <a
-                href="mailto:support@jevahapp.com"
-                className="rounded-xl border-2 border-white px-8 py-4 font-bold text-white transition-all duration-200 hover:scale-105 hover:bg-white hover:text-orange-400"
-              >
-                📧 Sermon Support
-              </a>
-            </div>
+      <section className="bg-gray-50 py-20 px-8 lg:px-12">
+        <div className="mx-auto max-w-4xl text-center">
+          <h2
+            className={`mb-6 text-4xl font-bold text-gray-900 ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
+          >
+            Start Growing in Faith Today
+          </h2>
+          <p
+            className={`mb-8 text-lg text-gray-700 ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
+            style={{ animationDelay: "0.2s" }}
+          >
+            Download Jevah and access thousands of inspiring sermons, live
+            events, and Bible studies. Join thousands of believers deepening
+            their faith through God's word.
+          </p>
+          <div
+            className={`${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
+            style={{ animationDelay: "0.4s" }}
+          >
+            <ButtonLink
+              href="#download"
+              className="inline-block rounded-full px-8 py-4 text-white transition-all duration-300 hover:opacity-90 hover:shadow-lg"
+              style={{ backgroundColor: "#090E24" }}
+            >
+              Download App
+            </ButtonLink>
           </div>
         </div>
       </section>

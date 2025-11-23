@@ -1,25 +1,34 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Features from "./sections/Features";
 import Footer from "./sections/Footer";
 import Hero from "./sections/Hero";
 import Nav from "./sections/Nav";
-import Partners from "./sections/Partners";
-import Reviews from "./sections/Reviews";
-import WhatWeDo from "./sections/WhatWeDo";
-import Catering from "./pages/Catering";
-import Fulcrums from "./pages/Fulcrums";
-import Properties from "./pages/Properties";
+import AboutUs from "./sections/AboutUs";
+import PowerfulFeatures from "./sections/PowerfulFeatures";
+import Testimonials from "./sections/Testimonials";
+import FAQ from "./sections/FAQ";
+import ContactUs from "./sections/ContactUs";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
+import Sermons from "./pages/Sermons";
+import Music from "./pages/Music";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
+import Events from "./pages/Events";
+import Forum from "./pages/Forum";
+import Children from "./pages/Children";
+import Ebooks from "./pages/Ebooks";
+import Blog from "./pages/Blog";
+import ScrollToTop from "./components/ScrollToTop";
 
 function HomePage() {
   return (
     <>
       <Hero />
-      <Features />
-      <WhatWeDo />
-      <Partners />
-      <Reviews />
+      <AboutUs />
+      <PowerfulFeatures />
+      <Testimonials />
+      <FAQ />
+      <ContactUs />
     </>
   );
 }
@@ -27,15 +36,22 @@ function HomePage() {
 function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-gradient-to-br from-teal-900 via-teal-800 to-teal-700">
+      <ScrollToTop />
+      <div className="min-h-screen bg-white">
         <Nav />
         <Routes>
           <Route path="/" element={<HomePage />} />
-          <Route path="/catering" element={<Catering />} />
-          <Route path="/fulcrums" element={<Fulcrums />} />
-          <Route path="/properties" element={<Properties />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/sermons" element={<Sermons />} />
+          <Route path="/music" element={<Music />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/events" element={<Events />} />
+          <Route path="/forum" element={<Forum />} />
+          <Route path="/children" element={<Children />} />
+          <Route path="/ebooks" element={<Ebooks />} />
+          <Route path="/blog" element={<Blog />} />
         </Routes>
         <Footer />
       </div>

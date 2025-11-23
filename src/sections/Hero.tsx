@@ -1,9 +1,7 @@
-import StoreLinks, { BtnTypes } from "../common/StoreLinks";
-import Phone from "../assets/mockup.svg";
+import StoreLinks from "../common/StoreLinks";
+import { BtnTypes } from "../common/StoreLinks.types";
 import { useIntersectionObserver } from "../hooks/useIntersectionObserver";
-
-const HeroImage =
-  "https://res.cloudinary.com/dxojy40bv/image/upload/v1758720851/Content_detail_-_Audio_or_Video_zmkqhj.png";
+import HomeImage from "../assets/logos/home-img-removebg-preview.png";
 
 function Hero() {
   const { ref, isIntersecting } = useIntersectionObserver({ threshold: 0.1 });
@@ -11,46 +9,46 @@ function Hero() {
   return (
     <section
       ref={ref}
-      className="relative mt-4 flex h-fit max-w-7xl flex-col items-center gap-10 px-8 sm:gap-16 md:my-0 md:h-[84.9vh] md:flex-row md:gap-0 lg:px-12 xl:m-auto xl:gap-0 xl:overflow-hidden"
+      id="download"
+      className="relative bg-gradient-to-br from-blue-100 via-teal-50 to-green-100 px-8 pb-0 pt-[15vh] lg:px-12"
     >
-      <div
-        className={`sm:w-full md:w-3/6 ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
-      >
-        <h1
-          className={`text-cream-50 mx-auto mb-8 w-[12ch] text-center text-4xl font-semibold sm:text-5xl md:mx-0 md:text-left ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
-          style={{ animationDelay: "0.2s" }}
-        >
-          Jingles Conglomerate
-        </h1>
-        <p
-          className={`text-cream-50 m-auto w-[34ch] text-center md:m-0 md:text-left ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
-          style={{ animationDelay: "0.4s" }}
-        >
-          A Household Brand of Trust, Taste & Value. A dynamic multi-sector
-          brand built on excellence, precision, and trust. With a strong
-          presence in food, fashion, and real estate, Jingles delivers premium
-          services and products that add value to everyday living.
-        </p>
+      <div className="mx-auto max-w-7xl">
         <div
-          className={`${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
-          style={{ animationDelay: "0.6s" }}
+          className={`mb-12 mt-8 text-center ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
         >
-          <StoreLinks type={BtnTypes.Standard} />
+          <h1
+            className={`mb-6 text-5xl font-bold text-gray-900 md:text-6xl lg:text-7xl ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
+            style={{ animationDelay: "0.2s" }}
+          >
+            Experience Faith. Connect with Purpose.
+          </h1>
+          <p
+            className={`mx-auto mb-8 max-w-3xl text-lg text-gray-700 md:text-xl ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
+            style={{ animationDelay: "0.4s" }}
+          >
+            The Jevah App is your all-in-one Christian platform bringing gospel
+            music, sermons, e-books, prayer communities, and children's Bible
+            learning together in one sacred space.
+          </p>
+          <div
+            className={`${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
+            style={{ animationDelay: "0.6s" }}
+          >
+            <StoreLinks type={BtnTypes.Standard} />
+          </div>
         </div>
-      </div>
-      <div className="md:w-3/6 xl:mb-12 xl:overflow-hidden">
-        <img
-          className={`right-0 m-auto w-72 xl:absolute xl:left-6 xl:right-0 xl:mt-32 xl:w-80 ${isIntersecting ? "animate-fade-in-right" : "opacity-0"}`}
-          src={Phone}
-          alt="JEVAH app frame"
+
+        {/* Hero Image */}
+        <div
+          className={`-mt-2 flex items-center justify-center ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
           style={{ animationDelay: "0.8s" }}
-        />
-        <img
-          className={`hidden rounded-2xl xl:flex ${isIntersecting ? "animate-fade-in-left" : "opacity-0"}`}
-          src={HeroImage}
-          alt="A person engaging with JEVAH gospel content"
-          style={{ animationDelay: "1s" }}
-        />
+        >
+          <img
+            src={HomeImage}
+            alt="Jevah App"
+            className="h-auto w-full max-w-4xl object-contain"
+          />
+        </div>
       </div>
     </section>
   );

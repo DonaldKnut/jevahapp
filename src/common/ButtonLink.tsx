@@ -6,15 +6,17 @@ export interface ButtonLinkProps {
   logo?: string;
   upperText?: string;
   lowerText?: string;
+  style?: React.CSSProperties;
 }
 
-function ButtonLink({ href, children, className, target }: ButtonLinkProps) {
+function ButtonLink({ href, children, className, target, style }: ButtonLinkProps) {
   return (
     <a
       href={href}
       children={children}
       className={className}
       target={target}
+      style={style}
     ></a>
   );
 }

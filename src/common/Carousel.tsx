@@ -15,7 +15,7 @@ interface Slide {
 }
 
 function Carousel({ slides }: CarouselProps) {
-  let [current, setCurrent] = useState(0);
+  const [current, setCurrent] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 

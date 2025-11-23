@@ -1,60 +1,70 @@
-import AppleLogo from "../assets/logos/app_store.svg";
-import GooglePlay from "../assets/logos/google_play.svg";
-import GooglePlayBright from "../assets/logos/google_play_bright.svg";
-import StoreLink from "../common/StoreLink";
+import AppStore from "../assets/logos/app-store.png";
+import PlayStore from "../assets/logos/play-store.png";
+import { BtnTypes } from "./StoreLinks.types";
 
 interface StoreLinksProps {
   type: BtnTypes;
 }
 
-export enum BtnTypes {
-  Standard,
-  Variant,
-}
-
 function StoreLinks({ type }: StoreLinksProps) {
   if (type === BtnTypes.Standard) {
     return (
-      <div className="mt-10 hidden justify-center space-x-2 sm:flex md:justify-normal">
-        <StoreLink
+      <div className="flex justify-center gap-4">
+        <a
           href="https://www.apple.com/app-store"
-          upperText="Download on the"
-          lowerText="App Store"
-          logo={AppleLogo}
           target="_blank"
-          className="flex gap-3 rounded-lg bg-zinc-900 px-4 py-3 text-white hover:bg-zinc-950 active:bg-zinc-800"
-        />
-        <StoreLink
+          rel="noopener noreferrer"
+          className="transition-transform duration-300 hover:scale-105"
+        >
+          <img
+            src={AppStore}
+            alt="Download on the App Store"
+            className="h-12 w-auto md:h-14"
+          />
+        </a>
+        <a
           href="https://play.google.com"
-          upperText="Get it on"
-          lowerText="Google Play"
-          logo={GooglePlay}
           target="_blank"
-          className="flex gap-3 rounded-lg bg-zinc-900 px-4 py-3 text-white hover:bg-zinc-950 active:bg-zinc-800"
-        />
+          rel="noopener noreferrer"
+          className="transition-transform duration-300 hover:scale-105"
+        >
+          <img
+            src={PlayStore}
+            alt="Get it on Google Play"
+            className="h-12 w-auto md:h-14"
+          />
+        </a>
       </div>
     );
   }
   if (type === BtnTypes.Variant) {
     return (
-      <>
-        <StoreLink
+      <div className="flex flex-col gap-2">
+        <a
           href="https://www.apple.com/app-store"
-          upperText="Download on the"
-          lowerText="App Store"
-          logo={AppleLogo}
           target="_blank"
-          className="my-4 flex gap-3 rounded-lg border bg-transparent px-2 py-1 text-white hover:bg-zinc-950 active:bg-zinc-800"
-        />
-        <StoreLink
+          rel="noopener noreferrer"
+          className="transition-transform duration-300 hover:scale-105"
+        >
+          <img
+            src={AppStore}
+            alt="Download on the App Store"
+            className="h-10 w-auto"
+          />
+        </a>
+        <a
           href="https://play.google.com"
-          upperText="Get it on"
-          lowerText="Google Play"
-          logo={GooglePlayBright}
           target="_blank"
-          className="my-4 flex gap-3 rounded-lg border bg-transparent px-2 py-1 text-white hover:bg-zinc-950 active:bg-zinc-800"
-        />
-      </>
+          rel="noopener noreferrer"
+          className="transition-transform duration-300 hover:scale-105"
+        >
+          <img
+            src={PlayStore}
+            alt="Get it on Google Play"
+            className="h-10 w-auto"
+          />
+        </a>
+      </div>
     );
   }
 }

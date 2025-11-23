@@ -1,5 +1,5 @@
 import { useIntersectionObserver } from "../hooks/useIntersectionObserver";
-import JevahLogo from "../components/JevahLogo";
+import ButtonLink from "../common/ButtonLink";
 
 function Music() {
   const { ref, isIntersecting } = useIntersectionObserver({ threshold: 0.1 });
@@ -110,50 +110,62 @@ function Music() {
   ];
 
   return (
-    <div className="min-h-screen bg-teal-800">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-teal-800 to-teal-700 py-16">
-        <div className="mx-auto max-w-7xl px-8 text-center lg:px-12">
-          <JevahLogo width={120} height={60} className="mx-auto mb-8" />
-          <h1 className="text-cream-50 mb-6 text-5xl font-bold md:text-6xl">
-            🎵 Gospel Music Streaming
-          </h1>
-          <p className="text-cream-50 mx-auto mb-8 max-w-3xl text-xl leading-relaxed">
-            Stream over 10,000 gospel songs, hymns, and worship music from
-            artists worldwide. Create playlists, discover new artists, and
-            worship anywhere.
-          </p>
-          <div className="flex flex-col justify-center gap-4 sm:flex-row">
-            <a
-              href="https://play.google.com"
-              className="rounded-xl bg-orange-400 px-8 py-4 font-bold text-white transition-colors duration-200 hover:scale-105 hover:bg-orange-300"
+    <div className="min-h-screen bg-white">
+      {/* Hero Section */}
+      <section className="relative bg-gradient-to-br from-blue-100 via-teal-50 to-green-100 py-20 px-8 pt-[20vh] lg:px-12">
+        <div className="mx-auto max-w-7xl">
+          <div
+            className={`text-center ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
+          >
+            <h1
+              className={`mb-6 text-5xl font-bold text-gray-900 md:text-6xl lg:text-7xl ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
+              style={{ animationDelay: "0.2s" }}
             >
-              🎧 Start Listening
-            </a>
-            <a
-              href="mailto:support@jevahapp.com"
-              className="rounded-xl border-2 border-orange-400 px-8 py-4 font-bold text-orange-400 transition-all duration-200 hover:scale-105 hover:bg-orange-400 hover:text-white"
+              Gospel Music Streaming
+            </h1>
+            <p
+              className={`mx-auto mb-8 max-w-3xl text-lg text-gray-700 md:text-xl ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
+              style={{ animationDelay: "0.4s" }}
             >
-              📧 Music Support
-            </a>
+              Stream over 10,000 gospel songs, hymns, and worship music from
+              artists worldwide. Create playlists, discover new artists, and
+              worship anywhere.
+            </p>
+            <div
+              className={`${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
+              style={{ animationDelay: "0.6s" }}
+            >
+              <ButtonLink
+                href="#download"
+                className="inline-block rounded-full px-8 py-4 text-white transition-all duration-300 hover:opacity-90 hover:shadow-lg"
+                style={{ backgroundColor: "#090E24" }}
+              >
+                Start Listening
+              </ButtonLink>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Music Player Interface */}
-      <section className="bg-teal-700 py-20">
-        <div className="mx-auto max-w-7xl px-8 lg:px-12">
-          <div className="mb-16 text-center">
-            <h2 className="text-cream-50 mb-6 text-4xl font-bold">
-              🎶 Now Playing
+      <section ref={ref} className="bg-white py-20 px-8 lg:px-12">
+        <div className="mx-auto max-w-7xl">
+          <div
+            className={`mb-12 text-center ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
+          >
+            <h2 className="mb-4 text-4xl font-bold text-gray-900">
+              Now Playing
             </h2>
-            <p className="text-cream-50 mx-auto max-w-3xl text-xl">
+            <p className="mx-auto max-w-3xl text-lg text-gray-600">
               Experience our music player interface
             </p>
           </div>
 
           <div className="mx-auto max-w-4xl">
-            <div className="rounded-3xl border border-white/20 bg-white/10 p-8 backdrop-blur-sm">
+            <div
+              className={`rounded-2xl bg-gray-50 p-8 shadow-lg transition-all duration-300 hover:shadow-xl ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
+              style={{ animationDelay: "0.2s" }}
+            >
               <div className="mb-6 flex items-center gap-6">
                 <img
                   src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?q=80&w=200&auto=format&fit=crop"
@@ -161,36 +173,41 @@ function Music() {
                   className="h-20 w-20 rounded-xl object-cover"
                 />
                 <div>
-                  <h3 className="text-cream-50 text-2xl font-bold">
+                  <h3 className="text-2xl font-bold text-gray-900">
                     Amazing Grace
                   </h3>
-                  <p className="text-lg text-orange-300">Various Artists</p>
-                  <p className="text-cream-50/80 text-sm">2.5M plays</p>
+                  <p className="text-lg" style={{ color: "#256E63" }}>
+                    Various Artists
+                  </p>
+                  <p className="text-sm text-gray-600">2.5M plays</p>
                 </div>
               </div>
 
               <div className="mb-6">
-                <div className="mb-2 h-2 w-full rounded-full bg-white/20">
+                <div className="mb-2 h-2 w-full rounded-full bg-gray-200">
                   <div
-                    className="h-2 rounded-full bg-orange-400"
-                    style={{ width: "35%" }}
+                    className="h-2 rounded-full transition-all duration-300"
+                    style={{ width: "35%", backgroundColor: "#256E63" }}
                   ></div>
                 </div>
-                <div className="text-cream-50/80 flex justify-between text-sm">
+                <div className="flex justify-between text-sm text-gray-600">
                   <span>1:23</span>
                   <span>3:45</span>
                 </div>
               </div>
 
               <div className="flex justify-center gap-4">
-                <button className="text-cream-50 transition-colors hover:text-orange-400">
-                  <span className="text-2xl">⏮️</span>
+                <button className="text-gray-600 transition-colors hover:text-[#256E63]">
+                  <span className="text-2xl">⏮</span>
                 </button>
-                <button className="flex h-12 w-12 items-center justify-center rounded-full bg-orange-400 text-white transition-colors hover:bg-orange-300">
-                  <span className="text-xl">▶️</span>
+                <button
+                  className="flex h-12 w-12 items-center justify-center rounded-full text-white transition-all duration-300 hover:scale-110"
+                  style={{ backgroundColor: "#256E63" }}
+                >
+                  <span className="text-xl">▶</span>
                 </button>
-                <button className="text-cream-50 transition-colors hover:text-orange-400">
-                  <span className="text-2xl">⏭️</span>
+                <button className="text-gray-600 transition-colors hover:text-[#256E63]">
+                  <span className="text-2xl">⏭</span>
                 </button>
               </div>
             </div>
@@ -199,15 +216,15 @@ function Music() {
       </section>
 
       {/* Trending Songs */}
-      <section ref={ref} className="py-20">
-        <div className="mx-auto max-w-7xl px-8 lg:px-12">
+      <section className="bg-gray-50 py-20 px-8 lg:px-12">
+        <div className="mx-auto max-w-7xl">
           <div
-            className={`mb-16 text-center ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
+            className={`mb-12 text-center ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
           >
-            <h2 className="text-cream-50 mb-6 text-4xl font-bold">
-              🔥 Trending Now
+            <h2 className="mb-4 text-4xl font-bold text-gray-900">
+              Trending Now
             </h2>
-            <p className="text-cream-50 mx-auto max-w-3xl text-xl">
+            <p className="mx-auto max-w-3xl text-lg text-gray-600">
               The most played gospel songs this week
             </p>
           </div>
@@ -216,12 +233,10 @@ function Music() {
             {trendingSongs.map((song, index) => (
               <div
                 key={index}
-                className={`flex items-center gap-6 rounded-2xl border border-white/20 bg-white/10 p-6 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:bg-white/20 ${
-                  isIntersecting ? "animate-fade-in-up" : "opacity-0"
-                }`}
-                style={{ animationDelay: `${index * 0.1}s` }}
+                className={`flex items-center gap-6 rounded-2xl bg-white p-6 shadow-md transition-all duration-300 hover:scale-105 hover:shadow-lg ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
+                style={{ animationDelay: `${0.1 * index}s` }}
               >
-                <div className="w-8 text-2xl font-bold text-orange-400">
+                <div className="w-8 text-2xl font-bold" style={{ color: "#256E63" }}>
                   {index + 1}
                 </div>
                 <img
@@ -230,17 +245,20 @@ function Music() {
                   className="h-16 w-16 rounded-xl object-cover"
                 />
                 <div className="flex-1">
-                  <h3 className="text-cream-50 text-xl font-bold">
+                  <h3 className="text-xl font-bold text-gray-900">
                     {song.title}
                   </h3>
-                  <p className="text-orange-300">{song.artist}</p>
+                  <p style={{ color: "#256E63" }}>{song.artist}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-cream-50/80 text-sm">{song.plays} plays</p>
-                  <p className="text-cream-50/60 text-sm">{song.duration}</p>
+                  <p className="text-sm text-gray-600">{song.plays} plays</p>
+                  <p className="text-sm text-gray-500">{song.duration}</p>
                 </div>
-                <button className="text-cream-50 transition-colors hover:text-orange-400">
-                  <span className="text-2xl">▶️</span>
+                <button
+                  className="flex h-10 w-10 items-center justify-center rounded-full text-white transition-all duration-300 hover:scale-110"
+                  style={{ backgroundColor: "#090E24" }}
+                >
+                  <span className="text-lg">▶</span>
                 </button>
               </div>
             ))}
@@ -249,13 +267,15 @@ function Music() {
       </section>
 
       {/* Featured Playlists */}
-      <section className="bg-teal-700 py-20">
-        <div className="mx-auto max-w-7xl px-8 lg:px-12">
-          <div className="mb-16 text-center">
-            <h2 className="text-cream-50 mb-6 text-4xl font-bold">
-              📋 Featured Playlists
+      <section className="bg-white py-20 px-8 lg:px-12">
+        <div className="mx-auto max-w-7xl">
+          <div
+            className={`mb-12 text-center ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
+          >
+            <h2 className="mb-4 text-4xl font-bold text-gray-900">
+              Featured Playlists
             </h2>
-            <p className="text-cream-50 mx-auto max-w-3xl text-xl">
+            <p className="mx-auto max-w-3xl text-lg text-gray-600">
               Curated collections for every worship moment
             </p>
           </div>
@@ -264,20 +284,21 @@ function Music() {
             {playlists.map((playlist, index) => (
               <div
                 key={index}
-                className="rounded-2xl border border-white/20 bg-white/10 p-6 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:bg-white/20"
+                className={`rounded-2xl bg-gray-50 p-6 shadow-md transition-all duration-300 hover:scale-105 hover:shadow-lg ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
+                style={{ animationDelay: `${0.1 * index}s` }}
               >
                 <img
                   src={playlist.image}
                   alt={playlist.title}
                   className="mb-4 h-32 w-full rounded-xl object-cover"
                 />
-                <h3 className="text-cream-50 mb-2 text-lg font-bold">
+                <h3 className="mb-2 text-lg font-bold text-gray-900">
                   {playlist.title}
                 </h3>
-                <p className="mb-2 text-sm text-orange-300">
+                <p className="mb-2 text-sm" style={{ color: "#256E63" }}>
                   {playlist.creator}
                 </p>
-                <div className="text-cream-50/80 flex justify-between text-sm">
+                <div className="flex justify-between text-sm text-gray-600">
                   <span>{playlist.songs} songs</span>
                   <span>{playlist.followers} followers</span>
                 </div>
@@ -288,13 +309,15 @@ function Music() {
       </section>
 
       {/* Top Artists */}
-      <section className="py-20">
-        <div className="mx-auto max-w-7xl px-8 lg:px-12">
-          <div className="mb-16 text-center">
-            <h2 className="text-cream-50 mb-6 text-4xl font-bold">
-              ⭐ Top Gospel Artists
+      <section className="bg-gray-50 py-20 px-8 lg:px-12">
+        <div className="mx-auto max-w-7xl">
+          <div
+            className={`mb-12 text-center ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
+          >
+            <h2 className="mb-4 text-4xl font-bold text-gray-900">
+              Top Gospel Artists
             </h2>
-            <p className="text-cream-50 mx-auto max-w-3xl text-xl">
+            <p className="mx-auto max-w-3xl text-lg text-gray-600">
               Follow your favorite gospel artists and discover new ones
             </p>
           </div>
@@ -303,27 +326,32 @@ function Music() {
             {artists.map((artist, index) => (
               <div
                 key={index}
-                className="rounded-2xl border border-white/20 bg-white/10 p-6 text-center backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:bg-white/20"
+                className={`rounded-2xl bg-white p-6 text-center shadow-md transition-all duration-300 hover:scale-105 hover:shadow-lg ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
+                style={{ animationDelay: `${0.1 * index}s` }}
               >
                 <div className="relative mb-4">
                   <img
                     src={artist.image}
                     alt={artist.name}
-                    className="mx-auto h-20 w-20 rounded-full border-4 border-orange-400 object-cover"
+                    className="mx-auto h-20 w-20 rounded-full border-4 object-cover"
+                    style={{ borderColor: "#256E63" }}
                   />
                   {artist.verified && (
-                    <div className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-orange-400 text-xs text-white">
+                    <div
+                      className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full text-xs text-white"
+                      style={{ backgroundColor: "#256E63" }}
+                    >
                       ✓
                     </div>
                   )}
                 </div>
-                <h3 className="text-cream-50 mb-2 text-lg font-bold">
+                <h3 className="mb-2 text-lg font-bold text-gray-900">
                   {artist.name}
                 </h3>
-                <p className="mb-2 text-sm text-orange-300">
+                <p className="mb-2 text-sm" style={{ color: "#256E63" }}>
                   {artist.followers} followers
                 </p>
-                <p className="text-cream-50/80 text-sm">{artist.songs} songs</p>
+                <p className="text-sm text-gray-600">{artist.songs} songs</p>
               </div>
             ))}
           </div>
@@ -331,31 +359,32 @@ function Music() {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-teal-700 py-20">
-        <div className="mx-auto max-w-7xl px-8 text-center lg:px-12">
-          <div className="rounded-3xl bg-gradient-to-r from-orange-400 to-orange-300 p-12">
-            <h2 className="mb-6 text-3xl font-bold text-white md:text-4xl">
-              🎵 Start Your Gospel Music Journey
-            </h2>
-            <p className="mx-auto mb-8 max-w-2xl text-xl text-white">
-              Download JEVAH and access unlimited gospel music, create
-              playlists, and discover new artists. Join thousands of believers
-              worshiping through music.
-            </p>
-            <div className="flex flex-col justify-center gap-4 sm:flex-row">
-              <a
-                href="https://play.google.com"
-                className="rounded-xl bg-white px-8 py-4 font-bold text-orange-400 transition-colors duration-200 hover:scale-105 hover:bg-gray-100"
-              >
-                🎧 Download Music App
-              </a>
-              <a
-                href="mailto:support@jevahapp.com"
-                className="rounded-xl border-2 border-white px-8 py-4 font-bold text-white transition-all duration-200 hover:scale-105 hover:bg-white hover:text-orange-400"
-              >
-                📧 Music Support
-              </a>
-            </div>
+      <section className="bg-white py-20 px-8 lg:px-12">
+        <div className="mx-auto max-w-4xl text-center">
+          <h2
+            className={`mb-6 text-4xl font-bold text-gray-900 ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
+          >
+            Start Your Gospel Music Journey
+          </h2>
+          <p
+            className={`mb-8 text-lg text-gray-700 ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
+            style={{ animationDelay: "0.2s" }}
+          >
+            Download Jevah and access unlimited gospel music, create playlists,
+            and discover new artists. Join thousands of believers worshiping
+            through music.
+          </p>
+          <div
+            className={`${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
+            style={{ animationDelay: "0.4s" }}
+          >
+            <ButtonLink
+              href="#download"
+              className="inline-block rounded-full px-8 py-4 text-white transition-all duration-300 hover:opacity-90 hover:shadow-lg"
+              style={{ backgroundColor: "#090E24" }}
+            >
+              Download App
+            </ButtonLink>
           </div>
         </div>
       </section>

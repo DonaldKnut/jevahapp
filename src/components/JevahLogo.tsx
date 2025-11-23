@@ -1,4 +1,4 @@
-import JevahHQ from "../assets/logos/jevah-hq-removebg-preview.png";
+import JevahLogoImg from "../assets/logos/logo.png";
 
 interface JevahLogoProps {
   width?: number;
@@ -14,7 +14,7 @@ function JevahLogo({
   return (
     <div className={`inline-block ${className}`}>
       <img
-        src={JevahHQ}
+        src={JevahLogoImg}
         alt="JEVAH Logo"
         width={width}
         height={height}

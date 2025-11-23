@@ -1,5 +1,6 @@
 import Carousel from "../common/Carousel";
-import StoreLinks, { BtnTypes } from "../common/StoreLinks";
+import StoreLinks from "../common/StoreLinks";
+import { BtnTypes } from "../common/StoreLinks.types";
 import { useIntersectionObserver } from "../hooks/useIntersectionObserver";
 
 function Reviews() {
