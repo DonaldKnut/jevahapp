@@ -8,6 +8,7 @@ import {
   type TrackCard,
 } from "../services/creatorsApi";
 import { ApiError } from "../lib/api";
+import { ErrorToaster } from "../components/ErrorToaster";
 
 export default function Music() {
   const [lane, setLane] = useState<"curated" | "artist">("curated");
@@ -59,7 +60,9 @@ export default function Music() {
   }, [load]);
 
   return (
-    <div className="bg-[linear-gradient(180deg,#F3F7F6_0%,#ffffff_45%)] pb-20 pt-24">
+    <>
+      <ErrorToaster error={error} title="Could not load music" />
+    <div className="bg-[linear-gradient(180deg,#F3F7F6_0%,#ffffff_45%)] pb-20 pt-24 dark:bg-jevah-bg dark:from-jevah-bg dark:to-jevah-surface">
       <div className="mx-auto max-w-3xl px-4 sm:px-6">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#256E63]">
           Listen
@@ -126,13 +129,7 @@ export default function Music() {
           </button>
         </form>
 
-        {error && (
-          <div className="mt-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-            {error}
-          </div>
-        )}
-
-        <div className="mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div className="mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-jevah-border dark:bg-jevah-elevated">
           {loading ? (
             <div className="flex justify-center py-16">
               <div className="h-9 w-9 animate-spin rounded-full border-2 border-[#256E63] border-t-transparent" />
@@ -186,5 +183,6 @@ export default function Music() {
         </p>
       </div>
     </div>
+    </>
   );
 }

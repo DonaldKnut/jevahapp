@@ -150,8 +150,8 @@ export default function CategoriesPage() {
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {items.map((c) => (
             <Panel key={catId(c)}>
-              <p className="font-semibold text-[#0B1A1F]">{c.name}</p>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="font-semibold text-jevah-text">{c.name}</p>
+              <p className="mt-1 text-xs text-jevah-text-muted">
                 {c.slug || c.description || "—"}
               </p>
               <Button

@@ -66,7 +66,7 @@ export default function EmailLogPage() {
           {items.map((row, i) => (
             <Panel key={String(row.id || row._id || i)}>
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="font-semibold text-[#0B1A1F]">
+                <p className="font-semibold text-jevah-text">
                   {row.subject || "Untitled"}
                 </p>
                 <div className="flex gap-1.5">
@@ -74,7 +74,7 @@ export default function EmailLogPage() {
                   <Badge tone="neutral">{row.status || "sent"}</Badge>
                 </div>
               </div>
-              <p className="mt-2 text-xs text-slate-500">
+              <p className="mt-2 text-xs text-jevah-text-muted">
                 {row.createdAt
                   ? new Date(row.createdAt).toLocaleString()
                   : ""}

@@ -20,7 +20,7 @@ export default function CreatorsLanding() {
   const { isAuthenticated } = useAuth();
 
   return (
-    <div className="bg-[linear-gradient(180deg,#F3F7F6_0%,#ffffff_40%)]">
+    <div className="jevah-dashboard-shell">
       <section className="relative overflow-hidden px-4 pb-16 pt-28 sm:px-8 sm:pt-32 lg:px-12">
         <div
           className="pointer-events-none absolute inset-0 opacity-70"
@@ -31,13 +31,13 @@ export default function CreatorsLanding() {
           aria-hidden
         />
         <div className="relative mx-auto max-w-4xl text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#256E63]">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-jevah-accent">
             Jevah Creators
           </p>
-          <h1 className="mt-4 text-4xl font-bold tracking-tight text-[#0B1A1F] sm:text-5xl">
+          <h1 className="mt-4 text-4xl font-bold tracking-tight text-jevah-text sm:text-5xl">
             Spotify for gospel — built for faith music
           </h1>
-          <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-slate-600 sm:text-lg">
+          <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-jevah-text-muted sm:text-lg">
             Apply once. When approved, upload to the Artists shelf. Copyright-free
             beds stay curated by Jevah — same Track model, separate surfaces.
           </p>
@@ -49,7 +49,7 @@ export default function CreatorsLanding() {
                   ? undefined
                   : { from: "/creators/apply", intent: "creator" }
               }
-              className="inline-flex min-h-12 w-full items-center justify-center rounded-full bg-[#256E63] px-8 text-sm font-semibold text-white transition hover:bg-[#1e5a52] sm:w-auto"
+              className="inline-flex min-h-12 w-full items-center justify-center rounded-full bg-jevah-accent px-8 text-sm font-semibold text-white transition hover:bg-jevah-accent-hover sm:w-auto"
             >
               {isAuthenticated ? "Continue application" : "Become a creator"}
             </Link>
@@ -64,7 +64,7 @@ export default function CreatorsLanding() {
                   ? undefined
                   : { from: "/creators/studio", intent: "creator" }
               }
-              className="inline-flex min-h-12 w-full items-center justify-center rounded-full border border-[#256E63]/30 px-8 text-sm font-semibold text-[#256E63] transition hover:bg-[#256E63]/5 sm:w-auto"
+              className="inline-flex min-h-12 w-full items-center justify-center rounded-full border border-jevah-accent/30 px-8 text-sm font-semibold text-jevah-accent transition hover:bg-jevah-accent/5 sm:w-auto"
             >
               Open studio
             </Link>
@@ -75,15 +75,15 @@ export default function CreatorsLanding() {
       <section className="mx-auto max-w-5xl px-4 pb-20 sm:px-8 lg:px-12">
         <div className="grid gap-6 sm:grid-cols-3">
           {TYPES.map((t) => (
-            <div key={t.title} className="rounded-2xl border border-slate-200/80 bg-white p-6">
-              <h2 className="text-lg font-semibold text-[#0B1A1F]">{t.title}</h2>
-              <p className="mt-2 text-sm leading-relaxed text-slate-600">{t.body}</p>
+            <div key={t.title} className="rounded-2xl border border-jevah-border bg-jevah-surface p-6">
+              <h2 className="text-lg font-semibold text-jevah-text">{t.title}</h2>
+              <p className="mt-2 text-sm leading-relaxed text-jevah-text-muted">{t.body}</p>
             </div>
           ))}
         </div>
-        <p className="mt-10 text-center text-sm text-slate-500">
+        <p className="mt-10 text-center text-sm text-jevah-text-muted">
           Already approved? Head to{" "}
-          <Link to="/creators/studio" className="font-semibold text-[#256E63] hover:underline">
+          <Link to="/creators/studio" className="font-semibold text-jevah-accent hover:underline">
             your studio
           </Link>
           . Admins review applications in the Artists queue — not here.

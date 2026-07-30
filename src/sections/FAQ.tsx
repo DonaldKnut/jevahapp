@@ -11,11 +11,11 @@ function FAQ() {
     <section
       ref={ref}
       id="faq"
-      className="bg-gray-50 py-20 px-8 lg:px-12"
+      className="jevah-section-muted py-20 px-8 transition-colors duration-300 lg:px-12"
     >
       <div className="mx-auto max-w-4xl">
         <h2
-          className={`mb-12 text-center text-4xl font-bold text-gray-900 md:text-5xl ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
+          className={`mb-12 text-center text-4xl font-bold text-jevah-text md:text-5xl ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
         >
           Frequently Asked Questions (FAQ)
         </h2>
@@ -25,23 +25,25 @@ function FAQ() {
             <Disclosure key={index}>
               {({ open }) => (
                 <div
-                  className={`rounded-lg border border-gray-300 bg-white ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
+                  className={`overflow-hidden rounded-lg border border-jevah-border bg-jevah-surface transition-colors duration-300 ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
                   style={{ animationDelay: `${0.05 * index}s` }}
                 >
-                  <Disclosure.Button className="flex w-full items-center justify-between px-6 py-4 text-left hover:bg-gray-50 transition-colors">
-                    <span className="font-semibold text-gray-900">
+                  <Disclosure.Button className="flex w-full items-center justify-between px-6 py-4 text-left transition-colors hover:bg-jevah-card">
+                    <span className="font-semibold text-jevah-text">
                       {faq.question}
                     </span>
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full transition-all duration-200" style={{ backgroundColor: open ? '#090E24' : '#090E24' }}>
+                    <div
+                      className="flex h-8 w-8 items-center justify-center rounded-full transition-all duration-200"
+                      style={{ backgroundColor: "var(--jevah-disclosure-icon-bg)" }}
+                    >
                       <PlusIcon
-                        className={`h-5 w-5 transition-transform duration-200 ${
+                        className={`h-5 w-5 text-white transition-transform duration-200 ${
                           open ? "rotate-45" : ""
                         }`}
-                        style={{ color: '#ffffff' }}
                       />
                     </div>
                   </Disclosure.Button>
-                  <Disclosure.Panel className="px-6 pb-4 text-gray-700">
+                  <Disclosure.Panel className="px-6 pb-4 text-jevah-text-muted">
                     {faq.answer}
                   </Disclosure.Panel>
                 </div>
@@ -55,4 +57,3 @@ function FAQ() {
 }
 
 export default FAQ;
-

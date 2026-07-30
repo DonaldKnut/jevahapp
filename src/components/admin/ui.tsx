@@ -18,11 +18,11 @@ export function PageHeader({
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
       <div className="min-w-0">
-        <h1 className="text-2xl font-bold tracking-tight text-[#0B1A1F] sm:text-3xl">
+        <h1 className="text-2xl font-bold tracking-tight text-jevah-text sm:text-3xl">
           {title}
         </h1>
         {subtitle && (
-          <p className="mt-1 max-w-2xl text-sm leading-relaxed text-slate-500">
+          <p className="mt-1 max-w-2xl text-sm leading-relaxed text-jevah-text-muted">
             {subtitle}
           </p>
         )}
@@ -48,7 +48,7 @@ export function Panel({
   return (
     <div
       className={cn(
-        "rounded-2xl border border-slate-200/80 bg-white shadow-[0_1px_3px_rgba(11,26,31,0.05),0_1px_2px_rgba(11,26,31,0.03)]",
+        "rounded-2xl border border-jevah-border bg-jevah-surface shadow-[0_1px_3px_var(--jevah-shadow),0_1px_2px_var(--jevah-shadow)]",
         padding && "p-4 sm:p-5",
         className
       )}
@@ -67,7 +67,7 @@ export function PanelTitle({
 }) {
   return (
     <div className="mb-4 flex items-center justify-between gap-3">
-      <h2 className="text-base font-bold text-[#0B1A1F]">{title}</h2>
+      <h2 className="text-base font-bold text-jevah-text">{title}</h2>
       {action}
     </div>
   );
@@ -77,10 +77,10 @@ type BtnVariant = "primary" | "secondary" | "ghost" | "danger" | "warning" | "su
 
 const btnStyles: Record<BtnVariant, string> = {
   primary:
-    "bg-[#256E63] text-white hover:bg-[#1e5a52] shadow-sm shadow-[#256E63]/20 hover:shadow-[#256E63]/30",
+    "bg-jevah-accent text-white hover:bg-jevah-accent-hover shadow-sm shadow-jevah-accent/20 hover:shadow-jevah-accent/30",
   secondary:
-    "bg-white text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50 shadow-sm",
-  ghost: "bg-transparent text-slate-600 hover:bg-slate-100",
+    "bg-jevah-surface text-jevah-text ring-1 ring-jevah-border hover:bg-jevah-card shadow-sm",
+  ghost: "bg-transparent text-jevah-text-muted hover:bg-jevah-card hover:text-jevah-text",
   danger: "bg-rose-600 text-white hover:bg-rose-700 shadow-sm shadow-rose-500/20",
   warning: "bg-amber-500 text-white hover:bg-amber-600 shadow-sm shadow-amber-400/20",
   success: "bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm shadow-emerald-500/20",
@@ -116,12 +116,12 @@ export function Badge({
   tone?: "neutral" | "brand" | "success" | "warning" | "danger" | "info";
 }) {
   const tones = {
-    neutral: "bg-slate-100 text-slate-700 ring-slate-200/50",
-    brand: "bg-[#256E63]/10 text-[#256E63] ring-[#256E63]/15",
-    success: "bg-emerald-50 text-emerald-700 ring-emerald-200/50",
-    warning: "bg-amber-50 text-amber-800 ring-amber-200/50",
-    danger: "bg-rose-50 text-rose-700 ring-rose-200/50",
-    info: "bg-sky-50 text-sky-800 ring-sky-200/50",
+    neutral: "bg-jevah-card text-jevah-text ring-jevah-border",
+    brand: "bg-jevah-accent/10 text-jevah-accent ring-jevah-accent/15",
+    success: "bg-emerald-500/10 text-emerald-700 ring-emerald-500/20 dark:text-emerald-300",
+    warning: "bg-amber-500/10 text-amber-800 ring-amber-500/20 dark:text-amber-300",
+    danger: "bg-rose-500/10 text-rose-700 ring-rose-500/20 dark:text-rose-300",
+    info: "bg-sky-500/10 text-sky-800 ring-sky-500/20 dark:text-sky-300",
   };
   return (
     <span
@@ -145,13 +145,13 @@ export function EmptyState({
   action?: ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50/60 px-6 py-12 text-center">
-      <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#256E63]/8">
-        <div className="h-6 w-6 rounded-full bg-[#256E63]/20" />
+    <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-jevah-border bg-jevah-muted/60 px-6 py-12 text-center">
+      <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-jevah-accent/10">
+        <div className="h-6 w-6 rounded-full bg-jevah-accent/20" />
       </div>
-      <p className="font-semibold text-slate-700">{title}</p>
+      <p className="font-semibold text-jevah-text">{title}</p>
       {description && (
-        <p className="mt-1 max-w-sm text-sm text-slate-500">{description}</p>
+        <p className="mt-1 max-w-sm text-sm text-jevah-text-muted">{description}</p>
       )}
       {action && <div className="mt-4">{action}</div>}
     </div>
@@ -162,7 +162,7 @@ export function Skeleton({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "animate-pulse rounded-xl bg-slate-200/70",
+        "animate-pulse rounded-xl bg-jevah-card",
         className
       )}
     />
@@ -189,9 +189,9 @@ export function Alert({
   onRetry?: () => void;
 }) {
   const tones = {
-    error: "border-rose-200 bg-rose-50 text-rose-800",
-    warning: "border-amber-200 bg-amber-50 text-amber-900",
-    success: "border-emerald-200 bg-emerald-50 text-emerald-800",
+    error: "border-rose-500/30 bg-rose-500/10 text-rose-800 dark:text-rose-200",
+    warning: "border-amber-500/30 bg-amber-500/10 text-amber-900 dark:text-amber-200",
+    success: "border-emerald-500/30 bg-emerald-500/10 text-emerald-800 dark:text-emerald-200",
   };
   return (
     <div
@@ -216,32 +216,32 @@ export function Alert({
 
 const kpiToneConfig = {
   brand: {
-    card: "from-[#256E63]/5 via-white to-white border-[#256E63]/12",
-    icon: "bg-[#256E63]/10 text-[#256E63]",
-    value: "text-[#256E63]",
-    arrow: "text-[#256E63]/50",
-    hover: "hover:border-[#256E63]/25 hover:shadow-[#256E63]/8",
+    card: "from-jevah-accent/10 via-jevah-surface to-jevah-surface border-jevah-accent/20",
+    icon: "bg-jevah-accent/10 text-jevah-accent",
+    value: "text-jevah-accent",
+    arrow: "text-jevah-accent/50",
+    hover: "hover:border-jevah-accent/30",
   },
   danger: {
-    card: "from-rose-50 via-white to-white border-rose-100",
-    icon: "bg-rose-50 text-rose-500",
-    value: "text-rose-600",
-    arrow: "text-rose-300",
-    hover: "hover:border-rose-200 hover:shadow-rose-100",
+    card: "from-rose-500/10 via-jevah-surface to-jevah-surface border-rose-500/20",
+    icon: "bg-rose-500/10 text-rose-500",
+    value: "text-rose-600 dark:text-rose-400",
+    arrow: "text-rose-400/60",
+    hover: "hover:border-rose-500/30",
   },
   warning: {
-    card: "from-amber-50 via-white to-white border-amber-100",
-    icon: "bg-amber-50 text-amber-500",
-    value: "text-amber-600",
-    arrow: "text-amber-300",
-    hover: "hover:border-amber-200 hover:shadow-amber-100",
+    card: "from-amber-500/10 via-jevah-surface to-jevah-surface border-amber-500/20",
+    icon: "bg-amber-500/10 text-amber-500",
+    value: "text-amber-600 dark:text-amber-400",
+    arrow: "text-amber-400/60",
+    hover: "hover:border-amber-500/30",
   },
   neutral: {
-    card: "from-slate-50 via-white to-white border-slate-200",
-    icon: "bg-slate-100 text-slate-500",
-    value: "text-slate-700",
-    arrow: "text-slate-300",
-    hover: "hover:border-slate-300 hover:shadow-slate-100",
+    card: "from-jevah-card via-jevah-surface to-jevah-surface border-jevah-border",
+    icon: "bg-jevah-card text-jevah-text-muted",
+    value: "text-jevah-text",
+    arrow: "text-jevah-text-muted",
+    hover: "hover:border-jevah-border",
   },
 };
 
@@ -282,11 +282,11 @@ export function KpiLink({
         <p className={cn("text-3xl font-bold tracking-tight sm:text-4xl", t.value)}>
           {typeof value === "number" ? value.toLocaleString() : value}
         </p>
-        <p className="mt-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500 sm:text-xs">
+        <p className="mt-1 text-[11px] font-semibold uppercase tracking-wide text-jevah-text-muted sm:text-xs">
           {label}
         </p>
         {desc && (
-          <p className="mt-0.5 text-[11px] text-slate-400">{desc}</p>
+          <p className="mt-0.5 text-[11px] text-jevah-text-muted">{desc}</p>
         )}
       </div>
     </Link>
@@ -301,7 +301,7 @@ export function Field({
   children: ReactNode;
 }) {
   return (
-    <label className="block text-sm font-medium text-slate-700">
+    <label className="block text-sm font-medium text-jevah-text">
       <span className="mb-1.5 block">{label}</span>
       {children}
     </label>
@@ -354,13 +354,13 @@ export function StaggerList({
 
 export function OnlineDot({ online }: { online?: boolean }) {
   return (
-    <span className="inline-flex items-center gap-1.5 text-sm text-slate-600">
+    <span className="inline-flex items-center gap-1.5 text-sm text-jevah-text-muted">
       <span
         className={cn(
           "h-2 w-2 rounded-full",
           online
             ? "admin-online-dot bg-emerald-400 shadow-[0_0_0_3px_rgba(52,211,153,0.2)]"
-            : "bg-slate-300"
+            : "bg-jevah-border"
         )}
       />
       {online ? "Online" : "Offline"}

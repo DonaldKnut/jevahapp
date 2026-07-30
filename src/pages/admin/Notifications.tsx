@@ -117,16 +117,16 @@ export default function NotificationsPage() {
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge tone="brand">{n.type || "alert"}</Badge>
-                    <span className="text-xs text-slate-400">
+                    <span className="text-xs text-jevah-text-muted">
                       {n.createdAt
                         ? new Date(n.createdAt).toLocaleString()
                         : ""}
                     </span>
                   </div>
-                  <p className="mt-2 font-medium text-[#0B1A1F]">
+                  <p className="mt-2 font-medium text-jevah-text">
                     {n.title || "Notification"}
                   </p>
-                  <p className="mt-1 text-sm text-slate-600">
+                  <p className="mt-1 text-sm text-jevah-text-muted">
                     {n.message || n.body}
                   </p>
                 </div>

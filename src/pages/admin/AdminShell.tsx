@@ -134,8 +134,8 @@ export default function AdminShell() {
               cn(
                 "group flex items-center gap-3 rounded-2xl px-3.5 py-2.5 text-sm font-semibold transition-all duration-200",
                 isActive
-                  ? "admin-nav-active bg-[#256E63] text-white shadow-md shadow-[#256E63]/30"
-                  : "text-slate-300/80 hover:bg-white/10 hover:text-white"
+                  ? "admin-nav-active bg-jevah-accent text-white shadow-md shadow-jevah-accent/30"
+                  : "text-white/70 hover:bg-white/10 hover:text-white"
               )
             }
           >
@@ -143,7 +143,7 @@ export default function AdminShell() {
               <>
                 <span className={cn(
                   "flex h-8 w-8 shrink-0 items-center justify-center rounded-xl transition-all duration-200",
-                  isActive ? "bg-white/20 text-white" : "bg-white/5 text-slate-300 group-hover:bg-white/10 group-hover:text-white"
+                  isActive ? "bg-white/20 text-white" : "bg-white/5 text-white/70 group-hover:bg-white/10 group-hover:text-white"
                 )}>
                   <Icon className="h-4 w-4" />
                 </span>
@@ -157,15 +157,10 @@ export default function AdminShell() {
   }
 
   return (
-    <div className="admin-shell min-h-dvh bg-jevah-muted font-sans text-jevah-text antialiased transition-colors duration-300 dark:bg-jevah-bg">
+    <div className="admin-shell jevah-dashboard-shell min-h-dvh font-sans text-jevah-text antialiased transition-colors duration-300">
       <div className="flex min-h-dvh">
         {/* ── Desktop Sidebar (App Theme Colors) ── */}
-        <aside
-          className="sticky top-0 hidden h-dvh w-[272px] shrink-0 flex-col bg-[#0B1A1F] text-white lg:flex"
-          style={{
-            background: "linear-gradient(180deg, #0F3832 0%, #0B1A1F 60%, #071317 100%)"
-          }}
-        >
+        <aside className="jevah-dashboard-sidebar sticky top-0 hidden h-dvh w-[272px] shrink-0 flex-col text-white lg:flex">
           {/* Top Logo Section (Star icon removed, JevahLogo added) */}
           <div className="px-5 pt-6 pb-4">
             <div className="flex items-center gap-3">
@@ -173,7 +168,7 @@ export default function AdminShell() {
                 <JevahLogo width={92} height={40} />
               </div>
               <div className="min-w-0">
-                <span className="rounded-md bg-[#256E63]/40 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-emerald-200 ring-1 ring-emerald-400/30">
+                <span className="rounded-md bg-jevah-accent/40 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-emerald-200 ring-1 ring-emerald-400/30">
                   Admin
                 </span>
               </div>
@@ -183,9 +178,9 @@ export default function AdminShell() {
           {/* User Profile Card */}
           <div className="mx-3 mb-3 rounded-2xl bg-white/8 p-3.5 ring-1 ring-white/10 backdrop-blur-md">
             <div className="flex items-center gap-3">
-              <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#256E63] to-[#4ECDC4] text-sm font-bold text-white shadow-md shadow-[#256E63]/30">
+              <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-jevah-accent to-[#4ECDC4] text-sm font-bold text-white shadow-md shadow-jevah-accent/25">
                 {initials || "A"}
-                <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-[#0B1A1F] bg-emerald-400" />
+                <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-black/40 bg-emerald-400" />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-bold text-white">{displayName}</p>
@@ -258,7 +253,7 @@ export default function AdminShell() {
               <button
                 type="button"
                 onClick={() => setMobileOpen(true)}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-700 transition hover:bg-slate-200"
+                className="jevah-hamburger-btn inline-flex h-10 w-10 items-center justify-center rounded-2xl transition"
                 aria-label="Open menu"
               >
                 <Bars3Icon className="h-5 w-5" />
@@ -267,7 +262,7 @@ export default function AdminShell() {
               <div className="min-w-0 flex-1 text-center">
                 <div className="inline-flex items-center gap-1.5">
                   <JevahLogo width={72} height={32} />
-                  <span className="rounded-md bg-[#256E63] px-2 py-0.5 text-[10px] font-bold text-white uppercase">
+                  <span className="rounded-md bg-jevah-accent px-2 py-0.5 text-[10px] font-bold text-white uppercase">
                     Admin
                   </span>
                 </div>
@@ -276,15 +271,15 @@ export default function AdminShell() {
               <div className="flex items-center gap-1.5">
                 <ThemeToggle variant="icon" />
                 {onlineCount !== null && (
-                  <span className="hidden items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 text-[11px] font-semibold text-emerald-700 sm:inline-flex">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                  <span className="hidden items-center gap-1 rounded-full bg-jevah-accent/10 px-2 py-1 text-[11px] font-semibold text-jevah-accent sm:inline-flex">
+                    <span className="h-1.5 w-1.5 rounded-full bg-jevah-accent" />
                     {onlineCount}
                   </span>
                 )}
                 {unread > 0 && (
                   <button
                     onClick={() => void clearNotifs()}
-                    className="relative flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-50 text-rose-600"
+                    className="relative flex h-10 w-10 items-center justify-center rounded-2xl bg-rose-500/10 text-rose-500"
                   >
                     <BellIcon className="h-5 w-5" />
                     <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[9px] font-bold text-white">
@@ -301,19 +296,15 @@ export default function AdminShell() {
             <div className="fixed inset-0 z-40 lg:hidden">
               <button
                 type="button"
-                className="absolute inset-0 bg-[#0B1A1F]/65 backdrop-blur-sm admin-fade-in"
+                className="absolute inset-0 backdrop-blur-sm admin-fade-in"
+                style={{ backgroundColor: "var(--jevah-overlay)" }}
                 aria-label="Close menu"
                 onClick={() => setMobileOpen(false)}
               />
-              <div
-                className="absolute inset-y-0 left-0 flex w-[min(100%,22rem)] flex-col pb-[env(safe-area-inset-bottom)] admin-drawer-in"
-                style={{
-                  background: "linear-gradient(180deg, #0F3832 0%, #0B1A1F 60%, #071317 100%)"
-                }}
-              >
+              <div className="jevah-dashboard-sidebar absolute inset-y-0 left-0 flex w-[min(100%,22rem)] flex-col pb-[env(safe-area-inset-bottom)] admin-drawer-in">
                 {/* Drawer Header */}
                 <div className="flex items-center justify-between px-4 py-4 pt-[max(1rem,env(safe-area-inset-top))]">
-                  <div className="inline-flex rounded-2xl bg-white px-3 py-1.5">
+                  <div className="inline-flex rounded-2xl bg-white px-3 py-1.5 shadow-sm">
                     <JevahLogo width={84} height={36} />
                   </div>
                   <button
@@ -328,7 +319,7 @@ export default function AdminShell() {
                 {/* User Card */}
                 <div className="mx-3 mb-3 rounded-2xl bg-white/8 p-3.5 ring-1 ring-white/10">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#256E63] text-sm font-bold text-white">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-jevah-accent text-sm font-bold text-white">
                       {initials || "A"}
                     </div>
                     <div className="min-w-0 flex-1">
@@ -343,7 +334,10 @@ export default function AdminShell() {
 
                 <NavItems onNavigate={() => setMobileOpen(false)} />
 
-                <div className="border-t border-white/10 p-3">
+                <div className="border-t border-white/10 p-3 space-y-2">
+                  <div className="flex justify-center px-2">
+                    <ThemeToggle variant="pill" className="w-full [&>button]:w-full [&>button]:justify-center" />
+                  </div>
                   <button
                     type="button"
                     onClick={() => void handleLogout()}

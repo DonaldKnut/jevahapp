@@ -151,8 +151,8 @@ export default function Nav() {
                 onClick={() => setActiveMega((v) => (v === "music" ? null : "music"))}
                 className={`group inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold transition-all ${
                   activeMega === "music"
-                    ? "bg-[#256E63]/10 text-[#256E63]"
-                    : "text-gray-700 hover:bg-black/5 hover:text-gray-900"
+                    ? "bg-[#256E63]/10 text-[#256E63] dark:bg-jevah-accent/15 dark:text-jevah-accent"
+                    : "text-gray-700 hover:bg-black/5 hover:text-gray-900 dark:text-jevah-text-muted dark:hover:bg-white/5 dark:hover:text-jevah-text"
                 }`}
                 aria-expanded={activeMega === "music"}
               >
@@ -172,7 +172,7 @@ export default function Nav() {
                     : "pointer-events-none translate-y-2 opacity-0"
                 }`}
               >
-                <div className="w-[620px] overflow-hidden rounded-3xl border border-gray-100 bg-white p-6 shadow-2xl shadow-black/10 ring-1 ring-black/5 backdrop-blur-xl">
+                <div className="jevah-mega-panel w-[620px] overflow-hidden rounded-3xl border p-6 shadow-2xl shadow-black/10 ring-1 ring-black/5 backdrop-blur-xl">
                   <div className="grid grid-cols-2 gap-3">
                     {musicAndArtistsMenu.map((item) => {
                       const Icon = item.icon;
@@ -181,7 +181,7 @@ export default function Nav() {
                           key={item.title}
                           to={item.href}
                           onClick={() => setActiveMega(null)}
-                          className="group flex items-start gap-3.5 rounded-2xl p-3.5 transition-all duration-200 hover:bg-slate-50 hover:shadow-sm"
+                          className="jevah-mega-item group flex items-start gap-3.5 rounded-2xl p-3.5 transition-all duration-200 hover:shadow-sm"
                         >
                           <div
                             className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border ${item.color} transition-transform duration-200 group-hover:scale-105`}
@@ -190,16 +190,16 @@ export default function Nav() {
                           </div>
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2">
-                              <span className="text-sm font-bold text-gray-900 group-hover:text-[#256E63]">
+                              <span className="text-sm font-bold text-jevah-text group-hover:text-jevah-accent">
                                 {item.title}
                               </span>
                               {item.badge && (
-                                <span className="rounded-full bg-[#256E63]/10 px-2 py-0.5 text-[10px] font-bold text-[#256E63]">
+                                <span className="rounded-full bg-jevah-accent/10 px-2 py-0.5 text-[10px] font-bold text-jevah-accent">
                                   {item.badge}
                                 </span>
                               )}
                             </div>
-                            <p className="mt-0.5 line-clamp-1 text-xs text-gray-500">
+                            <p className="mt-0.5 line-clamp-1 text-xs text-jevah-text-muted">
                               {item.description}
                             </p>
                           </div>
@@ -243,8 +243,8 @@ export default function Nav() {
                 onClick={() => setActiveMega((v) => (v === "about" ? null : "about"))}
                 className={`group inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold transition-all ${
                   activeMega === "about"
-                    ? "bg-[#256E63]/10 text-[#256E63]"
-                    : "text-gray-700 hover:bg-black/5 hover:text-gray-900"
+                    ? "bg-[#256E63]/10 text-[#256E63] dark:bg-jevah-accent/15 dark:text-jevah-accent"
+                    : "text-gray-700 hover:bg-black/5 hover:text-gray-900 dark:text-jevah-text-muted dark:hover:bg-white/5 dark:hover:text-jevah-text"
                 }`}
                 aria-expanded={activeMega === "about"}
               >
@@ -264,7 +264,7 @@ export default function Nav() {
                     : "pointer-events-none translate-y-2 opacity-0"
                 }`}
               >
-                <div className="w-[600px] overflow-hidden rounded-3xl border border-gray-100 bg-white p-6 shadow-2xl shadow-black/10 ring-1 ring-black/5 backdrop-blur-xl">
+                <div className="jevah-mega-panel w-[600px] overflow-hidden rounded-3xl border p-6 shadow-2xl shadow-black/10 ring-1 ring-black/5 backdrop-blur-xl">
                   <div className="grid grid-cols-2 gap-3">
                     {aboutAndCommunityMenu.map((item) => {
                       const Icon = item.icon;
@@ -273,7 +273,7 @@ export default function Nav() {
                           key={item.title}
                           to={item.href}
                           onClick={() => setActiveMega(null)}
-                          className="group flex items-start gap-3.5 rounded-2xl p-3.5 transition-all duration-200 hover:bg-slate-50 hover:shadow-sm"
+                          className="jevah-mega-item group flex items-start gap-3.5 rounded-2xl p-3.5 transition-all duration-200 hover:shadow-sm"
                         >
                           <div
                             className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border ${item.color} transition-transform duration-200 group-hover:scale-105`}
@@ -282,7 +282,7 @@ export default function Nav() {
                           </div>
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2">
-                              <span className="text-sm font-bold text-gray-900 group-hover:text-[#256E63]">
+                              <span className="text-sm font-bold text-jevah-text group-hover:text-jevah-accent">
                                 {item.title}
                               </span>
                               {item.badge && (
@@ -291,7 +291,7 @@ export default function Nav() {
                                 </span>
                               )}
                             </div>
-                            <p className="mt-0.5 line-clamp-1 text-xs text-gray-500">
+                            <p className="mt-0.5 line-clamp-1 text-xs text-jevah-text-muted">
                               {item.description}
                             </p>
                           </div>
@@ -321,8 +321,14 @@ export default function Nav() {
           <div className="z-10 flex items-center gap-2 sm:gap-3">
             <ThemeToggle variant="icon" />
             <Link
+              to="/creators/login"
+              className="hidden rounded-full border border-[var(--jevah-auth-creator-accent)]/40 px-4 py-2 text-sm font-bold text-[var(--jevah-auth-creator-accent)] transition hover:bg-[var(--jevah-auth-creator-accent)]/10 active:scale-95 md:inline-flex"
+            >
+              Creator
+            </Link>
+            <Link
               to="/login"
-              className="hidden rounded-full border border-[#256E63]/30 px-5 py-2 text-sm font-bold text-[#256E63] transition hover:border-[#256E63] hover:bg-[#256E63]/5 active:scale-95 md:inline-flex"
+              className="hidden rounded-full border border-jevah-accent/30 px-4 py-2 text-sm font-bold text-jevah-accent transition hover:border-jevah-accent hover:bg-jevah-accent/5 active:scale-95 md:inline-flex"
             >
               Admin
             </Link>
@@ -337,22 +343,22 @@ export default function Nav() {
             <button
               type="button"
               onClick={() => setMobileOpen((v) => !v)}
-              className="relative z-50 flex h-11 w-11 items-center justify-center rounded-2xl bg-black/5 text-gray-900 transition hover:bg-black/10 active:scale-90 md:hidden"
+              className="jevah-hamburger-btn relative z-50 flex h-11 w-11 items-center justify-center rounded-2xl transition active:scale-90 md:hidden"
               aria-label={mobileOpen ? "Close menu" : "Open menu"}
             >
               <div className="flex h-5 w-5 flex-col justify-between">
                 <span
-                  className={`h-0.5 w-full rounded-full bg-gray-900 transition-all duration-300 ease-in-out ${
+                  className={`jevah-hamburger-line h-0.5 w-full rounded-full transition-all duration-300 ease-in-out ${
                     mobileOpen ? "translate-y-[9px] rotate-45" : ""
                   }`}
                 />
                 <span
-                  className={`h-0.5 w-full rounded-full bg-gray-900 transition-all duration-200 ease-in-out ${
+                  className={`jevah-hamburger-line h-0.5 w-full rounded-full transition-all duration-200 ease-in-out ${
                     mobileOpen ? "scale-x-0 opacity-0" : ""
                   }`}
                 />
                 <span
-                  className={`h-0.5 w-full rounded-full bg-gray-900 transition-all duration-300 ease-in-out ${
+                  className={`jevah-hamburger-line h-0.5 w-full rounded-full transition-all duration-300 ease-in-out ${
                     mobileOpen ? "-translate-y-[9px] -rotate-45" : ""
                   }`}
                 />
@@ -364,21 +370,26 @@ export default function Nav() {
 
       {/* ── Premium Mobile Menu Drawer ── */}
       <div
-        className={`fixed inset-0 z-40 bg-[#060E18]/60 backdrop-blur-md transition-opacity duration-300 md:hidden ${
+        className={`fixed inset-0 z-40 backdrop-blur-md transition-opacity duration-300 md:hidden ${
           mobileOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
         }`}
+        style={{ backgroundColor: "var(--jevah-overlay)" }}
         onClick={() => setMobileOpen(false)}
         aria-hidden="true"
       />
 
       <div
-        className={`fixed left-3 right-3 top-20 z-50 max-h-[calc(100vh-6rem)] overflow-y-auto rounded-3xl border border-white/40 bg-white/95 p-5 shadow-2xl shadow-black/20 backdrop-blur-2xl transition-all duration-300 ease-out md:hidden ${
+        className={`fixed left-3 right-3 top-20 z-50 max-h-[calc(100vh-6rem)] overflow-y-auto rounded-3xl border p-5 shadow-2xl backdrop-blur-2xl transition-all duration-300 ease-out md:hidden ${
           mobileOpen
             ? "translate-y-0 scale-100 opacity-100 pointer-events-auto"
             : "-translate-y-6 scale-95 opacity-0 pointer-events-none"
         }`}
+        style={{
+          backgroundColor: "var(--jevah-mobile-menu-bg)",
+          borderColor: "var(--jevah-mobile-menu-border)",
+        }}
       >
-        <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+        <div className="flex items-center justify-between border-b border-jevah-border pb-3">
           <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#256E63]">
             Navigation
           </p>
@@ -392,15 +403,15 @@ export default function Nav() {
           <Link
             to="/"
             onClick={() => setMobileOpen(false)}
-            className="flex items-center justify-between rounded-2xl px-4 py-3 text-base font-bold text-gray-900 transition hover:bg-[#256E63]/8 hover:text-[#256E63]"
+            className="flex items-center justify-between rounded-2xl px-4 py-3 text-base font-bold text-jevah-text transition hover:bg-jevah-accent/10 hover:text-jevah-accent"
           >
             Home
             <ArrowRightIcon className="h-4 w-4 text-gray-300" />
           </Link>
 
           {/* Mobile Category Grid: Music & Artists */}
-          <div className="my-2 rounded-2xl bg-slate-50 p-3 ring-1 ring-slate-100">
-            <p className="px-2 pb-2 text-[10px] font-bold uppercase tracking-wider text-gray-400">
+          <div className="jevah-mobile-section my-2 rounded-2xl p-3 ring-1 ring-jevah-border">
+            <p className="px-2 pb-2 text-[10px] font-bold uppercase tracking-wider text-jevah-text-muted">
               Music & Artists
             </p>
             <div className="grid grid-cols-2 gap-2">
@@ -411,12 +422,12 @@ export default function Nav() {
                     key={item.title}
                     to={item.href}
                     onClick={() => setMobileOpen(false)}
-                    className="flex flex-col gap-1.5 rounded-xl bg-white p-2.5 shadow-sm transition active:scale-95"
+                    className="flex flex-col gap-1.5 rounded-xl bg-jevah-card p-2.5 shadow-sm transition active:scale-95"
                   >
                     <div className={`flex h-8 w-8 items-center justify-center rounded-lg border ${item.color}`}>
                       <Icon className="h-4 w-4" />
                     </div>
-                    <span className="text-xs font-bold text-gray-900 line-clamp-1">{item.title}</span>
+                    <span className="text-xs font-bold text-jevah-text line-clamp-1">{item.title}</span>
                   </Link>
                 );
               })}
@@ -424,8 +435,8 @@ export default function Nav() {
                 </div>
 
           {/* Mobile Category Grid: About & Community */}
-          <div className="my-2 rounded-2xl bg-slate-50 p-3 ring-1 ring-slate-100">
-            <p className="px-2 pb-2 text-[10px] font-bold uppercase tracking-wider text-gray-400">
+          <div className="jevah-mobile-section my-2 rounded-2xl p-3 ring-1 ring-jevah-border">
+            <p className="px-2 pb-2 text-[10px] font-bold uppercase tracking-wider text-jevah-text-muted">
               About & Community
             </p>
             <div className="grid grid-cols-2 gap-2">
@@ -436,12 +447,12 @@ export default function Nav() {
                     key={item.title}
                     to={item.href}
                     onClick={() => setMobileOpen(false)}
-                    className="flex flex-col gap-1.5 rounded-xl bg-white p-2.5 shadow-sm transition active:scale-95"
+                    className="flex flex-col gap-1.5 rounded-xl bg-jevah-card p-2.5 shadow-sm transition active:scale-95"
                   >
                     <div className={`flex h-8 w-8 items-center justify-center rounded-lg border ${item.color}`}>
                       <Icon className="h-4 w-4" />
                     </div>
-                    <span className="text-xs font-bold text-gray-900 line-clamp-1">{item.title}</span>
+                    <span className="text-xs font-bold text-jevah-text line-clamp-1">{item.title}</span>
                   </Link>
                 );
               })}
@@ -450,22 +461,31 @@ export default function Nav() {
         </div>
 
         {/* Action Buttons */}
-        <div className="mt-5 space-y-2.5 border-t border-gray-100 pt-4">
-          <Link
-            to="/login"
-            onClick={() => setMobileOpen(false)}
-            className="flex w-full items-center justify-center rounded-2xl border-2 border-[#256E63] py-3.5 text-base font-bold text-[#256E63] transition hover:bg-[#256E63]/5 active:scale-95"
-          >
-            Admin sign-in
-          </Link>
+        <div className="mt-5 space-y-2.5 border-t border-jevah-border pt-4">
+          <div className="grid grid-cols-2 gap-2">
+            <Link
+              to="/login"
+              onClick={() => setMobileOpen(false)}
+              className="flex items-center justify-center rounded-2xl border-2 border-jevah-accent py-3 text-sm font-bold text-jevah-accent transition hover:bg-jevah-accent/5 active:scale-95"
+            >
+              Admin
+            </Link>
+            <Link
+              to="/creators/login"
+              onClick={() => setMobileOpen(false)}
+              className="flex items-center justify-center rounded-2xl border-2 border-[var(--jevah-auth-creator-accent)] py-3 text-sm font-bold text-[var(--jevah-auth-creator-accent)] transition hover:bg-[var(--jevah-auth-creator-accent)]/10 active:scale-95"
+            >
+              Creator
+            </Link>
+          </div>
           <a
             href="/#download"
             onClick={() => setMobileOpen(false)}
-            className="flex w-full items-center justify-center rounded-2xl bg-[#256E63] py-3.5 text-base font-bold text-white shadow-lg shadow-[#256E63]/25 transition hover:bg-[#1e5a52] active:scale-95"
-                  >
-                    Download App
+            className="flex w-full items-center justify-center rounded-2xl bg-jevah-accent py-3.5 text-base font-bold text-white shadow-lg shadow-jevah-accent/25 transition hover:bg-jevah-accent-hover active:scale-95"
+          >
+            Download App
           </a>
-                </div>
+        </div>
               </div>
     </header>
   );

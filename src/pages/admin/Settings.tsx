@@ -98,7 +98,7 @@ export default function SettingsPage() {
 
       <form onSubmit={(e) => void onSave(e)} className="space-y-4">
         <Panel>
-          <p className="mb-4 text-sm font-semibold text-[#0B1A1F]">Feature flags</p>
+          <p className="mb-4 text-sm font-semibold text-jevah-text">Feature flags</p>
           <div className="space-y-3">
             {(
               [
@@ -110,14 +110,14 @@ export default function SettingsPage() {
             ).map(([key, label]) => (
               <label
                 key={key}
-                className="flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-slate-200 px-4 py-3"
+                className="flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-jevah-border px-4 py-3"
               >
-                <span className="text-sm text-slate-700">{label}</span>
+                <span className="text-sm text-jevah-text">{label}</span>
                 <input
                   type="checkbox"
                   checked={Boolean(config[key])}
                   onChange={() => toggle(key)}
-                  className="h-4 w-4 rounded border-slate-300 text-[#256E63] focus:ring-[#256E63]"
+                  className="h-4 w-4 rounded border-jevah-border text-jevah-accent focus:ring-jevah-accent"
                 />
               </label>
             ))}

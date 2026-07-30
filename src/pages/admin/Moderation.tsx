@@ -380,7 +380,7 @@ export default function ModerationPage() {
   function ReviewBody({ forMobile = false }: { forMobile?: boolean }) {
     if (!selectedId) {
       return (
-        <div className="flex h-full min-h-[280px] items-center justify-center p-6 text-sm text-slate-500">
+        <div className="flex h-full min-h-[280px] items-center justify-center p-6 text-sm text-jevah-text-muted">
           Select an item to review.
         </div>
       );
@@ -415,23 +415,23 @@ export default function ModerationPage() {
               <Badge tone="warning">{signedExpiryLabel(detail.preview)}</Badge>
             )}
             {detail.createdAt && (
-              <span className="text-xs text-slate-400">
+              <span className="text-xs text-jevah-text-muted">
                 {formatAge(detail.createdAt)}
               </span>
             )}
           </div>
 
           <div>
-            <h2 className="text-lg font-semibold leading-snug text-[#0B1A1F] sm:text-xl">
+            <h2 className="text-lg font-semibold leading-snug text-jevah-text sm:text-xl">
               {detail.title}
             </h2>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-jevah-text-muted">
               {detail.contentType}
               {detail.category ? ` · ${detail.category}` : ""} ·{" "}
               {uploaderLabel(detail)}
             </p>
             {detail.description && (
-              <p className="mt-2 text-sm leading-relaxed text-slate-700">
+              <p className="mt-2 text-sm leading-relaxed text-jevah-text">
                 {detail.description}
               </p>
             )}
@@ -459,7 +459,7 @@ export default function ModerationPage() {
           )}
 
           {detail.processing?.status && (
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-jevah-text-muted">
               Processing: {detail.processing.status}
               {detail.processing.progress != null
                 ? ` (${detail.processing.progress}%)`
@@ -477,11 +477,11 @@ export default function ModerationPage() {
             />
           </Field>
 
-          <div className="rounded-xl border border-slate-100 bg-slate-50 p-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+          <div className="rounded-xl border border-jevah-border bg-jevah-muted p-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-jevah-text-muted">
               Notes thread
             </p>
-            <ul className="mt-2 max-h-28 space-y-1.5 overflow-y-auto text-xs text-slate-600">
+            <ul className="mt-2 max-h-28 space-y-1.5 overflow-y-auto text-xs text-jevah-text-muted">
               {threadNotes.length === 0 ? (
                 <li>No notes yet.</li>
               ) : (
@@ -551,28 +551,28 @@ export default function ModerationPage() {
           </div>
 
           {showCases && (
-            <div className="rounded-2xl border border-slate-100 bg-slate-50 p-3">
+            <div className="rounded-2xl border border-jevah-border bg-jevah-muted p-3">
               <div className="mb-2 flex items-center justify-between">
                 <p className="text-sm font-semibold">AI case history</p>
                 <button
                   type="button"
-                  className="rounded-lg p-1 text-slate-500 hover:bg-white"
+                  className="rounded-lg p-1 text-jevah-text-muted hover:bg-jevah-surface"
                   onClick={() => setShowCases(false)}
                 >
                   <XMarkIcon className="h-4 w-4" />
                 </button>
               </div>
               {cases.length === 0 ? (
-                <p className="text-xs text-slate-500">No cases.</p>
+                <p className="text-xs text-jevah-text-muted">No cases.</p>
               ) : (
                 <ul className="max-h-48 space-y-2 overflow-y-auto text-xs">
                   {cases.map((c) => (
-                    <li key={c.id} className="rounded-xl bg-white p-2.5 shadow-sm">
+                    <li key={c.id} className="rounded-xl bg-jevah-surface p-2.5 shadow-sm">
                       <p className="font-medium">
                         {c.provider || "AI"} · {c.modelId || "—"}
                       </p>
                       <p className="mt-1">{c.decision?.reason || "—"}</p>
-                      <p className="mt-1 text-slate-400">
+                      <p className="mt-1 text-jevah-text-muted">
                         {(c.decision?.flags || []).join(", ")} · {c.createdAt}
                       </p>
                     </li>
@@ -583,25 +583,25 @@ export default function ModerationPage() {
           )}
         </div>
 
-        <div className="sticky bottom-0 border-t border-slate-200 bg-white/95 px-4 py-3 backdrop-blur">
+        <div className="sticky bottom-0 border-t border-jevah-border bg-jevah-surface/95 px-4 py-3 backdrop-blur">
           <div className="mb-2 flex items-center justify-between gap-2">
             <button
               type="button"
               disabled={selectedIndex <= 0}
               onClick={() => goAdjacent(-1)}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-slate-600 ring-1 ring-slate-200 disabled:opacity-30"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-jevah-text-muted ring-1 ring-jevah-border disabled:opacity-30"
               aria-label="Previous"
             >
               <ChevronLeftIcon className="h-5 w-5" />
             </button>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-jevah-text-muted">
               {selectedIndex >= 0 ? selectedIndex + 1 : 0} / {items.length}
             </p>
             <button
               type="button"
               disabled={selectedIndex < 0 || selectedIndex >= items.length - 1}
               onClick={() => goAdjacent(1)}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-slate-600 ring-1 ring-slate-200 disabled:opacity-30"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-jevah-text-muted ring-1 ring-jevah-border disabled:opacity-30"
               aria-label="Next"
             >
               <ChevronRightIcon className="h-5 w-5" />
@@ -663,8 +663,8 @@ export default function ModerationPage() {
             className={cn(
               "shrink-0 rounded-full px-3.5 py-2 text-sm font-semibold transition",
               statusFilter === f.value
-                ? "bg-[#256E63] text-white shadow-sm"
-                : "bg-white text-slate-600 ring-1 ring-slate-200"
+                ? "bg-jevah-accent text-white shadow-sm"
+                : "bg-jevah-surface text-jevah-text-muted ring-1 ring-jevah-border"
             )}
           >
             {f.label}
@@ -673,8 +673,8 @@ export default function ModerationPage() {
       </div>
 
       {selectedIds.size > 0 && (
-        <div className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2">
-          <span className="text-xs font-medium text-slate-600">
+        <div className="flex flex-wrap items-center gap-2 rounded-xl border border-jevah-border bg-jevah-surface px-3 py-2">
+          <span className="text-xs font-medium text-jevah-text-muted">
             {selectedIds.size} selected
           </span>
           <Button
@@ -710,8 +710,8 @@ export default function ModerationPage() {
       )}
 
       {/* Desktop split */}
-      <div className="hidden overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm lg:grid lg:h-[calc(100vh-12rem)] lg:grid-cols-[minmax(280px,360px)_1fr]">
-        <div className="overflow-y-auto border-r border-slate-100">
+      <div className="hidden overflow-hidden rounded-2xl border border-jevah-border bg-jevah-surface shadow-sm lg:grid lg:h-[calc(100vh-12rem)] lg:grid-cols-[minmax(280px,360px)_1fr]">
+        <div className="overflow-y-auto border-r border-jevah-border">
           {loading ? (
             <div className="space-y-2 p-3">
               {Array.from({ length: 6 }).map((_, i) => (
@@ -728,8 +728,8 @@ export default function ModerationPage() {
                 <li key={item.id}>
                   <div
                     className={cn(
-                      "flex w-full gap-2 border-b border-slate-50 px-2 py-3 transition duration-200 hover:bg-slate-50",
-                      selectedId === item.id && "bg-[#256E63]/5"
+                      "flex w-full gap-2 border-b border-jevah-border px-2 py-3 transition duration-200 hover:bg-jevah-card",
+                      selectedId === item.id && "bg-jevah-accent/5"
                     )}
                   >
                     <input
@@ -743,7 +743,7 @@ export default function ModerationPage() {
                       onClick={() => selectItem(item.id)}
                       className="flex min-w-0 flex-1 gap-3 text-left"
                     >
-                    <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-slate-100">
+                    <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-jevah-card">
                       {item.preview?.thumbnailUrl ? (
                         <img
                           src={item.preview.thumbnailUrl}
@@ -754,10 +754,10 @@ export default function ModerationPage() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-semibold">{item.title}</p>
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-jevah-text-muted">
                         {item.contentType} · {item.moderationStatus}
                       </p>
-                      <p className="truncate text-xs text-slate-400">
+                      <p className="truncate text-xs text-jevah-text-muted">
                         {uploaderLabel(item)}
                         {item.createdAt ? ` · ${formatAge(item.createdAt)}` : ""}
                       </p>
@@ -795,9 +795,9 @@ export default function ModerationPage() {
                 <button
                   type="button"
                   onClick={() => selectItem(item.id, true)}
-                  className="flex w-full gap-3 rounded-2xl border border-slate-200/80 bg-white p-3 text-left shadow-sm transition active:scale-[0.99]"
+                  className="flex w-full gap-3 rounded-2xl border border-jevah-border bg-jevah-surface p-3 text-left shadow-sm transition active:scale-[0.99]"
                 >
-                  <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-slate-100">
+                  <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-jevah-card">
                     {item.preview?.thumbnailUrl ? (
                       <img
                         src={item.preview.thumbnailUrl}
@@ -810,10 +810,10 @@ export default function ModerationPage() {
                     <p className="line-clamp-2 text-sm font-semibold leading-snug">
                       {item.title}
                     </p>
-                    <p className="mt-1 text-xs text-slate-500">
+                    <p className="mt-1 text-xs text-jevah-text-muted">
                       {item.contentType} · {item.moderationStatus}
                     </p>
-                    <p className="mt-0.5 truncate text-xs text-slate-400">
+                    <p className="mt-0.5 truncate text-xs text-jevah-text-muted">
                       {uploaderLabel(item)}
                       {item.createdAt ? ` · ${formatAge(item.createdAt)}` : ""}
                     </p>
@@ -827,12 +827,12 @@ export default function ModerationPage() {
 
       {/* Mobile full-screen review */}
       {mobileReviewOpen && (
-        <div className="fixed inset-0 z-40 flex flex-col bg-white admin-fade-in lg:hidden">
-          <div className="flex items-center gap-2 border-b border-slate-200 px-3 py-2.5 admin-sheet-in">
+        <div className="fixed inset-0 z-40 flex flex-col bg-jevah-surface admin-fade-in lg:hidden">
+          <div className="flex items-center gap-2 border-b border-jevah-border px-3 py-2.5 admin-sheet-in">
             <button
               type="button"
               onClick={() => setMobileReviewOpen(false)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-xl hover:bg-slate-100"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-xl hover:bg-jevah-card"
               aria-label="Back to queue"
             >
               <ArrowLeftIcon className="h-5 w-5" />
@@ -841,7 +841,7 @@ export default function ModerationPage() {
               <p className="truncate text-sm font-semibold">
                 {detail?.title || "Review"}
               </p>
-              <p className="text-[11px] text-slate-400">
+              <p className="text-[11px] text-jevah-text-muted">
                 {selectedIndex >= 0 ? selectedIndex + 1 : 0} of {items.length}
               </p>
             </div>
@@ -854,7 +854,7 @@ export default function ModerationPage() {
 
       {editOpen && detail && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:items-center sm:p-4">
-          <div className="w-full max-w-lg space-y-3 rounded-t-3xl bg-white p-6 shadow-xl admin-sheet-in sm:rounded-2xl">
+          <div className="w-full max-w-lg space-y-3 rounded-t-3xl bg-jevah-surface p-6 shadow-xl admin-sheet-in sm:rounded-2xl">
             <h3 className="text-lg font-semibold">Edit metadata</h3>
             <input
               value={editTitle}

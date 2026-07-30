@@ -16,6 +16,7 @@ import {
 import { ApiError } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
 import { useFeedback } from "../../components/admin/Feedback";
+import { ErrorToaster } from "../../components/ErrorToaster";
 import { inputClass } from "../../components/ui/forms";
 import CreatorHubByStep from "./components/CreatorHubByStep";
 import ThemeToggle from "../../components/ThemeToggle";
@@ -169,8 +170,8 @@ export default function CreatorStudio() {
 
   if (loading) {
     return (
-      <div className="flex min-h-dvh items-center justify-center bg-[#F3F7F6]">
-        <div className="h-10 w-10 animate-spin rounded-full border-2 border-[#256E63] border-t-transparent" />
+      <div className="jevah-dashboard-shell flex min-h-dvh items-center justify-center">
+        <div className="h-10 w-10 animate-spin rounded-full border-2 border-jevah-accent border-t-transparent" />
       </div>
     );
   }
@@ -181,21 +182,21 @@ export default function CreatorStudio() {
     me.artist?.displayName || me.artist?.name || user?.email || "Creator";
 
   return (
-    <div className="creator-shell min-h-dvh bg-jevah-muted font-sans antialiased transition-colors duration-300 dark:bg-jevah-bg">
+    <div className="creator-shell jevah-dashboard-shell min-h-dvh font-sans antialiased transition-colors duration-300">
       <header className="border-b border-jevah-border bg-jevah-surface/90 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-4 sm:px-6">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-[#256E63]">
+            <p className="text-xs font-semibold uppercase tracking-wide text-jevah-accent">
               Creator studio
             </p>
-            <h1 className="text-lg font-bold text-[#0B1A1F]">{name}</h1>
+            <h1 className="text-lg font-bold text-jevah-text">{name}</h1>
           </div>
           <div className="flex items-center gap-2">
             <ThemeToggle variant="icon" />
             {me.capabilities.publicProfilePath && (
               <Link
                 to={me.capabilities.publicProfilePath}
-                className="hidden rounded-full border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 sm:inline-flex"
+                className="hidden rounded-full border border-jevah-border px-3 py-2 text-xs font-semibold text-jevah-text-muted sm:inline-flex"
               >
                 Public profile
               </Link>
@@ -203,7 +204,7 @@ export default function CreatorStudio() {
             <button
               type="button"
               onClick={() => void logout().then(() => navigate("/creators"))}
-              className="rounded-full px-3 py-2 text-xs font-semibold text-slate-500 hover:bg-slate-100"
+              className="rounded-full px-3 py-2 text-xs font-semibold text-jevah-text-muted hover:bg-jevah-card"
             >
               Log out
             </button>
@@ -212,23 +213,19 @@ export default function CreatorStudio() {
       </header>
 
       <main className="mx-auto max-w-5xl space-y-6 px-4 py-8 sm:px-6">
-        {error && (
-          <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-            {error}
-          </div>
-        )}
+        <ErrorToaster error={error} title="Studio error" />
 
         <div className="flex flex-wrap gap-2">
           <Link
             to="/creators"
-            className="rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-medium text-slate-600"
+            className="rounded-full border border-jevah-border bg-jevah-surface px-4 py-2 text-xs font-medium text-jevah-text-muted"
           >
             Overview
           </Link>
           {me.capabilities.canUploadTracks && (
             <Link
               to="/creators/studio/upload"
-              className="rounded-full bg-[#256E63] px-4 py-2 text-xs font-semibold text-white"
+              className="rounded-full bg-jevah-accent px-4 py-2 text-xs font-semibold text-white"
             >
               Upload
             </Link>
@@ -237,7 +234,7 @@ export default function CreatorStudio() {
             <button
               type="button"
               onClick={() => setProfileOpen(true)}
-              className="rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-medium text-slate-600"
+              className="rounded-full border border-jevah-border bg-jevah-surface px-4 py-2 text-xs font-medium text-jevah-text-muted"
             >
               Edit profile
             </button>
@@ -245,7 +242,7 @@ export default function CreatorStudio() {
           <button
             type="button"
             onClick={() => void load()}
-            className="rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-medium text-slate-600"
+            className="rounded-full border border-jevah-border bg-jevah-surface px-4 py-2 text-xs font-medium text-jevah-text-muted"
           >
             Refresh
           </button>
@@ -258,9 +255,9 @@ export default function CreatorStudio() {
         />
 
         {tracks.length > 0 && (
-          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
-            <div className="border-b border-slate-100 px-4 py-3">
-              <h2 className="text-sm font-semibold text-[#0B1A1F]">My tracks</h2>
+          <div className="overflow-hidden rounded-2xl border border-jevah-border bg-jevah-surface">
+            <div className="border-b border-jevah-border px-4 py-3">
+              <h2 className="text-sm font-semibold text-jevah-text">My tracks</h2>
             </div>
             <ul className="divide-y divide-slate-100">
               {tracks.map((t) => {
@@ -272,10 +269,10 @@ export default function CreatorStudio() {
                     className="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center"
                   >
                     <div className="min-w-0 flex-1">
-                      <p className="truncate font-medium text-[#0B1A1F]">
+                      <p className="truncate font-medium text-jevah-text">
                         {t.title}
                       </p>
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-jevah-text-muted">
                         {trackArtist(t)} · {t.visibility || "—"} · {status}
                         {t.playCount != null ? ` · ${t.playCount} plays` : ""}
                       </p>
@@ -298,7 +295,7 @@ export default function CreatorStudio() {
                           setEditTitle(t.title || "");
                           setEditVisibility(t.visibility || "published");
                         }}
-                        className="rounded-lg px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                        className="rounded-lg px-3 py-2 text-xs font-semibold text-jevah-text-muted hover:bg-jevah-card"
                       >
                         Edit
                       </button>
@@ -322,13 +319,13 @@ export default function CreatorStudio() {
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:items-center sm:p-4">
           <form
             onSubmit={(e) => void onSaveTrack(e)}
-            className="w-full max-w-md rounded-t-3xl bg-white p-6 sm:rounded-2xl"
+            className="w-full max-w-md rounded-t-3xl bg-jevah-surface p-6 sm:rounded-2xl"
           >
             <h3 className="text-lg font-semibold">Edit track</h3>
             <div className="mt-4 space-y-3">
               <Field label="Title" value={editTitle} onChange={setEditTitle} />
               <label className="block">
-                <span className="mb-1.5 block text-sm text-slate-600">
+                <span className="mb-1.5 block text-sm text-jevah-text-muted">
                   Visibility
                 </span>
                 <select
@@ -346,14 +343,14 @@ export default function CreatorStudio() {
               <button
                 type="button"
                 onClick={() => setEditTrack(null)}
-                className="flex-1 rounded-xl py-3 text-sm font-semibold text-slate-600"
+                className="flex-1 rounded-xl py-3 text-sm font-semibold text-jevah-text-muted"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={busy}
-                className="flex-1 rounded-xl bg-[#256E63] py-3 text-sm font-semibold text-white"
+                className="flex-1 rounded-xl bg-jevah-accent py-3 text-sm font-semibold text-white"
               >
                 Save
               </button>
@@ -366,7 +363,7 @@ export default function CreatorStudio() {
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:items-center sm:p-4">
           <form
             onSubmit={(e) => void onSaveProfile(e)}
-            className="w-full max-w-md rounded-t-3xl bg-white p-6 sm:rounded-2xl"
+            className="w-full max-w-md rounded-t-3xl bg-jevah-surface p-6 sm:rounded-2xl"
           >
             <h3 className="text-lg font-semibold">Edit profile</h3>
             <div className="mt-4 space-y-3">
@@ -376,7 +373,7 @@ export default function CreatorStudio() {
                 onChange={setProfileName}
               />
               <label className="block">
-                <span className="mb-1.5 block text-sm text-slate-600">Bio</span>
+                <span className="mb-1.5 block text-sm text-jevah-text-muted">Bio</span>
                 <textarea
                   rows={3}
                   value={profileBio}
@@ -389,14 +386,14 @@ export default function CreatorStudio() {
               <button
                 type="button"
                 onClick={() => setProfileOpen(false)}
-                className="flex-1 rounded-xl py-3 text-sm font-semibold text-slate-600"
+                className="flex-1 rounded-xl py-3 text-sm font-semibold text-jevah-text-muted"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={busy}
-                className="flex-1 rounded-xl bg-[#256E63] py-3 text-sm font-semibold text-white"
+                className="flex-1 rounded-xl bg-jevah-accent py-3 text-sm font-semibold text-white"
               >
                 Save
               </button>
@@ -419,7 +416,7 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-sm text-slate-600">{label}</span>
+      <span className="mb-1.5 block text-sm text-jevah-text-muted">{label}</span>
       <input
         required
         value={value}

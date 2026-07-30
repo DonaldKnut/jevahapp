@@ -20,14 +20,14 @@ export default function CreatorHubByStep({
   switch (step) {
     case "apply":
       return (
-        <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center">
-          <h2 className="text-xl font-semibold text-[#0B1A1F]">Become a creator</h2>
-          <p className="mt-2 text-sm text-slate-500">
+        <div className="rounded-2xl border border-jevah-border bg-jevah-surface p-8 text-center">
+          <h2 className="text-xl font-semibold text-jevah-text">Become a creator</h2>
+          <p className="mt-2 text-sm text-jevah-text-muted">
             {me.capabilities.statusMessage}
           </p>
           <Link
             to="/creators/apply"
-            className="mt-6 inline-flex rounded-full bg-[#256E63] px-6 py-3 text-sm font-semibold text-white"
+            className="mt-6 inline-flex rounded-full bg-jevah-accent px-6 py-3 text-sm font-semibold text-white"
           >
             Apply now
           </Link>
@@ -58,15 +58,15 @@ export default function CreatorHubByStep({
       );
     case "upload_first_track":
       return (
-        <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center">
+        <div className="rounded-2xl border border-jevah-border bg-jevah-surface p-8 text-center">
           <h2 className="text-xl font-semibold">Upload your first song</h2>
-          <p className="mt-2 text-sm text-slate-500">
+          <p className="mt-2 text-sm text-jevah-text-muted">
             {me.capabilities.statusMessage}
           </p>
           <button
             type="button"
             onClick={onUpload}
-            className="mt-6 rounded-full bg-[#256E63] px-6 py-3 text-sm font-semibold text-white"
+            className="mt-6 rounded-full bg-jevah-accent px-6 py-3 text-sm font-semibold text-white"
           >
             Upload track
           </button>
@@ -76,12 +76,12 @@ export default function CreatorHubByStep({
     default:
       if (!tracks.length && me.capabilities.canUploadTracks) {
         return (
-          <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center">
+          <div className="rounded-2xl border border-jevah-border bg-jevah-surface p-8 text-center">
             <h2 className="text-xl font-semibold">Your catalog is empty</h2>
             <button
               type="button"
               onClick={onUpload}
-              className="mt-6 rounded-full bg-[#256E63] px-6 py-3 text-sm font-semibold text-white"
+              className="mt-6 rounded-full bg-jevah-accent px-6 py-3 text-sm font-semibold text-white"
             >
               Upload track
             </button>

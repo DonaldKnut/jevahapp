@@ -15,8 +15,8 @@ import type {
   AdminUser,
 } from "../../types/admin";
 import { ApiError } from "../../lib/api";
+import { ErrorToaster } from "../../components/ErrorToaster";
 import {
-  Alert,
   KpiLink,
   Panel,
   Skeleton,
@@ -54,14 +54,14 @@ function formatWhen(iso?: string) {
 }
 
 const EVENT_TYPE_COLORS: Record<string, { bg: string; text: string; dot: string }> = {
-  upload:    { bg: "bg-sky-50", text: "text-sky-700", dot: "bg-sky-400" },
-  login:     { bg: "bg-emerald-50", text: "text-emerald-700", dot: "bg-emerald-400" },
-  report:    { bg: "bg-rose-50", text: "text-rose-700", dot: "bg-rose-400" },
-  ban:       { bg: "bg-red-50", text: "text-red-700", dot: "bg-red-500" },
-  flag:      { bg: "bg-amber-50", text: "text-amber-700", dot: "bg-amber-400" },
-  review:    { bg: "bg-purple-50", text: "text-purple-700", dot: "bg-purple-400" },
-  approve:   { bg: "bg-green-50", text: "text-green-700", dot: "bg-green-400" },
-  default:   { bg: "bg-slate-50", text: "text-slate-600", dot: "bg-slate-400" },
+  upload:    { bg: "bg-sky-500/10", text: "text-sky-700 dark:text-sky-300", dot: "bg-sky-400" },
+  login:     { bg: "bg-emerald-500/10", text: "text-emerald-700 dark:text-emerald-300", dot: "bg-emerald-400" },
+  report:    { bg: "bg-rose-500/10", text: "text-rose-700 dark:text-rose-300", dot: "bg-rose-400" },
+  ban:       { bg: "bg-red-500/10", text: "text-red-700 dark:text-red-300", dot: "bg-red-500" },
+  flag:      { bg: "bg-amber-500/10", text: "text-amber-700 dark:text-amber-300", dot: "bg-amber-400" },
+  review:    { bg: "bg-purple-500/10", text: "text-purple-700 dark:text-purple-300", dot: "bg-purple-400" },
+  approve:   { bg: "bg-green-500/10", text: "text-green-700 dark:text-green-300", dot: "bg-green-400" },
+  default:   { bg: "bg-jevah-muted", text: "text-jevah-text-muted", dot: "bg-jevah-border" },
 };
 
 function getEventStyle(type?: string) {
@@ -75,12 +75,12 @@ function getEventStyle(type?: string) {
 function ModerationStatusBadge({ status }: { status: string }) {
   const s = status.toLowerCase().replace(/_/g, " ");
   const map: Record<string, string> = {
-    "under review": "bg-amber-100 text-amber-800 ring-amber-200/50",
-    pending: "bg-orange-100 text-orange-800 ring-orange-200/50",
-    approved: "bg-emerald-100 text-emerald-800 ring-emerald-200/50",
-    rejected: "bg-red-100 text-red-800 ring-red-200/50",
+    "under review": "bg-amber-500/10 text-amber-800 ring-amber-500/20 dark:text-amber-300",
+    pending: "bg-orange-500/10 text-orange-800 ring-orange-500/20 dark:text-orange-300",
+    approved: "bg-emerald-500/10 text-emerald-800 ring-emerald-500/20 dark:text-emerald-300",
+    rejected: "bg-red-500/10 text-red-800 ring-red-500/20 dark:text-red-300",
   };
-  const cls = map[s] ?? "bg-slate-100 text-slate-700 ring-slate-200/50";
+  const cls = map[s] ?? "bg-jevah-card text-jevah-text ring-jevah-border";
   return (
     <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ring-1 capitalize ${cls}`}>
       {s}
@@ -230,14 +230,14 @@ export default function Overview() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#256E63]/10">
-              <SparklesIcon className="h-4 w-4 text-[#256E63]" />
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-jevah-accent/10">
+              <SparklesIcon className="h-4 w-4 text-jevah-accent" />
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-[#0B1A1F] sm:text-3xl">
+            <h1 className="text-2xl font-bold tracking-tight text-jevah-text sm:text-3xl">
               Dashboard
             </h1>
           </div>
-          <p className="text-sm text-slate-500 leading-relaxed">
+          <p className="text-sm text-jevah-text-muted leading-relaxed">
             Platform overview · Live pulse, refreshes every 45 seconds
           </p>
         </div>
@@ -249,11 +249,7 @@ export default function Overview() {
         </div>
       </div>
 
-      {error && (
-        <Alert tone="warning" onRetry={() => void load()}>
-          {error}
-        </Alert>
-      )}
+      <ErrorToaster error={error} title="Dashboard error" />
 
       {/* ── KPI Cards ── */}
       <div className="grid grid-cols-2 gap-3 xl:grid-cols-3">
@@ -273,11 +269,11 @@ export default function Overview() {
       {/* ── Timeseries ── */}
       <Panel>
         <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-          <p className="text-sm font-semibold text-[#0B1A1F]">Last 7 days</p>
+          <p className="text-sm font-semibold text-jevah-text">Last 7 days</p>
           <select
             value={metric}
             onChange={(e) => setMetric(e.target.value)}
-            className="rounded-lg border border-slate-200 px-2 py-1.5 text-xs"
+            className="rounded-lg border border-jevah-border px-2 py-1.5 text-xs"
           >
             <option value="signups">Signups</option>
             <option value="uploads">Uploads</option>
@@ -286,7 +282,7 @@ export default function Overview() {
           </select>
         </div>
         {series.length === 0 ? (
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-jevah-text-muted">
             Chart data unavailable (timeseries endpoint optional).
           </p>
         ) : (
@@ -305,10 +301,10 @@ export default function Overview() {
                   title={`${pt.date || pt.label || ""}: ${val}`}
                 >
                   <div
-                    className="w-full rounded-t-md bg-[#256E63]/80"
+                    className="w-full rounded-t-md bg-jevah-accent/80"
                     style={{ height: `${h}%` }}
                   />
-                  <span className="truncate text-[9px] text-slate-400">
+                  <span className="truncate text-[9px] text-jevah-text-muted">
                     {(pt.date || pt.label || "").toString().slice(5, 10) ||
                       String(i + 1)}
                   </span>
@@ -323,14 +319,14 @@ export default function Overview() {
       <section>
         <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <h2 className="text-base font-bold text-[#0B1A1F]">Online Now</h2>
+            <h2 className="text-base font-bold text-jevah-text">Online Now</h2>
             <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
               {onlineCount}
             </span>
           </div>
           <Link
             to="/admin/users?presence=online"
-            className="inline-flex items-center gap-1 text-sm font-semibold text-[#256E63] transition hover:text-[#1e5a52]"
+            className="inline-flex items-center gap-1 text-sm font-semibold text-jevah-accent transition hover:text-jevah-accent-hover"
           >
             View all
             <ArrowUpRightIcon className="h-3.5 w-3.5" />
@@ -338,9 +334,9 @@ export default function Overview() {
         </div>
 
         {onlineUsers.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-slate-200 bg-white/60 px-6 py-8 text-center">
-            <WifiIcon className="mx-auto mb-2 h-8 w-8 text-slate-300" />
-            <p className="text-sm font-medium text-slate-500">No one online right now</p>
+          <div className="rounded-2xl border border-dashed border-jevah-border bg-jevah-surface/60 px-6 py-8 text-center">
+            <WifiIcon className="mx-auto mb-2 h-8 w-8 text-jevah-text-muted" />
+            <p className="text-sm font-medium text-jevah-text-muted">No one online right now</p>
           </div>
         ) : (
           <div className="-mx-1 flex gap-3 overflow-x-auto px-1 pb-2">
@@ -350,17 +346,17 @@ export default function Overview() {
               return (
                 <div
                   key={u.id}
-                  className="admin-list-item group min-w-[160px] cursor-pointer rounded-2xl border border-slate-200/80 bg-white p-3.5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                  className="admin-list-item group min-w-[160px] cursor-pointer rounded-2xl border border-jevah-border bg-jevah-surface p-3.5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
                   style={{ animationDelay: `${Math.min(i, 8) * 45}ms` }}
                 >
                   <div className="relative mb-2.5 inline-flex">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-[#256E63] to-[#4ECDC4] text-xs font-bold text-white">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-jevah-accent to-[#4ECDC4] text-xs font-bold text-white">
                       {initials}
                     </div>
                     <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white bg-emerald-400 admin-online-dot" />
                   </div>
-                  <p className="truncate text-sm font-semibold text-[#0B1A1F]">{name}</p>
-                  <p className="truncate text-[11px] capitalize text-slate-400">{u.role}</p>
+                  <p className="truncate text-sm font-semibold text-jevah-text">{name}</p>
+                  <p className="truncate text-[11px] capitalize text-jevah-text-muted">{u.role}</p>
                 </div>
               );
             })}
@@ -374,26 +370,26 @@ export default function Overview() {
         <Panel className="lg:col-span-3">
           <div className="mb-5 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100">
-                <ClockIcon className="h-4 w-4 text-slate-500" />
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-jevah-card">
+                <ClockIcon className="h-4 w-4 text-jevah-text-muted" />
               </div>
-              <h2 className="text-base font-bold text-[#0B1A1F]">Activity Feed</h2>
+              <h2 className="text-base font-bold text-jevah-text">Activity Feed</h2>
             </div>
-            <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-semibold text-slate-600">
+            <span className="rounded-full bg-jevah-card px-2.5 py-0.5 text-[11px] font-semibold text-jevah-text-muted">
               {feed.length} events
             </span>
           </div>
 
           <ul className="max-h-[460px] space-y-2 overflow-y-auto pr-0.5 custom-scrollbar">
             {feed.length === 0 && (
-              <li className="py-8 text-center text-sm text-slate-400">No recent events.</li>
+              <li className="py-8 text-center text-sm text-jevah-text-muted">No recent events.</li>
             )}
             {feed.map((ev, i) => {
               const style = getEventStyle(ev.type);
               return (
                 <li
                   key={ev.id || String(i)}
-                  className="flex items-start gap-3 rounded-xl border border-transparent bg-slate-50/80 px-3.5 py-3 transition hover:border-slate-200 hover:bg-white"
+                  className="flex items-start gap-3 rounded-xl border border-transparent bg-jevah-muted/80 px-3.5 py-3 transition hover:border-jevah-border hover:bg-jevah-surface"
                 >
                   <div className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${style.bg}`}>
                     <span className={`h-2 w-2 rounded-full ${style.dot}`} />
@@ -403,11 +399,11 @@ export default function Overview() {
                       <span className={`rounded-md px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ${style.bg} ${style.text}`}>
                         {ev.type}
                       </span>
-                      <span className="shrink-0 text-[10px] text-slate-400">
+                      <span className="shrink-0 text-[10px] text-jevah-text-muted">
                         {formatWhen(ev.createdAt || ev.timestamp)}
                       </span>
                     </div>
-                    <p className="mt-1 text-sm text-slate-700 leading-snug">
+                    <p className="mt-1 text-sm text-jevah-text leading-snug">
                       {ev.title || ev.message || ev.description || "Admin event"}
                     </p>
                   </div>
@@ -423,14 +419,14 @@ export default function Overview() {
           <Panel>
             <div className="mb-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100">
-                  <MusicalNoteIcon className="h-4 w-4 text-slate-500" />
+                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-jevah-card">
+                  <MusicalNoteIcon className="h-4 w-4 text-jevah-text-muted" />
                 </div>
-                <h2 className="text-base font-bold text-[#0B1A1F]">Latest Uploads</h2>
+                <h2 className="text-base font-bold text-jevah-text">Latest Uploads</h2>
               </div>
               <Link
                 to="/admin/moderation"
-                className="inline-flex items-center gap-0.5 text-[11px] font-semibold text-[#256E63] hover:text-[#1e5a52]"
+                className="inline-flex items-center gap-0.5 text-[11px] font-semibold text-jevah-accent hover:text-jevah-accent-hover"
               >
                 Moderation
                 <ArrowUpRightIcon className="h-3 w-3" />
@@ -439,12 +435,12 @@ export default function Overview() {
 
             <ul className="space-y-2">
               {recent.length === 0 && (
-                <li className="py-4 text-center text-sm text-slate-400">No recent uploads.</li>
+                <li className="py-4 text-center text-sm text-jevah-text-muted">No recent uploads.</li>
               )}
               {recent.map((item) => (
                 <li
                   key={item.id}
-                  className="flex items-center gap-3 rounded-xl border border-slate-100 p-2 transition hover:border-slate-200 hover:bg-slate-50"
+                  className="flex items-center gap-3 rounded-xl border border-jevah-border p-2 transition hover:border-jevah-border hover:bg-jevah-card"
                 >
                   {item.preview?.thumbnailUrl ? (
                     <img
@@ -454,12 +450,12 @@ export default function Overview() {
                     />
                   ) : (
                     <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-slate-100 to-slate-200">
-                      <MusicalNoteIcon className="h-5 w-5 text-slate-400" />
+                      <MusicalNoteIcon className="h-5 w-5 text-jevah-text-muted" />
                     </div>
                   )}
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold text-[#0B1A1F]">{item.title}</p>
-                    <p className="mt-0.5 text-[11px] capitalize text-slate-400">
+                    <p className="truncate text-sm font-semibold text-jevah-text">{item.title}</p>
+                    <p className="mt-0.5 text-[11px] capitalize text-jevah-text-muted">
                       {item.contentType}
                     </p>
                   </div>
@@ -476,11 +472,11 @@ export default function Overview() {
                 <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-50">
                   <ExclamationTriangleIcon className="h-4 w-4 text-amber-500" />
                 </div>
-                <h2 className="text-base font-bold text-[#0B1A1F]">On Review</h2>
+                <h2 className="text-base font-bold text-jevah-text">On Review</h2>
               </div>
               <Link
                 to="/admin/moderation"
-                className="inline-flex items-center gap-0.5 text-[11px] font-semibold text-[#256E63] hover:text-[#1e5a52]"
+                className="inline-flex items-center gap-0.5 text-[11px] font-semibold text-jevah-accent hover:text-jevah-accent-hover"
               >
                 Open queue
                 <ArrowUpRightIcon className="h-3 w-3" />
@@ -500,7 +496,7 @@ export default function Overview() {
                     key={item.id}
                     className="flex items-center justify-between gap-2 rounded-xl bg-amber-50/70 px-3 py-2.5 ring-1 ring-amber-200/40"
                   >
-                    <span className="min-w-0 truncate text-sm font-medium text-[#0B1A1F]">
+                    <span className="min-w-0 truncate text-sm font-medium text-jevah-text">
                       {item.title}
                     </span>
                     <ModerationStatusBadge status={item.moderationStatus} />

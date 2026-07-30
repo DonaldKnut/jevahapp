@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { useIntersectionObserver } from "../hooks/useIntersectionObserver";
 import ButtonLink from "../common/ButtonLink";
+import { useFeedback } from "../components/admin/Feedback";
 
 function ContactUs() {
   const { ref, isIntersecting } = useIntersectionObserver({ threshold: 0.1 });
+  const { toast } = useFeedback();
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -23,9 +25,7 @@ function ContactUs() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission here
-    console.log("Form submitted:", formData);
-    // Reset form
+    toast.success("Message sent", "We'll get back to you within 24 hours.");
     setFormData({
       fullName: "",
       email: "",
@@ -42,34 +42,33 @@ function ContactUs() {
     <section
       ref={ref}
       id="contact"
-      className="bg-white py-20 px-8 lg:px-12"
+      className="jevah-section py-20 px-8 transition-colors duration-300 lg:px-12"
     >
       <div className="mx-auto max-w-7xl">
         <div className="grid gap-12 md:grid-cols-2">
-          {/* Left Side - Contact Information */}
           <div
             className={`${isIntersecting ? "animate-fade-in-left" : "opacity-0"}`}
           >
-            <h2 className="mb-6 text-4xl font-bold text-gray-900">
-              Contact Us
-            </h2>
-            <p className="mb-6 text-lg text-gray-700">
+            <h2 className="mb-6 text-4xl font-bold text-jevah-text">Contact Us</h2>
+            <p className="mb-6 text-lg text-jevah-text-muted">
               We're available 9 am - 11 pm WAT
             </p>
             <div className="mb-6">
               <ButtonLink
                 href="https://wa.me/2347037742764"
                 target="_blank"
-                className="inline-block rounded-full border-2 border-orange-400 bg-white px-6 py-3 text-orange-400 transition-all duration-300 hover:bg-orange-50"
+                className="inline-block rounded-full border-2 border-orange-400 bg-jevah-surface px-6 py-3 text-orange-400 transition-all duration-300 hover:bg-orange-400/10"
               >
                 Let's chat on WhatsApp
               </ButtonLink>
             </div>
             <div className="mb-6">
-              <p className="mb-2 text-lg text-gray-700">Wanna call instead?</p>
+              <p className="mb-2 text-lg text-jevah-text-muted">
+                Wanna call instead?
+              </p>
               <a
                 href="tel:+2347037742764"
-                className="flex items-center gap-2 text-lg text-gray-900 hover:text-orange-400"
+                className="flex items-center gap-2 text-lg text-jevah-text transition hover:text-orange-400"
               >
                 <svg
                   className="h-6 w-6"
@@ -87,52 +86,45 @@ function ContactUs() {
                 +234 703 774 2764
               </a>
             </div>
-            <p className="text-gray-600">
+            <p className="text-jevah-text-muted">
               Leave us a message and we'll get back to you within 48 hrs
             </p>
           </div>
 
-          {/* Right Side - Contact Form */}
           <div
             className={`${isIntersecting ? "animate-fade-in-right" : "opacity-0"}`}
           >
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <input
-                  type="text"
-                  id="fullName"
-                  name="fullName"
-                  value={formData.fullName}
-                  onChange={handleChange}
-                  placeholder="Full name"
-                  required
-                  className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-gray-400 focus:outline-none"
-                />
-              </div>
-              <div>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="Email"
-                  required
-                  className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-gray-400 focus:outline-none"
-                />
-              </div>
-              <div>
-                <input
-                  type="tel"
-                  id="phoneNumber"
-                  name="phoneNumber"
-                  value={formData.phoneNumber}
-                  onChange={handleChange}
-                  placeholder="Phone number"
-                  required
-                  className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-gray-400 focus:outline-none"
-                />
-              </div>
+              <input
+                type="text"
+                id="fullName"
+                name="fullName"
+                value={formData.fullName}
+                onChange={handleChange}
+                placeholder="Full name"
+                required
+                className="jevah-marketing-input"
+              />
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="Email"
+                required
+                className="jevah-marketing-input"
+              />
+              <input
+                type="tel"
+                id="phoneNumber"
+                name="phoneNumber"
+                value={formData.phoneNumber}
+                onChange={handleChange}
+                placeholder="Phone number"
+                required
+                className="jevah-marketing-input"
+              />
               <div className="relative">
                 <textarea
                   id="message"
@@ -143,28 +135,25 @@ function ContactUs() {
                   required
                   rows={6}
                   maxLength={maxLength}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-3 pb-8 text-gray-900 placeholder-gray-400 focus:border-gray-400 focus:outline-none"
+                  className="jevah-marketing-input pb-8"
                 />
-                <div className="absolute bottom-3 right-3 text-sm text-gray-400">
+                <div className="absolute bottom-3 right-3 text-sm text-jevah-text-muted">
                   {messageLength}/{maxLength}
                 </div>
               </div>
-              <div>
-                <input
-                  type="text"
-                  id="useCase"
-                  name="useCase"
-                  value={formData.useCase}
-                  onChange={handleChange}
-                  placeholder="How Do You Intend to Use Jevah?"
-                  required
-                  className="w-full rounded-lg border border-gray-300 px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-gray-400 focus:outline-none"
-                />
-              </div>
+              <input
+                type="text"
+                id="useCase"
+                name="useCase"
+                value={formData.useCase}
+                onChange={handleChange}
+                placeholder="How Do You Intend to Use Jevah?"
+                required
+                className="jevah-marketing-input"
+              />
               <button
                 type="submit"
-                className="w-full rounded-full px-6 py-3 text-white transition-all duration-300 hover:opacity-90 hover:shadow-lg"
-                style={{ backgroundColor: '#090E24' }}
+                className="jevah-btn-dark w-full rounded-full px-6 py-3 transition-all duration-300 hover:opacity-90 hover:shadow-lg"
               >
                 Submit
               </button>

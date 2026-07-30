@@ -270,14 +270,14 @@ export default function AudioLibraryPage() {
       />
 
       <Panel>
-        <div className="mb-3 grid grid-cols-2 gap-1 rounded-xl bg-slate-100 p-1">
+        <div className="mb-3 grid grid-cols-2 gap-1 rounded-xl bg-jevah-card p-1">
           <button
             type="button"
             onClick={() => setLane("curated")}
             className={`rounded-lg py-2 text-sm font-medium transition ${
               lane === "curated"
-                ? "bg-white text-[#0B1A1F] shadow-sm"
-                : "text-slate-500"
+                ? "bg-jevah-surface text-jevah-text shadow-sm"
+                : "text-jevah-text-muted"
             }`}
           >
             Curated
@@ -287,8 +287,8 @@ export default function AudioLibraryPage() {
             onClick={() => setLane("artist")}
             className={`rounded-lg py-2 text-sm font-medium transition ${
               lane === "artist"
-                ? "bg-white text-[#0B1A1F] shadow-sm"
-                : "text-slate-500"
+                ? "bg-jevah-surface text-jevah-text shadow-sm"
+                : "text-jevah-text-muted"
             }`}
           >
             Artist catalog
@@ -337,7 +337,7 @@ export default function AudioLibraryPage() {
             return (
               <div
                 key={trackId(t)}
-                className="admin-list-item flex flex-col rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm"
+                className="admin-list-item flex flex-col rounded-2xl border border-jevah-border bg-jevah-surface p-4 shadow-sm"
                 style={{ animationDelay: `${Math.min(i, 10) * 40}ms` }}
               >
                 <div className="flex items-start gap-3">
@@ -348,15 +348,15 @@ export default function AudioLibraryPage() {
                       className="h-14 w-14 shrink-0 rounded-xl object-cover"
                     />
                   ) : (
-                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-[#256E63]/10 text-xs font-semibold text-[#256E63]">
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-jevah-accent/10 text-xs font-semibold text-jevah-accent">
                       Audio
                     </div>
                   )}
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-semibold text-[#0B1A1F]">
+                    <p className="truncate font-semibold text-jevah-text">
                       {t.title || "Untitled"}
                     </p>
-                    <p className="truncate text-sm text-slate-500">
+                    <p className="truncate text-sm text-jevah-text-muted">
                       {trackArtist(t)}
                     </p>
                     <div className="mt-1.5 flex flex-wrap gap-1.5">
@@ -414,24 +414,24 @@ export default function AudioLibraryPage() {
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:items-center sm:p-4">
           <form
             onSubmit={(e) => void onSubmit(e)}
-            className="max-h-[92dvh] w-full max-w-lg overflow-y-auto rounded-t-3xl bg-white p-6 shadow-xl sm:rounded-2xl"
+            className="max-h-[92dvh] w-full max-w-lg overflow-y-auto rounded-t-3xl bg-jevah-surface p-6 shadow-xl sm:rounded-2xl"
           >
             <h3 className="text-lg font-semibold">
               {editing ? "Edit track" : "Upload track"}
             </h3>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-jevah-text-muted">
               Curated lane · copyright-free for the app library
             </p>
 
             {!editing && (
-              <div className="mt-4 grid grid-cols-2 gap-2 rounded-xl bg-slate-100 p-1">
+              <div className="mt-4 grid grid-cols-2 gap-2 rounded-xl bg-jevah-card p-1">
                 <button
                   type="button"
                   onClick={() => setMode("file")}
                   className={`rounded-lg py-2 text-sm font-medium transition ${
                     mode === "file"
-                      ? "bg-white text-[#0B1A1F] shadow-sm"
-                      : "text-slate-500"
+                      ? "bg-jevah-surface text-jevah-text shadow-sm"
+                      : "text-jevah-text-muted"
                   }`}
                 >
                   Upload file
@@ -441,8 +441,8 @@ export default function AudioLibraryPage() {
                   onClick={() => setMode("url")}
                   className={`rounded-lg py-2 text-sm font-medium transition ${
                     mode === "url"
-                      ? "bg-white text-[#0B1A1F] shadow-sm"
-                      : "text-slate-500"
+                      ? "bg-jevah-surface text-jevah-text shadow-sm"
+                      : "text-jevah-text-muted"
                   }`}
                 >
                   Paste URL
@@ -514,14 +514,14 @@ export default function AudioLibraryPage() {
                     }}
                     className={`rounded-2xl border-2 border-dashed px-4 py-8 text-center transition ${
                       dragOver
-                        ? "border-[#256E63] bg-[#256E63]/5"
-                        : "border-slate-200 bg-slate-50"
+                        ? "border-jevah-accent bg-jevah-accent/5"
+                        : "border-jevah-border bg-jevah-muted"
                     }`}
                   >
-                    <p className="text-sm font-medium text-slate-700">
+                    <p className="text-sm font-medium text-jevah-text">
                       Drop audio here, or browse
                     </p>
-                    <p className="mt-1 text-xs text-slate-400">
+                    <p className="mt-1 text-xs text-jevah-text-muted">
                       MP3, M4A, WAV · optional cover image
                     </p>
                     <div className="mt-4 flex flex-wrap justify-center gap-2">
@@ -558,7 +558,7 @@ export default function AudioLibraryPage() {
                       }}
                     />
                     {(audioFile || coverFile) && (
-                      <div className="mt-4 space-y-1 text-left text-xs text-slate-600">
+                      <div className="mt-4 space-y-1 text-left text-xs text-jevah-text-muted">
                         {audioFile && (
                           <p>
                             Audio:{" "}
@@ -615,7 +615,7 @@ export default function AudioLibraryPage() {
               )}
 
               {progress && (
-                <p className="text-sm font-medium text-[#256E63]">{progress}</p>
+                <p className="text-sm font-medium text-jevah-accent">{progress}</p>
               )}
             </div>
 

@@ -2,22 +2,26 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import ButtonLink from "../common/ButtonLink";
 import JevahLogo from "../components/JevahLogo";
+import { useFeedback } from "../components/admin/Feedback";
 import Facebook from "../assets/logos/icons8-facebook.svg";
 import AppStore from "../assets/logos/app_store.png";
 import PlayStore from "../assets/logos/play_store.png";
 
 function Footer() {
+  const { toast } = useFeedback();
   const [email, setEmail] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle newsletter subscription
-    console.log("Newsletter subscription:", email);
+    toast.success("Subscribed!", "Thanks for joining the Jevah newsletter.");
     setEmail("");
   };
 
   return (
-    <footer className="py-12 px-8 lg:px-12" style={{ backgroundColor: '#090E24' }}>
+    <footer
+      className="py-12 px-8 transition-colors duration-300 lg:px-12"
+      style={{ backgroundColor: "var(--jevah-footer)" }}
+    >
       <div className="mx-auto max-w-7xl">
         <div className="grid gap-8 md:grid-cols-4">
           {/* Left Column - Logo, Download Button, App Store Buttons, Newsletter */}

@@ -10,20 +10,20 @@ function Hero() {
     <section
       ref={ref}
       id="download"
-      className="relative bg-gradient-to-br from-blue-100 via-teal-50 to-green-100 px-8 pb-0 pt-[15vh] lg:px-12"
+      className="relative bg-gradient-to-br from-[var(--jevah-hero-from)] via-[var(--jevah-hero-via)] to-[var(--jevah-hero-to)] px-8 pb-0 pt-[15vh] transition-colors duration-300 lg:px-12"
     >
       <div className="mx-auto max-w-7xl">
         <div
           className={`mb-12 mt-8 text-center ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
         >
           <h1
-            className={`mb-6 text-5xl font-bold text-gray-900 md:text-6xl lg:text-7xl ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
+            className={`mb-6 text-5xl font-bold text-jevah-text md:text-6xl lg:text-7xl ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
             style={{ animationDelay: "0.2s" }}
           >
             Experience Faith. Connect with Purpose.
           </h1>
           <p
-            className={`mx-auto mb-8 max-w-3xl text-lg text-gray-700 md:text-xl ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
+            className={`mx-auto mb-8 max-w-3xl text-lg text-jevah-text-muted md:text-xl ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
             style={{ animationDelay: "0.4s" }}
           >
             The Jevah App is your all-in-one Christian platform bringing gospel
@@ -38,7 +38,6 @@ function Hero() {
           </div>
         </div>
 
-        {/* Hero Image */}
         <div
           className={`-mt-2 flex items-center justify-center ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
           style={{ animationDelay: "0.8s" }}
@@ -46,7 +45,7 @@ function Hero() {
           <img
             src={HomeImage}
             alt="Jevah App"
-            className="h-auto w-full max-w-4xl object-contain"
+            className="h-auto w-full max-w-4xl object-contain dark:brightness-95 dark:drop-shadow-[0_20px_40px_rgba(0,0,0,0.35)]"
           />
         </div>
       </div>

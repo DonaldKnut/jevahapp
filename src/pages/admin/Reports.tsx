@@ -277,8 +277,8 @@ export default function ReportsPage() {
       </FilterBar>
 
       {type !== "comment" && selected.size > 0 && (
-        <div className="flex flex-wrap items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2">
-          <span className="text-xs font-medium text-slate-600">
+        <div className="flex flex-wrap items-center gap-2 rounded-xl border border-jevah-border bg-jevah-surface px-3 py-2">
+          <span className="text-xs font-medium text-jevah-text-muted">
             {selected.size} selected
           </span>
           <Button
@@ -333,7 +333,7 @@ export default function ReportsPage() {
             return (
               <article
                 key={id}
-                className="admin-list-item rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm"
+                className="admin-list-item rounded-2xl border border-jevah-border bg-jevah-surface p-4 shadow-sm"
                 style={{ animationDelay: `${Math.min(i, 10) * 40}ms` }}
               >
                 <div className="flex flex-wrap items-center justify-between gap-2">
@@ -348,17 +348,17 @@ export default function ReportsPage() {
                     )}
                     <Badge tone="danger">{kind}</Badge>
                   </div>
-                  <span className="text-xs text-slate-400">
+                  <span className="text-xs text-jevah-text-muted">
                     {r.createdAt ? new Date(r.createdAt).toLocaleString() : ""}
                   </span>
                 </div>
-                <p className="mt-2 font-semibold text-[#0B1A1F]">
+                <p className="mt-2 font-semibold text-jevah-text">
                   {r.reason || "Reported content"}
                 </p>
                 {r.description && (
-                  <p className="mt-1 text-sm text-slate-600">{r.description}</p>
+                  <p className="mt-1 text-sm text-jevah-text-muted">{r.description}</p>
                 )}
-                <p className="mt-2 text-xs text-slate-500">
+                <p className="mt-2 text-xs text-jevah-text-muted">
                   Status: {r.status || "—"}
                   {r.reporter?.email ? ` · by ${r.reporter.email}` : ""}
                 </p>
@@ -413,18 +413,18 @@ export default function ReportsPage() {
       </div>
 
       {(detail || detailLoading) && (
-        <div className="fixed inset-0 z-50 flex bg-[#0B1A1F]/45 sm:items-stretch sm:justify-end sm:bg-black/40">
+        <div className="fixed inset-0 z-50 flex sm:items-stretch sm:justify-end" style={{ backgroundColor: "var(--jevah-overlay)" }}>
           <button
             type="button"
             className="hidden flex-1 sm:block"
             aria-label="Close"
             onClick={() => setDetail(null)}
           />
-          <div className="flex h-dvh w-full max-w-none flex-col bg-white shadow-2xl admin-panel-in sm:h-auto sm:max-w-lg">
-            <div className="sticky top-0 z-10 flex items-center gap-2 border-b bg-white px-3 py-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-5 sm:pt-4">
+          <div className="flex h-dvh w-full max-w-none flex-col bg-jevah-surface shadow-2xl admin-panel-in sm:h-auto sm:max-w-lg">
+            <div className="sticky top-0 z-10 flex items-center gap-2 border-b bg-jevah-surface px-3 py-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-5 sm:pt-4">
               <button
                 type="button"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-xl hover:bg-slate-100 sm:hidden"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-xl hover:bg-jevah-card sm:hidden"
                 onClick={() => setDetail(null)}
                 aria-label="Back"
               >
@@ -435,7 +435,7 @@ export default function ReportsPage() {
               </h2>
               <button
                 type="button"
-                className="hidden h-10 w-10 items-center justify-center rounded-xl hover:bg-slate-100 sm:inline-flex"
+                className="hidden h-10 w-10 items-center justify-center rounded-xl hover:bg-jevah-card sm:inline-flex"
                 onClick={() => setDetail(null)}
                 aria-label="Close"
               >
@@ -461,16 +461,16 @@ export default function ReportsPage() {
                   )}
 
                   <div>
-                    <p className="text-base font-semibold text-[#0B1A1F]">
+                    <p className="text-base font-semibold text-jevah-text">
                       {detail.media.title}
                     </p>
-                    <p className="mt-1 text-xs text-slate-500">
+                    <p className="mt-1 text-xs text-jevah-text-muted">
                       {detail.report.reason} · {detail.report.status}
                     </p>
-                    <p className="mt-2 text-sm leading-relaxed text-slate-700">
+                    <p className="mt-2 text-sm leading-relaxed text-jevah-text">
                       {detail.report.description || "No description"}
                     </p>
-                    <p className="mt-2 text-xs text-slate-500">
+                    <p className="mt-2 text-xs text-jevah-text-muted">
                       Reporter: {detail.report.reporter?.email || "—"}
                       <br />
                       Uploader: {detail.uploader?.email || "—"}
@@ -478,7 +478,7 @@ export default function ReportsPage() {
                   </div>
 
                   {detail.siblingReports?.length > 0 && (
-                    <div className="rounded-xl bg-slate-50 p-3 text-xs">
+                    <div className="rounded-xl bg-jevah-muted p-3 text-xs">
                       <p className="font-semibold">
                         Sibling reports ({detail.siblingReports.length})
                       </p>
@@ -502,7 +502,7 @@ export default function ReportsPage() {
                   </Field>
                 </div>
 
-                <div className="sticky bottom-0 grid grid-cols-1 gap-2 border-t bg-white/95 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur sm:grid-cols-2 sm:px-5">
+                <div className="sticky bottom-0 grid grid-cols-1 gap-2 border-t bg-jevah-surface/95 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur sm:grid-cols-2 sm:px-5">
                   {(
                     detail.actions?.review || [
                       "dismissed",

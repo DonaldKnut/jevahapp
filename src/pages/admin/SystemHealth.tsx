@@ -100,7 +100,7 @@ export default function SystemHealthPage() {
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {services.map(([label, value]) => (
               <Panel key={label}>
-                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                <p className="text-xs font-semibold uppercase tracking-wide text-jevah-text-muted">
                   {label}
                 </p>
                 <div className="mt-2">
@@ -113,19 +113,19 @@ export default function SystemHealthPage() {
           <Panel>
             <div className="flex flex-wrap gap-6 text-sm">
               <div>
-                <p className="text-xs text-slate-400">Version</p>
-                <p className="mt-1 font-mono text-slate-800">
+                <p className="text-xs text-jevah-text-muted">Version</p>
+                <p className="mt-1 font-mono text-jevah-text">
                   {health.version || "—"}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-slate-400">Uptime</p>
-                <p className="mt-1 font-medium text-slate-800">
+                <p className="text-xs text-jevah-text-muted">Uptime</p>
+                <p className="mt-1 font-medium text-jevah-text">
                   {formatUptime(health.uptimeSeconds)}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-slate-400">Overall</p>
+                <p className="text-xs text-jevah-text-muted">Overall</p>
                 <div className="mt-1">
                   <Badge tone={statusTone(health.status)}>
                     {health.status || "unknown"}
@@ -137,15 +137,15 @@ export default function SystemHealthPage() {
 
           {health.queues && Object.keys(health.queues).length > 0 && (
             <Panel>
-              <p className="mb-3 text-sm font-semibold text-[#0B1A1F]">Queues</p>
+              <p className="mb-3 text-sm font-semibold text-jevah-text">Queues</p>
               <div className="grid gap-3 sm:grid-cols-2">
                 {Object.entries(health.queues).map(([name, q]) => (
                   <div
                     key={name}
-                    className="rounded-xl border border-slate-200 px-4 py-3"
+                    className="rounded-xl border border-jevah-border px-4 py-3"
                   >
                     <p className="text-sm font-medium capitalize">{name}</p>
-                    <p className="mt-1 text-xs text-slate-500">
+                    <p className="mt-1 text-xs text-jevah-text-muted">
                       waiting {q.waiting ?? 0} · failed {q.failed ?? 0}
                     </p>
                   </div>

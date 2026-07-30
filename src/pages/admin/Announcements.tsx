@@ -134,10 +134,10 @@ export default function AnnouncementsPage() {
             <Panel key={annId(a)}>
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div>
-                  <p className="font-semibold text-[#0B1A1F]">
+                  <p className="font-semibold text-jevah-text">
                     {a.title || "Untitled"}
                   </p>
-                  <p className="mt-1 text-sm text-slate-600 line-clamp-2">
+                  <p className="mt-1 text-sm text-jevah-text-muted line-clamp-2">
                     {a.body || a.message}
                   </p>
                 </div>
@@ -167,7 +167,7 @@ export default function AnnouncementsPage() {
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:items-center sm:p-4">
           <form
             onSubmit={(e) => void onCreate(e)}
-            className="w-full max-w-md rounded-t-3xl bg-white p-6 sm:rounded-2xl"
+            className="w-full max-w-md rounded-t-3xl bg-jevah-surface p-6 sm:rounded-2xl"
           >
             <h3 className="text-lg font-semibold">New announcement</h3>
             <div className="mt-4 space-y-3">

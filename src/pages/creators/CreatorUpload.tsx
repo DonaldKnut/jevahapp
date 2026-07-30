@@ -115,25 +115,25 @@ export default function CreatorUpload() {
   }
 
   return (
-    <div className="creator-shell min-h-dvh bg-[#F3F7F6] px-4 pb-16 pt-10 font-sans antialiased sm:px-6">
+    <div className="creator-shell jevah-dashboard-shell min-h-dvh px-4 pb-16 pt-10 font-sans antialiased sm:px-6">
       <div className="mx-auto max-w-lg">
         <Link
           to="/creators/studio"
-          className="text-sm font-semibold text-[#256E63] hover:underline"
+          className="text-sm font-semibold text-jevah-accent hover:underline"
         >
           ← Studio
         </Link>
-        <h1 className="mt-4 text-2xl font-bold text-[#0B1A1F]">Upload track</h1>
-        <p className="mt-1 text-sm text-slate-500">
+        <h1 className="mt-4 text-2xl font-bold text-jevah-text">Upload track</h1>
+        <p className="mt-1 text-sm text-jevah-text-muted">
           Artist lane · intent → PUT → finalize
         </p>
 
         <form
           onSubmit={(e) => void onSubmit(e)}
-          className="mt-6 space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+          className="mt-6 space-y-4 rounded-2xl border border-jevah-border bg-jevah-surface p-6 shadow-sm"
         >
           <label className="block">
-            <span className="mb-1.5 block text-sm font-medium text-slate-600">
+            <span className="mb-1.5 block text-sm font-medium text-jevah-text-muted">
               Title
             </span>
             <input
@@ -152,7 +152,7 @@ export default function CreatorUpload() {
               ] as const
             ).map(([label, value, set]) => (
               <label key={label} className="block">
-                <span className="mb-1 block text-xs text-slate-600">{label}</span>
+                <span className="mb-1 block text-xs text-jevah-text-muted">{label}</span>
                 <input
                   value={value}
                   onChange={(e) => set(e.target.value)}
@@ -175,8 +175,8 @@ export default function CreatorUpload() {
             }}
             className={`rounded-2xl border-2 border-dashed px-4 py-10 text-center ${
               dragOver
-                ? "border-[#256E63] bg-[#256E63]/5"
-                : "border-slate-200 bg-slate-50"
+                ? "border-jevah-accent bg-jevah-accent/5"
+                : "border-jevah-border bg-jevah-muted"
             }`}
           >
             <p className="text-sm font-medium">Drop audio / cover</p>
@@ -184,14 +184,14 @@ export default function CreatorUpload() {
               <button
                 type="button"
                 onClick={() => fileRef.current?.click()}
-                className="rounded-lg border bg-white px-3 py-2 text-xs font-semibold"
+                className="rounded-lg border bg-jevah-surface px-3 py-2 text-xs font-semibold"
               >
                 Audio
               </button>
               <button
                 type="button"
                 onClick={() => coverRef.current?.click()}
-                className="rounded-lg border bg-white px-3 py-2 text-xs font-semibold"
+                className="rounded-lg border bg-jevah-surface px-3 py-2 text-xs font-semibold"
               >
                 Cover
               </button>
@@ -211,31 +211,31 @@ export default function CreatorUpload() {
               onChange={(e) => onDrop(e.target.files)}
             />
             {(audioFile || coverFile) && (
-              <div className="mt-3 space-y-1 text-left text-xs text-slate-600">
+              <div className="mt-3 space-y-1 text-left text-xs text-jevah-text-muted">
                 {audioFile && <p>Audio: {audioFile.name}</p>}
                 {coverFile && <p>Cover: {coverFile.name}</p>}
               </div>
             )}
           </div>
 
-          <label className="flex items-center gap-2 text-sm text-slate-600">
+          <label className="flex items-center gap-2 text-sm text-jevah-text-muted">
             <input
               type="checkbox"
               checked={publish}
               onChange={(e) => setPublish(e.target.checked)}
-              className="h-4 w-4 rounded border-slate-300 text-[#256E63]"
+              className="h-4 w-4 rounded border-jevah-border text-jevah-accent"
             />
             Publish after finalize
           </label>
 
           {progress && (
-            <p className="text-sm font-medium text-[#256E63]">{progress}</p>
+            <p className="text-sm font-medium text-jevah-accent">{progress}</p>
           )}
 
           <button
             type="submit"
             disabled={busy || !audioFile}
-            className="w-full rounded-xl bg-[#256E63] py-3.5 text-sm font-semibold text-white disabled:opacity-60"
+            className="w-full rounded-xl bg-jevah-accent py-3.5 text-sm font-semibold text-white disabled:opacity-60"
           >
             {busy ? progress || "Working…" : "Upload & finalize"}
           </button>

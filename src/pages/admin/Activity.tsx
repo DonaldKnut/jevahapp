@@ -88,7 +88,7 @@ export default function ActivityPage() {
               <Panel>
                 <div className="flex items-center justify-between gap-2">
                   <Badge tone="brand">{ev.type}</Badge>
-                  <span className="text-xs text-slate-400">
+                  <span className="text-xs text-jevah-text-muted">
                     {ev.createdAt || ev.timestamp
                       ? new Date(
                           (ev.createdAt || ev.timestamp) as string
@@ -96,7 +96,7 @@ export default function ActivityPage() {
                       : ""}
                   </span>
                 </div>
-                <p className="mt-3 text-sm text-slate-800">
+                <p className="mt-3 text-sm text-jevah-text">
                   {ev.title || ev.message || ev.description || "Admin action"}
                 </p>
               </Panel>

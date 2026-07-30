@@ -50,18 +50,22 @@ export default function ArtistPublicProfile() {
   const name = artist?.displayName || artist?.name || slug;
 
   return (
-    <div className="bg-[linear-gradient(180deg,#0B1A1F_0%,#12263a_35%,#F3F7F6_35%)] pb-20 pt-24">
-      <div className="mx-auto max-w-3xl px-4 sm:px-6">
+    <div className="relative jevah-dashboard-shell pb-20 pt-24">
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 h-[35%] jevah-dashboard-sidebar"
+        aria-hidden
+      />
+      <div className="relative mx-auto max-w-3xl px-4 sm:px-6">
         {loading ? (
           <div className="flex justify-center py-20">
             <div className="h-10 w-10 animate-spin rounded-full border-2 border-white border-t-transparent" />
           </div>
         ) : error ? (
-          <div className="rounded-2xl bg-white p-8 text-center shadow-sm">
-            <p className="text-slate-700">{error}</p>
+          <div className="rounded-2xl bg-jevah-surface p-8 text-center shadow-sm">
+            <p className="text-jevah-text">{error}</p>
             <Link
               to="/creators"
-              className="mt-4 inline-flex text-sm font-semibold text-[#256E63]"
+              className="mt-4 inline-flex text-sm font-semibold text-jevah-accent"
             >
               Back to Creators
             </Link>
@@ -76,7 +80,7 @@ export default function ArtistPublicProfile() {
                   className="h-28 w-28 rounded-full object-cover ring-4 ring-white/20"
                 />
               ) : (
-                <div className="flex h-28 w-28 items-center justify-center rounded-full bg-[#256E63] text-3xl font-bold ring-4 ring-white/20">
+                <div className="flex h-28 w-28 items-center justify-center rounded-full bg-jevah-accent text-3xl font-bold ring-4 ring-white/20">
                   {(name || "?").charAt(0).toUpperCase()}
                 </div>
               )}
@@ -119,14 +123,14 @@ export default function ArtistPublicProfile() {
               </div>
             </div>
 
-            <div className="mt-10 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-              <div className="border-b border-slate-100 px-4 py-3">
-                <h2 className="text-sm font-semibold text-[#0B1A1F]">
+            <div className="mt-10 overflow-hidden rounded-2xl border border-jevah-border bg-jevah-surface shadow-sm">
+              <div className="border-b border-jevah-border px-4 py-3">
+                <h2 className="text-sm font-semibold text-jevah-text">
                   Discography
                 </h2>
               </div>
               {tracks.length === 0 ? (
-                <p className="px-4 py-10 text-center text-sm text-slate-500">
+                <p className="px-4 py-10 text-center text-sm text-jevah-text-muted">
                   No published tracks yet.
                 </p>
               ) : (
@@ -138,10 +142,10 @@ export default function ArtistPublicProfile() {
                       <li key={id} className="px-4 py-4">
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
-                            <p className="font-medium text-[#0B1A1F]">
+                            <p className="font-medium text-jevah-text">
                               {t.title}
                             </p>
-                            <p className="text-xs text-slate-500">
+                            <p className="text-xs text-jevah-text-muted">
                               {trackArtist(t)} · {trackProcessing(t)}
                               {t.playCount != null
                                 ? ` · ${t.playCount} plays`
@@ -154,7 +158,7 @@ export default function ArtistPublicProfile() {
                               onClick={() =>
                                 setPlayingId(playingId === id ? null : id)
                               }
-                              className="shrink-0 rounded-full bg-[#256E63] px-4 py-2 text-xs font-semibold text-white"
+                              className="shrink-0 rounded-full bg-jevah-accent px-4 py-2 text-xs font-semibold text-white"
                             >
                               {playingId === id ? "Hide" : "Play"}
                             </button>

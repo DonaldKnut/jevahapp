@@ -291,7 +291,7 @@ export default function UsersPage() {
     const name =
       [u.firstName, u.lastName].filter(Boolean).join(" ") || "Unnamed user";
     return (
-      <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm">
+      <div className="rounded-2xl border border-jevah-border bg-jevah-surface p-4 shadow-sm">
         <div className="flex items-start gap-3">
           <input
             type="checkbox"
@@ -301,11 +301,11 @@ export default function UsersPage() {
           />
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <p className="font-semibold text-[#0B1A1F]">{name}</p>
+              <p className="font-semibold text-jevah-text">{name}</p>
               {isSuperAdminEmail(u.email) && <Badge tone="warning">Master</Badge>}
               {u.isBanned && <Badge tone="danger">Banned</Badge>}
             </div>
-            <p className="truncate text-sm text-slate-500">{u.email}</p>
+            <p className="truncate text-sm text-jevah-text-muted">{u.email}</p>
             <div className="mt-2 flex flex-wrap items-center gap-3">
               <OnlineDot online={u.isOnline} />
               {isSuperAdmin && !isSuperAdminEmail(u.email) ? (
@@ -313,7 +313,7 @@ export default function UsersPage() {
                   value={u.role}
                   disabled={busy}
                   onChange={(e) => void changeRole(u, e.target.value)}
-                  className="rounded-lg border border-slate-200 px-2 py-1 text-xs capitalize"
+                  className="rounded-lg border border-jevah-border px-2 py-1 text-xs capitalize"
                 >
                   {ROLES.map((r) => (
                     <option key={r} value={r}>
@@ -322,7 +322,7 @@ export default function UsersPage() {
                   ))}
                 </select>
               ) : (
-                <span className="text-xs capitalize text-slate-600">{u.role}</span>
+                <span className="text-xs capitalize text-jevah-text-muted">{u.role}</span>
               )}
             </div>
             <div className="mt-3 flex flex-wrap gap-2">
@@ -495,7 +495,7 @@ export default function UsersPage() {
         >
           Previous
         </Button>
-        <span className="px-2 text-sm text-slate-500">Page {page}</span>
+        <span className="px-2 text-sm text-jevah-text-muted">Page {page}</span>
         <Button
           variant="secondary"
           onClick={() => {
@@ -510,7 +510,7 @@ export default function UsersPage() {
 
       {banTarget && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-0 sm:items-center sm:p-4">
-          <div className="w-full max-w-md rounded-t-3xl bg-white p-6 shadow-xl sm:rounded-2xl">
+          <div className="w-full max-w-md rounded-t-3xl bg-jevah-surface p-6 shadow-xl sm:rounded-2xl">
             <h3 className="text-lg font-semibold">Ban {banTarget.email}</h3>
             <div className="mt-4 space-y-3">
               <Field label="Reason">
@@ -529,12 +529,12 @@ export default function UsersPage() {
                   className={inputClass}
                 />
               </Field>
-              <label className="flex items-center gap-2 text-sm text-slate-600">
+              <label className="flex items-center gap-2 text-sm text-jevah-text-muted">
                 <input
                   type="checkbox"
                   checked={revokeSessions}
                   onChange={(e) => setRevokeSessions(e.target.checked)}
-                  className="h-4 w-4 rounded border-slate-300 text-[#256E63]"
+                  className="h-4 w-4 rounded border-jevah-border text-jevah-accent"
                 />
                 Revoke sessions (force logout)
               </label>
@@ -558,7 +558,7 @@ export default function UsersPage() {
 
       {warnTarget && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-0 sm:items-center sm:p-4">
-          <div className="w-full max-w-md rounded-t-3xl bg-white p-6 shadow-xl sm:rounded-2xl">
+          <div className="w-full max-w-md rounded-t-3xl bg-jevah-surface p-6 shadow-xl sm:rounded-2xl">
             <h3 className="text-lg font-semibold">Warn {warnTarget.email}</h3>
             <div className="mt-4 space-y-3">
               <Field label="Subject">
@@ -577,12 +577,12 @@ export default function UsersPage() {
                   className={inputClass}
                 />
               </Field>
-              <label className="flex items-center gap-2 text-sm text-slate-600">
+              <label className="flex items-center gap-2 text-sm text-jevah-text-muted">
                 <input
                   type="checkbox"
                   checked={warnEmail}
                   onChange={(e) => setWarnEmail(e.target.checked)}
-                  className="h-4 w-4 rounded border-slate-300 text-[#256E63]"
+                  className="h-4 w-4 rounded border-jevah-border text-jevah-accent"
                 />
                 Also send email
               </label>
@@ -607,10 +607,10 @@ export default function UsersPage() {
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:items-center sm:p-4">
           <form
             onSubmit={sendEmail}
-            className="w-full max-w-lg rounded-t-3xl bg-white p-6 shadow-xl sm:rounded-2xl"
+            className="w-full max-w-lg rounded-t-3xl bg-jevah-surface p-6 shadow-xl sm:rounded-2xl"
           >
             <h3 className="text-lg font-semibold">Compose email</h3>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-jevah-text-muted">
               To: {selectedEmails.join(", ") || "—"}
             </p>
             <div className="mt-4 space-y-3">
@@ -651,7 +651,7 @@ export default function UsersPage() {
 
       {(detailLoading || detailUser) && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:items-center sm:p-4">
-          <div className="max-h-[90dvh] w-full max-w-lg overflow-y-auto rounded-t-3xl bg-white p-6 shadow-xl sm:rounded-2xl">
+          <div className="max-h-[90dvh] w-full max-w-lg overflow-y-auto rounded-t-3xl bg-jevah-surface p-6 shadow-xl sm:rounded-2xl">
             <div className="flex items-center justify-between gap-2">
               <h3 className="text-lg font-semibold">User detail</h3>
               <Button variant="ghost" onClick={() => setDetailUser(null)}>
@@ -659,9 +659,9 @@ export default function UsersPage() {
               </Button>
             </div>
             {detailLoading ? (
-              <p className="mt-6 text-sm text-slate-500">Loading…</p>
+              <p className="mt-6 text-sm text-jevah-text-muted">Loading…</p>
             ) : (
-              <pre className="mt-4 overflow-x-auto rounded-xl bg-slate-50 p-3 text-[11px] leading-relaxed text-slate-700">
+              <pre className="mt-4 overflow-x-auto rounded-xl bg-jevah-muted p-3 text-[11px] leading-relaxed text-jevah-text">
                 {JSON.stringify(detailUser, null, 2)}
               </pre>
             )}

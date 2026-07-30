@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useIntersectionObserver } from "../hooks/useIntersectionObserver";
+import { useFeedback } from "../components/admin/Feedback";
 
 function Contact() {
   const { ref, isIntersecting } = useIntersectionObserver({ threshold: 0.1 });
+  const { toast } = useFeedback();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -48,8 +50,9 @@ function Contact() {
     // Simulate form submission
     setTimeout(() => {
       setIsSubmitting(false);
-      alert(
-        "Thank you for your message! We'll get back to you within 24 hours."
+      toast.success(
+        "Thank you for your message!",
+        "We'll get back to you within 24 hours."
       );
       setFormData({
         name: "",

@@ -26,7 +26,7 @@ export default function MediaPreview({
     return (
       <div
         className={cn(
-          "flex items-center justify-center rounded-2xl bg-slate-100 text-sm text-slate-400",
+          "flex items-center justify-center rounded-2xl bg-jevah-card text-sm text-jevah-text-muted",
           frame
         )}
       >
@@ -54,7 +54,7 @@ export default function MediaPreview({
 
   if (isAudioMedia(media, url)) {
     return (
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
+      <div className="overflow-hidden rounded-2xl border border-jevah-border bg-jevah-muted">
         {thumb ? (
           <img
             src={thumb}
@@ -62,7 +62,7 @@ export default function MediaPreview({
             className="aspect-[2/1] max-h-48 w-full object-cover"
           />
         ) : (
-          <div className="flex h-28 items-center justify-center text-sm text-slate-400">
+          <div className="flex h-28 items-center justify-center text-sm text-jevah-text-muted">
             Audio
           </div>
         )}
@@ -81,7 +81,7 @@ export default function MediaPreview({
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl bg-slate-100">
+    <div className="overflow-hidden rounded-2xl bg-jevah-card">
       <img
         src={thumb || url || ""}
         alt={media.title}

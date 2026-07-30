@@ -7,6 +7,7 @@ import {
 } from "../../services/creatorsApi";
 import { ApiError } from "../../lib/api";
 import { useFeedback } from "../../components/admin/Feedback";
+import { ErrorToaster } from "../../components/ErrorToaster";
 
 const CREATOR_TYPES = [
   { id: "artist", label: "Artist" },
@@ -24,7 +25,7 @@ const GENRE_OPTIONS = [
 ];
 
 const inputClass =
-  "w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-[#256E63] focus:ring-2 focus:ring-[#256E63]/15";
+  "w-full rounded-xl border border-jevah-border bg-jevah-input px-4 py-3 text-sm text-jevah-text outline-none transition placeholder:text-jevah-text-muted focus:border-jevah-accent focus:ring-2 focus:ring-jevah-accent/15";
 
 export default function CreatorApply() {
   const navigate = useNavigate();
@@ -119,20 +120,20 @@ export default function CreatorApply() {
   if (loading) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center pt-28">
-        <div className="h-10 w-10 animate-spin rounded-full border-2 border-[#256E63] border-t-transparent" />
+        <div className="h-10 w-10 animate-spin rounded-full border-2 border-jevah-accent border-t-transparent" />
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-xl px-4 pb-20 pt-28 font-sans antialiased sm:px-6">
-      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#256E63]">
+    <div className="jevah-dashboard-shell mx-auto max-w-xl px-4 pb-20 pt-28 font-sans antialiased sm:px-6">
+      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-jevah-accent">
         Apply
       </p>
-      <h1 className="mt-2 text-3xl font-bold tracking-tight text-[#0B1A1F]">
+      <h1 className="mt-2 text-3xl font-bold tracking-tight text-jevah-text">
         Become a creator
       </h1>
-      <p className="mt-2 text-sm text-slate-500">
+      <p className="mt-2 text-sm text-jevah-text-muted">
         Same form as mobile. Admins review in the Artists queue.
       </p>
 
@@ -142,15 +143,11 @@ export default function CreatorApply() {
         </div>
       )}
 
-      <form onSubmit={(e) => void onSubmit(e)} className="mt-8 space-y-5">
-        {error && (
-          <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-            {error}
-          </div>
-        )}
+      <ErrorToaster error={error} title="Application error" />
 
+      <form onSubmit={(e) => void onSubmit(e)} className="mt-8 space-y-5">
         <div>
-          <p className="mb-2 text-sm font-medium text-slate-700">I am a…</p>
+          <p className="mb-2 text-sm font-medium text-jevah-text">I am a…</p>
           <div className="flex flex-wrap gap-2">
             {CREATOR_TYPES.map((t) => {
               const on = types.includes(t.id);
@@ -161,8 +158,8 @@ export default function CreatorApply() {
                   onClick={() => toggleType(t.id)}
                   className={`rounded-full px-4 py-2 text-sm font-medium transition ${
                     on
-                      ? "bg-[#256E63] text-white"
-                      : "border border-slate-200 bg-white text-slate-600 hover:border-[#256E63]/40"
+                      ? "bg-jevah-accent text-white"
+                      : "border border-jevah-border bg-jevah-surface text-jevah-text-muted hover:border-jevah-accent/40"
                   }`}
                 >
                   {t.label}
@@ -173,7 +170,7 @@ export default function CreatorApply() {
         </div>
 
         <label className="block">
-          <span className="mb-1.5 block text-sm font-medium text-slate-600">
+          <span className="mb-1.5 block text-sm font-medium text-jevah-text-muted">
             Display name
           </span>
           <input
@@ -186,7 +183,7 @@ export default function CreatorApply() {
         </label>
 
         <label className="block">
-          <span className="mb-1.5 block text-sm font-medium text-slate-600">
+          <span className="mb-1.5 block text-sm font-medium text-jevah-text-muted">
             Bio
           </span>
           <textarea
@@ -199,7 +196,7 @@ export default function CreatorApply() {
         </label>
 
         <div>
-          <p className="mb-2 text-sm font-medium text-slate-700">Genres</p>
+          <p className="mb-2 text-sm font-medium text-jevah-text">Genres</p>
           <div className="flex flex-wrap gap-2">
             {GENRE_OPTIONS.map((g) => {
               const on = genres.includes(g);
@@ -210,8 +207,8 @@ export default function CreatorApply() {
                   onClick={() => toggleGenre(g)}
                   className={`rounded-full px-3 py-1.5 text-xs font-medium capitalize transition ${
                     on
-                      ? "bg-[#0B1A1F] text-white"
-                      : "border border-slate-200 text-slate-600"
+                      ? "bg-jevah-brand text-white"
+                      : "border border-jevah-border text-jevah-text-muted"
                   }`}
                 >
                   {g.replace(/_/g, " ")}
@@ -223,7 +220,7 @@ export default function CreatorApply() {
 
         <div className="grid gap-3 sm:grid-cols-3">
           <label className="block sm:col-span-1">
-            <span className="mb-1.5 block text-sm font-medium text-slate-600">
+            <span className="mb-1.5 block text-sm font-medium text-jevah-text-muted">
               Instagram
             </span>
             <input
@@ -233,7 +230,7 @@ export default function CreatorApply() {
             />
           </label>
           <label className="block">
-            <span className="mb-1.5 block text-sm font-medium text-slate-600">
+            <span className="mb-1.5 block text-sm font-medium text-jevah-text-muted">
               YouTube
             </span>
             <input
@@ -243,7 +240,7 @@ export default function CreatorApply() {
             />
           </label>
           <label className="block">
-            <span className="mb-1.5 block text-sm font-medium text-slate-600">
+            <span className="mb-1.5 block text-sm font-medium text-jevah-text-muted">
               Spotify
             </span>
             <input
@@ -255,7 +252,7 @@ export default function CreatorApply() {
         </div>
 
         <label className="block">
-          <span className="mb-1.5 block text-sm font-medium text-slate-600">
+          <span className="mb-1.5 block text-sm font-medium text-jevah-text-muted">
             Avatar URL (optional)
           </span>
           <input
@@ -267,7 +264,7 @@ export default function CreatorApply() {
         </label>
 
         <label className="block">
-          <span className="mb-1.5 block text-sm font-medium text-slate-600">
+          <span className="mb-1.5 block text-sm font-medium text-jevah-text-muted">
             Note to reviewers
           </span>
           <textarea
@@ -282,13 +279,13 @@ export default function CreatorApply() {
         <button
           type="submit"
           disabled={busy}
-          className="w-full rounded-xl bg-[#256E63] py-3.5 text-sm font-semibold text-white transition hover:bg-[#1e5a52] disabled:opacity-60"
+          className="w-full rounded-xl bg-jevah-accent py-3.5 text-sm font-semibold text-white transition hover:bg-jevah-accent-hover disabled:opacity-60"
         >
           {busy ? "Submitting…" : "Submit application"}
         </button>
 
-        <p className="text-center text-sm text-slate-500">
-          <Link to="/creators" className="text-[#256E63] hover:underline">
+        <p className="text-center text-sm text-jevah-text-muted">
+          <Link to="/creators" className="text-jevah-accent hover:underline">
             Back to Creators
           </Link>
         </p>

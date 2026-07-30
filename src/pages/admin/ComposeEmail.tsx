@@ -93,7 +93,7 @@ export default function ComposeEmailPage() {
         actions={
           <Link
             to="/admin/email/log"
-            className="text-sm font-semibold text-[#256E63] hover:underline"
+            className="text-sm font-semibold text-jevah-accent hover:underline"
           >
             View email log →
           </Link>
@@ -101,12 +101,12 @@ export default function ComposeEmailPage() {
       />
 
       <Panel>
-        <div className="mb-4 grid grid-cols-2 gap-1 rounded-xl bg-slate-100 p-1">
+        <div className="mb-4 grid grid-cols-2 gap-1 rounded-xl bg-jevah-card p-1">
           <button
             type="button"
             onClick={() => setMode("emails")}
             className={`rounded-lg py-2 text-sm font-medium ${
-              mode === "emails" ? "bg-white shadow-sm" : "text-slate-500"
+              mode === "emails" ? "bg-jevah-surface shadow-sm" : "text-jevah-text-muted"
             }`}
           >
             Emails
@@ -115,7 +115,7 @@ export default function ComposeEmailPage() {
             type="button"
             onClick={() => setMode("churches")}
             className={`rounded-lg py-2 text-sm font-medium ${
-              mode === "churches" ? "bg-white shadow-sm" : "text-slate-500"
+              mode === "churches" ? "bg-jevah-surface shadow-sm" : "text-jevah-text-muted"
             }`}
           >
             Churches
@@ -138,14 +138,14 @@ export default function ComposeEmailPage() {
             </Field>
           ) : (
             <Field label="Churches with contact email">
-              <div className="max-h-48 space-y-2 overflow-y-auto rounded-xl border border-slate-200 p-3">
+              <div className="max-h-48 space-y-2 overflow-y-auto rounded-xl border border-jevah-border p-3">
                 {churchOptions.length === 0 ? (
-                  <p className="text-xs text-slate-500">No churches with email.</p>
+                  <p className="text-xs text-jevah-text-muted">No churches with email.</p>
                 ) : (
                   churchOptions.map((c) => (
                     <label
                       key={c.id}
-                      className="flex items-start gap-2 text-sm text-slate-700"
+                      className="flex items-start gap-2 text-sm text-jevah-text"
                     >
                       <input
                         type="checkbox"
@@ -156,7 +156,7 @@ export default function ComposeEmailPage() {
                       <span>
                         {c.name}
                         {c.email ? (
-                          <span className="block text-xs text-slate-400">
+                          <span className="block text-xs text-jevah-text-muted">
                             {c.email}
                           </span>
                         ) : null}
@@ -187,12 +187,12 @@ export default function ComposeEmailPage() {
             />
           </Field>
 
-          <label className="flex items-center gap-2 text-sm text-slate-600">
+          <label className="flex items-center gap-2 text-sm text-jevah-text-muted">
             <input
               type="checkbox"
               checked={dryRun}
               onChange={(e) => setDryRun(e.target.checked)}
-              className="h-4 w-4 rounded border-slate-300 text-[#256E63]"
+              className="h-4 w-4 rounded border-jevah-border text-jevah-accent"
             />
             Dry run (no send)
           </label>

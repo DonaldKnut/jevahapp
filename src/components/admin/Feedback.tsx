@@ -72,17 +72,21 @@ const toneIcon = {
 };
 
 const toneStyles = {
-  success: "border-emerald-200 bg-emerald-50 text-emerald-900",
-  error: "border-rose-200 bg-rose-50 text-rose-900",
-  warning: "border-amber-200 bg-amber-50 text-amber-950",
-  info: "border-sky-200 bg-sky-50 text-sky-900",
+  success:
+    "border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-500/30 dark:bg-emerald-950/90 dark:text-emerald-100",
+  error:
+    "border-rose-200 bg-rose-50 text-rose-900 dark:border-rose-500/30 dark:bg-rose-950/90 dark:text-rose-100",
+  warning:
+    "border-amber-200 bg-amber-50 text-amber-950 dark:border-amber-500/30 dark:bg-amber-950/90 dark:text-amber-100",
+  info:
+    "border-sky-200 bg-sky-50 text-sky-900 dark:border-sky-500/30 dark:bg-sky-950/90 dark:text-sky-100",
 };
 
 const iconTone = {
-  success: "text-emerald-600",
-  error: "text-rose-600",
-  warning: "text-amber-600",
-  info: "text-sky-600",
+  success: "text-emerald-600 dark:text-emerald-400",
+  error: "text-rose-600 dark:text-rose-400",
+  warning: "text-amber-600 dark:text-amber-400",
+  info: "text-sky-600 dark:text-sky-400",
 };
 
 export function FeedbackProvider({ children }: { children: ReactNode }) {
@@ -194,7 +198,7 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
                   <div
                     key={t.id}
                     className={cn(
-                      "pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-2xl border px-4 py-3 shadow-lg shadow-slate-900/10 admin-list-item",
+                      "pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-2xl border px-4 py-3 shadow-lg shadow-slate-900/10 backdrop-blur-md admin-list-item dark:shadow-black/40",
                       toneStyles[t.tone]
                     )}
                   >
@@ -208,7 +212,7 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
                     <button
                       type="button"
                       onClick={() => dismissToast(t.id)}
-                      className="rounded-lg p-1 opacity-60 hover:bg-black/5 hover:opacity-100"
+                      className="rounded-lg p-1 opacity-60 hover:bg-black/5 hover:opacity-100 dark:hover:bg-white/10"
                       aria-label="Dismiss"
                     >
                       <XMarkIcon className="h-4 w-4" />
@@ -222,7 +226,8 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
               <div className="fixed inset-0 z-[110] flex items-end justify-center sm:items-center sm:p-4">
                 <button
                   type="button"
-                  className="absolute inset-0 bg-[#0B1A1F]/50 backdrop-blur-[2px] admin-fade-in"
+                  className="absolute inset-0 backdrop-blur-[2px] admin-fade-in"
+                  style={{ backgroundColor: "var(--jevah-overlay)" }}
                   aria-label="Close dialog"
                   onClick={() => closeConfirm(false)}
                 />
@@ -230,15 +235,15 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
                   role="alertdialog"
                   aria-modal="true"
                   aria-labelledby="admin-confirm-title"
-                  className="relative w-full max-w-md rounded-t-3xl bg-white p-6 shadow-2xl admin-sheet-in sm:rounded-2xl"
+                  className="relative w-full max-w-md rounded-t-3xl bg-jevah-surface p-6 shadow-2xl admin-sheet-in sm:rounded-2xl"
                 >
                   <h2
                     id="admin-confirm-title"
-                    className="text-lg font-semibold text-[#0B1A1F]"
+                    className="text-lg font-semibold text-jevah-text"
                   >
                     {confirmState.title}
                   </h2>
-                  <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                  <p className="mt-2 text-sm leading-relaxed text-jevah-text-muted">
                     {confirmState.message}
                   </p>
                   <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
@@ -271,7 +276,8 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
               <div className="fixed inset-0 z-[110] flex items-end justify-center sm:items-center sm:p-4">
                 <button
                   type="button"
-                  className="absolute inset-0 bg-[#0B1A1F]/50 backdrop-blur-[2px] admin-fade-in"
+                  className="absolute inset-0 backdrop-blur-[2px] admin-fade-in"
+                  style={{ backgroundColor: "var(--jevah-overlay)" }}
                   aria-label="Close dialog"
                   onClick={() => closePrompt(null)}
                 />
@@ -279,7 +285,7 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
                   role="dialog"
                   aria-modal="true"
                   aria-labelledby="admin-prompt-title"
-                  className="relative w-full max-w-md rounded-t-3xl bg-white p-6 shadow-2xl admin-sheet-in sm:rounded-2xl"
+                  className="relative w-full max-w-md rounded-t-3xl bg-jevah-surface p-6 shadow-2xl admin-sheet-in sm:rounded-2xl"
                   onSubmit={(e) => {
                     e.preventDefault();
                     const next = promptValue.trim();
@@ -289,16 +295,16 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
                 >
                   <h2
                     id="admin-prompt-title"
-                    className="text-lg font-semibold text-[#0B1A1F]"
+                    className="text-lg font-semibold text-jevah-text"
                   >
                     {promptState.title}
                   </h2>
                   {promptState.message && (
-                    <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                    <p className="mt-2 text-sm leading-relaxed text-jevah-text-muted">
                       {promptState.message}
                     </p>
                   )}
-                  <label className="mt-4 block text-sm font-medium text-slate-700">
+                  <label className="mt-4 block text-sm font-medium text-jevah-text">
                     <span className="mb-1.5 block">
                       {promptState.label || "Value"}
                     </span>

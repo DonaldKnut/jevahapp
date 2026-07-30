@@ -6,6 +6,12 @@ interface StoreLinksProps {
   type: BtnTypes;
 }
 
+const badgeClass =
+  "h-12 w-auto transition-transform duration-300 md:h-14 dark:rounded-xl dark:bg-white/95 dark:p-1 dark:shadow-md";
+
+const badgeClassSm =
+  "h-10 w-auto transition-transform duration-300 dark:rounded-lg dark:bg-white/95 dark:p-1 dark:shadow-md";
+
 function StoreLinks({ type }: StoreLinksProps) {
   if (type === BtnTypes.Standard) {
     return (
@@ -19,7 +25,7 @@ function StoreLinks({ type }: StoreLinksProps) {
           <img
             src={AppStore}
             alt="Download on the App Store"
-            className="h-12 w-auto md:h-14"
+            className={badgeClass}
           />
         </a>
         <a
@@ -31,7 +37,7 @@ function StoreLinks({ type }: StoreLinksProps) {
           <img
             src={PlayStore}
             alt="Get it on Google Play"
-            className="h-12 w-auto md:h-14"
+            className={badgeClass}
           />
         </a>
       </div>
@@ -49,7 +55,7 @@ function StoreLinks({ type }: StoreLinksProps) {
           <img
             src={AppStore}
             alt="Download on the App Store"
-            className="h-10 w-auto"
+            className={badgeClassSm}
           />
         </a>
         <a
@@ -61,7 +67,7 @@ function StoreLinks({ type }: StoreLinksProps) {
           <img
             src={PlayStore}
             alt="Get it on Google Play"
-            className="h-10 w-auto"
+            className={badgeClassSm}
           />
         </a>
       </div>

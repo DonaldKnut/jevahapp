@@ -33,7 +33,7 @@ export default function ArtistStudioPromo() {
   ];
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-jevah-muted via-[#eef3f1] to-jevah-bg px-6 py-20 dark:from-jevah-surface dark:via-jevah-bg dark:to-jevah-bg sm:py-28 sm:px-8 lg:px-12">
+    <section className="jevah-section relative overflow-hidden px-6 py-20 transition-colors duration-300 sm:py-28 sm:px-8 lg:px-12">
       <div
         className="pointer-events-none absolute inset-0 opacity-80 dark:opacity-40"
         style={{

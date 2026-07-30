@@ -193,24 +193,24 @@ export default function ArtistsPage() {
             return (
               <div
                 key={artistId(a)}
-                className="admin-list-item rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm"
+                className="admin-list-item rounded-2xl border border-jevah-border bg-jevah-surface p-4 shadow-sm"
                 style={{ animationDelay: `${Math.min(i, 10) * 40}ms` }}
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
-                    <p className="truncate font-semibold text-[#0B1A1F]">
+                    <p className="truncate font-semibold text-jevah-text">
                       {artistName(a)}
                     </p>
-                    <p className="mt-1 truncate text-sm text-slate-500">
+                    <p className="mt-1 truncate text-sm text-jevah-text-muted">
                       {a.email || "No email"}
                     </p>
                     {a.creatorTypes?.length ? (
-                      <p className="mt-1 text-xs capitalize text-slate-400">
+                      <p className="mt-1 text-xs capitalize text-jevah-text-muted">
                         {a.creatorTypes.join(" · ")}
                       </p>
                     ) : null}
                     {a.applicationNote && (
-                      <p className="mt-2 line-clamp-2 text-xs text-slate-500">
+                      <p className="mt-2 line-clamp-2 text-xs text-jevah-text-muted">
                         {a.applicationNote}
                       </p>
                     )}
@@ -297,10 +297,10 @@ export default function ArtistsPage() {
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:items-center sm:p-4">
           <form
             onSubmit={(e) => void onCreate(e)}
-            className="w-full max-w-md rounded-t-3xl bg-white p-6 shadow-xl sm:rounded-2xl"
+            className="w-full max-w-md rounded-t-3xl bg-jevah-surface p-6 shadow-xl sm:rounded-2xl"
           >
             <h3 className="text-lg font-semibold">Add artist stub</h3>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-jevah-text-muted">
               Outreach / manual — not the public apply funnel.
             </p>
             <div className="mt-4 space-y-3">
