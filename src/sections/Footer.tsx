@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import ButtonLink from "../common/ButtonLink";
+import JevahLogo from "../components/JevahLogo";
 import Facebook from "../assets/logos/icons8-facebook.svg";
-import FooterLogo from "../assets/logos/Jevah Logo.png";
 import AppStore from "../assets/logos/app_store.png";
 import PlayStore from "../assets/logos/play_store.png";
 
@@ -23,11 +23,9 @@ function Footer() {
           {/* Left Column - Logo, Download Button, App Store Buttons, Newsletter */}
           <div className="md:col-span-1">
             <div className="mb-4">
-              <img
-                src={FooterLogo}
-                alt="Jevah Logo"
-                className="h-auto w-32 object-contain"
-              />
+              <Link to="/" className="inline-block transition-transform hover:opacity-90 active:scale-95">
+                <JevahLogo width={112} height={52} />
+              </Link>
             </div>
             
             {/* Download App Button */}

@@ -1,395 +1,190 @@
-import { useIntersectionObserver } from "../hooks/useIntersectionObserver";
-import ButtonLink from "../common/ButtonLink";
+import { useCallback, useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { TrackRow } from "../components/TrackRow";
+import {
+  fetchCopyrightFreeTracks,
+  fetchMusicTracks,
+  trackId,
+  type TrackCard,
+} from "../services/creatorsApi";
+import { ApiError } from "../lib/api";
 
-function Music() {
-  const { ref, isIntersecting } = useIntersectionObserver({ threshold: 0.1 });
+export default function Music() {
+  const [lane, setLane] = useState<"curated" | "artist">("curated");
+  const [tracks, setTracks] = useState<TrackCard[]>([]);
+  const [search, setSearch] = useState("");
+  const [q, setQ] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(null);
 
-  const trendingSongs = [
-    {
-      title: "Amazing Grace",
-      artist: "Various Artists",
-      duration: "3:45",
-      plays: "2.5M",
-      image:
-        "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?q=80&w=400&auto=format&fit=crop",
-    },
-    {
-      title: "How Great Thou Art",
-      artist: "Gospel Choir",
-      duration: "4:12",
-      plays: "1.8M",
-      image:
-        "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=400&auto=format&fit=crop",
-    },
-    {
-      title: "Blessed Assurance",
-      artist: "Contemporary Worship",
-      duration: "3:28",
-      plays: "1.2M",
-      image:
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=400&auto=format&fit=crop",
-    },
-    {
-      title: "Great Is Thy Faithfulness",
-      artist: "Traditional Hymns",
-      duration: "4:05",
-      plays: "950K",
-      image:
-        "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?q=80&w=400&auto=format&fit=crop",
-    },
-  ];
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      if (lane === "curated") {
+        const list = await fetchCopyrightFreeTracks();
+        const filtered = q
+          ? list.filter(
+              (t) =>
+                t.title?.toLowerCase().includes(q.toLowerCase()) ||
+                (t.artistName || t.singer || "")
+                  .toLowerCase()
+                  .includes(q.toLowerCase())
+            )
+          : list;
+        setTracks(filtered);
+      } else {
+        const list = await fetchMusicTracks({
+          lane: "artist",
+          search: q || undefined,
+          limit: 50,
+        });
+        setTracks(list);
+      }
+    } catch (err) {
+      setError(
+        err instanceof ApiError
+          ? err.message
+          : "Could not load music right now."
+      );
+      setTracks([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [lane, q]);
 
-  const playlists = [
-    {
-      title: "Sunday Morning Worship",
-      songs: 25,
-      followers: "12K",
-      image:
-        "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?q=80&w=400&auto=format&fit=crop",
-      creator: "Grace Community Church",
-    },
-    {
-      title: "Gospel Classics",
-      songs: 18,
-      followers: "8.5K",
-      image:
-        "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=400&auto=format&fit=crop",
-      creator: "Music Ministry",
-    },
-    {
-      title: "Contemporary Praise",
-      songs: 32,
-      followers: "15K",
-      image:
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=400&auto=format&fit=crop",
-      creator: "New Life Fellowship",
-    },
-    {
-      title: "Children's Gospel",
-      songs: 15,
-      followers: "5.2K",
-      image:
-        "https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?q=80&w=400&auto=format&fit=crop",
-      creator: "Kids Ministry",
-    },
-  ];
-
-  const artists = [
-    {
-      name: "Kirk Franklin",
-      followers: "2.1M",
-      songs: 45,
-      image:
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=400&auto=format&fit=crop",
-      verified: true,
-    },
-    {
-      name: "CeCe Winans",
-      followers: "1.8M",
-      songs: 38,
-      image:
-        "https://images.unsplash.com/photo-1494790108755-2616b612b786?q=80&w=400&auto=format&fit=crop",
-      verified: true,
-    },
-    {
-      name: "Tasha Cobbs Leonard",
-      followers: "1.5M",
-      songs: 42,
-      image:
-        "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=400&auto=format&fit=crop",
-      verified: true,
-    },
-    {
-      name: "Travis Greene",
-      followers: "1.2M",
-      songs: 35,
-      image:
-        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=400&auto=format&fit=crop",
-      verified: true,
-    },
-  ];
+  useEffect(() => {
+    void load();
+  }, [load]);
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-blue-100 via-teal-50 to-green-100 py-20 px-8 pt-[20vh] lg:px-12">
-        <div className="mx-auto max-w-7xl">
-          <div
-            className={`text-center ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
+    <div className="bg-[linear-gradient(180deg,#F3F7F6_0%,#ffffff_45%)] pb-20 pt-24">
+      <div className="mx-auto max-w-3xl px-4 sm:px-6">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#256E63]">
+          Listen
+        </p>
+        <h1 className="mt-2 text-3xl font-bold tracking-tight text-[#0B1A1F] sm:text-4xl">
+          Music
+        </h1>
+        <p className="mt-2 text-sm text-slate-500">
+          Two shelves, one catalog — copyright-free beds and artist originals stay
+          separate.
+        </p>
+
+        <div className="mt-6 grid grid-cols-2 gap-1 rounded-xl bg-slate-100 p-1">
+          <button
+            type="button"
+            onClick={() => {
+              setLane("curated");
+              setActiveId(null);
+            }}
+            className={`rounded-lg py-2.5 text-sm font-semibold transition ${
+              lane === "curated"
+                ? "bg-white text-[#0B1A1F] shadow-sm"
+                : "text-slate-500"
+            }`}
           >
-            <h1
-              className={`mb-6 text-5xl font-bold text-gray-900 md:text-6xl lg:text-7xl ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
-              style={{ animationDelay: "0.2s" }}
-            >
-              Gospel Music Streaming
-            </h1>
-            <p
-              className={`mx-auto mb-8 max-w-3xl text-lg text-gray-700 md:text-xl ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
-              style={{ animationDelay: "0.4s" }}
-            >
-              Stream over 10,000 gospel songs, hymns, and worship music from
-              artists worldwide. Create playlists, discover new artists, and
-              worship anywhere.
-            </p>
-            <div
-              className={`${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
-              style={{ animationDelay: "0.6s" }}
-            >
-              <ButtonLink
-                href="#download"
-                className="inline-block rounded-full px-8 py-4 text-white transition-all duration-300 hover:opacity-90 hover:shadow-lg"
-                style={{ backgroundColor: "#090E24" }}
-              >
-                Start Listening
-              </ButtonLink>
+            Copyright-free
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setLane("artist");
+              setActiveId(null);
+            }}
+            className={`rounded-lg py-2.5 text-sm font-semibold transition ${
+              lane === "artist"
+                ? "bg-white text-[#0B1A1F] shadow-sm"
+                : "text-slate-500"
+            }`}
+          >
+            Artists / Gospel
+          </button>
+        </div>
+
+        <form
+          className="mt-4 flex gap-2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            setQ(search.trim());
+          }}
+        >
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={
+              lane === "curated" ? "Search curated tracks" : "Search artists & songs"
+            }
+            className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-[#256E63] focus:ring-2 focus:ring-[#256E63]/15"
+          />
+          <button
+            type="submit"
+            className="shrink-0 rounded-xl bg-[#256E63] px-5 text-sm font-semibold text-white"
+          >
+            Search
+          </button>
+        </form>
+
+        {error && (
+          <div className="mt-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+            {error}
+          </div>
+        )}
+
+        <div className="mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          {loading ? (
+            <div className="flex justify-center py-16">
+              <div className="h-9 w-9 animate-spin rounded-full border-2 border-[#256E63] border-t-transparent" />
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Music Player Interface */}
-      <section ref={ref} className="bg-white py-20 px-8 lg:px-12">
-        <div className="mx-auto max-w-7xl">
-          <div
-            className={`mb-12 text-center ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
-          >
-            <h2 className="mb-4 text-4xl font-bold text-gray-900">
-              Now Playing
-            </h2>
-            <p className="mx-auto max-w-3xl text-lg text-gray-600">
-              Experience our music player interface
-            </p>
-          </div>
-
-          <div className="mx-auto max-w-4xl">
-            <div
-              className={`rounded-2xl bg-gray-50 p-8 shadow-lg transition-all duration-300 hover:shadow-xl ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
-              style={{ animationDelay: "0.2s" }}
-            >
-              <div className="mb-6 flex items-center gap-6">
-                <img
-                  src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?q=80&w=200&auto=format&fit=crop"
-                  alt="Now Playing"
-                  className="h-20 w-20 rounded-xl object-cover"
-                />
-                <div>
-                  <h3 className="text-2xl font-bold text-gray-900">
-                    Amazing Grace
-                  </h3>
-                  <p className="text-lg" style={{ color: "#256E63" }}>
-                    Various Artists
-                  </p>
-                  <p className="text-sm text-gray-600">2.5M plays</p>
-                </div>
-              </div>
-
-              <div className="mb-6">
-                <div className="mb-2 h-2 w-full rounded-full bg-gray-200">
-                  <div
-                    className="h-2 rounded-full transition-all duration-300"
-                    style={{ width: "35%", backgroundColor: "#256E63" }}
-                  ></div>
-                </div>
-                <div className="flex justify-between text-sm text-gray-600">
-                  <span>1:23</span>
-                  <span>3:45</span>
-                </div>
-              </div>
-
-              <div className="flex justify-center gap-4">
-                <button className="text-gray-600 transition-colors hover:text-[#256E63]">
-                  <span className="text-2xl">⏮</span>
-                </button>
-                <button
-                  className="flex h-12 w-12 items-center justify-center rounded-full text-white transition-all duration-300 hover:scale-110"
-                  style={{ backgroundColor: "#256E63" }}
-                >
-                  <span className="text-xl">▶</span>
-                </button>
-                <button className="text-gray-600 transition-colors hover:text-[#256E63]">
-                  <span className="text-2xl">⏭</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Trending Songs */}
-      <section className="bg-gray-50 py-20 px-8 lg:px-12">
-        <div className="mx-auto max-w-7xl">
-          <div
-            className={`mb-12 text-center ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
-          >
-            <h2 className="mb-4 text-4xl font-bold text-gray-900">
-              Trending Now
-            </h2>
-            <p className="mx-auto max-w-3xl text-lg text-gray-600">
-              The most played gospel songs this week
-            </p>
-          </div>
-
-          <div className="space-y-4">
-            {trendingSongs.map((song, index) => (
-              <div
-                key={index}
-                className={`flex items-center gap-6 rounded-2xl bg-white p-6 shadow-md transition-all duration-300 hover:scale-105 hover:shadow-lg ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
-                style={{ animationDelay: `${0.1 * index}s` }}
-              >
-                <div className="w-8 text-2xl font-bold" style={{ color: "#256E63" }}>
-                  {index + 1}
-                </div>
-                <img
-                  src={song.image}
-                  alt={song.title}
-                  className="h-16 w-16 rounded-xl object-cover"
-                />
-                <div className="flex-1">
-                  <h3 className="text-xl font-bold text-gray-900">
-                    {song.title}
-                  </h3>
-                  <p style={{ color: "#256E63" }}>{song.artist}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm text-gray-600">{song.plays} plays</p>
-                  <p className="text-sm text-gray-500">{song.duration}</p>
-                </div>
-                <button
-                  className="flex h-10 w-10 items-center justify-center rounded-full text-white transition-all duration-300 hover:scale-110"
-                  style={{ backgroundColor: "#090E24" }}
-                >
-                  <span className="text-lg">▶</span>
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Featured Playlists */}
-      <section className="bg-white py-20 px-8 lg:px-12">
-        <div className="mx-auto max-w-7xl">
-          <div
-            className={`mb-12 text-center ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
-          >
-            <h2 className="mb-4 text-4xl font-bold text-gray-900">
-              Featured Playlists
-            </h2>
-            <p className="mx-auto max-w-3xl text-lg text-gray-600">
-              Curated collections for every worship moment
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
-            {playlists.map((playlist, index) => (
-              <div
-                key={index}
-                className={`rounded-2xl bg-gray-50 p-6 shadow-md transition-all duration-300 hover:scale-105 hover:shadow-lg ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
-                style={{ animationDelay: `${0.1 * index}s` }}
-              >
-                <img
-                  src={playlist.image}
-                  alt={playlist.title}
-                  className="mb-4 h-32 w-full rounded-xl object-cover"
-                />
-                <h3 className="mb-2 text-lg font-bold text-gray-900">
-                  {playlist.title}
-                </h3>
-                <p className="mb-2 text-sm" style={{ color: "#256E63" }}>
-                  {playlist.creator}
-                </p>
-                <div className="flex justify-between text-sm text-gray-600">
-                  <span>{playlist.songs} songs</span>
-                  <span>{playlist.followers} followers</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Top Artists */}
-      <section className="bg-gray-50 py-20 px-8 lg:px-12">
-        <div className="mx-auto max-w-7xl">
-          <div
-            className={`mb-12 text-center ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
-          >
-            <h2 className="mb-4 text-4xl font-bold text-gray-900">
-              Top Gospel Artists
-            </h2>
-            <p className="mx-auto max-w-3xl text-lg text-gray-600">
-              Follow your favorite gospel artists and discover new ones
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
-            {artists.map((artist, index) => (
-              <div
-                key={index}
-                className={`rounded-2xl bg-white p-6 text-center shadow-md transition-all duration-300 hover:scale-105 hover:shadow-lg ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
-                style={{ animationDelay: `${0.1 * index}s` }}
-              >
-                <div className="relative mb-4">
-                  <img
-                    src={artist.image}
-                    alt={artist.name}
-                    className="mx-auto h-20 w-20 rounded-full border-4 object-cover"
-                    style={{ borderColor: "#256E63" }}
-                  />
-                  {artist.verified && (
-                    <div
-                      className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full text-xs text-white"
-                      style={{ backgroundColor: "#256E63" }}
+          ) : tracks.length === 0 ? (
+            <div className="px-4 py-14 text-center">
+              <p className="font-medium text-slate-700">No tracks yet</p>
+              <p className="mt-1 text-sm text-slate-500">
+                {lane === "artist" ? (
+                  <>
+                    Are you an artist?{" "}
+                    <Link
+                      to="/creators"
+                      className="font-semibold text-[#256E63] hover:underline"
                     >
-                      ✓
-                    </div>
-                  )}
-                </div>
-                <h3 className="mb-2 text-lg font-bold text-gray-900">
-                  {artist.name}
-                </h3>
-                <p className="mb-2 text-sm" style={{ color: "#256E63" }}>
-                  {artist.followers} followers
-                </p>
-                <p className="text-sm text-gray-600">{artist.songs} songs</p>
-              </div>
-            ))}
-          </div>
+                      Become a creator
+                    </Link>
+                  </>
+                ) : (
+                  "Curated library will appear here when published."
+                )}
+              </p>
+            </div>
+          ) : (
+            <ul>
+              {tracks.map((t) => {
+                const id = trackId(t);
+                return (
+                  <TrackRow
+                    key={id}
+                    track={t}
+                    active={activeId === id}
+                    onPlay={(tr) => {
+                      const tid = trackId(tr);
+                      setActiveId((prev) => (prev === tid ? null : tid));
+                    }}
+                    showLane={false}
+                  />
+                );
+              })}
+            </ul>
+          )}
         </div>
-      </section>
 
-      {/* CTA Section */}
-      <section className="bg-white py-20 px-8 lg:px-12">
-        <div className="mx-auto max-w-4xl text-center">
-          <h2
-            className={`mb-6 text-4xl font-bold text-gray-900 ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
-          >
-            Start Your Gospel Music Journey
-          </h2>
-          <p
-            className={`mb-8 text-lg text-gray-700 ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
-            style={{ animationDelay: "0.2s" }}
-          >
-            Download Jevah and access unlimited gospel music, create playlists,
-            and discover new artists. Join thousands of believers worshiping
-            through music.
-          </p>
-          <div
-            className={`${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
-            style={{ animationDelay: "0.4s" }}
-          >
-            <ButtonLink
-              href="#download"
-              className="inline-block rounded-full px-8 py-4 text-white transition-all duration-300 hover:opacity-90 hover:shadow-lg"
-              style={{ backgroundColor: "#090E24" }}
-            >
-              Download App
-            </ButtonLink>
-          </div>
-        </div>
-      </section>
+        <p className="mt-8 text-center text-sm text-slate-500">
+          Creators upload in{" "}
+          <Link to="/creators" className="font-semibold text-[#256E63] hover:underline">
+            Studio
+          </Link>
+          . Full experience also lives in the Jevah app.
+        </p>
+      </div>
     </div>
   );
 }
-
-export default Music;

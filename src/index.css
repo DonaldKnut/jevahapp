@@ -1,18 +1,75 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
-
 @tailwind base;
 @tailwind components;
-html {
-  scroll-behavior: smooth;
-}
-body {
-  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-  background-color: #ffffff; /* White background */
-  color: #1f2937; /* Gray text */
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
 @tailwind utilities;
+
+@layer base {
+  :root {
+    --jevah-bg: #ffffff;
+    --jevah-surface: #ffffff;
+    --jevah-elevated: #ffffff;
+    --jevah-surface-muted: #f3f7f6;
+    --jevah-text: #0b1a1f;
+    --jevah-text-muted: #64748b;
+    --jevah-accent: #256e63;
+    --jevah-accent-hover: #1e5a52;
+    --jevah-accent-soft: #4ecdc4;
+    --jevah-border: rgba(148, 163, 184, 0.35);
+    --jevah-shadow: rgba(11, 26, 31, 0.08);
+    --jevah-hero-from: #dbeafe;
+    --jevah-hero-via: #f0fdfa;
+    --jevah-hero-to: #ecfdf5;
+    --jevah-nav: rgba(255, 255, 255, 0.92);
+    --jevah-footer: #090e24;
+  }
+
+  .dark {
+    --jevah-bg: #0a1218;
+    --jevah-surface: #0f1a22;
+    --jevah-elevated: #15242e;
+    --jevah-surface-muted: #1a2b36;
+    --jevah-text: #f1f5f9;
+    --jevah-text-muted: #94a3b8;
+    --jevah-accent: #4ecdc4;
+    --jevah-accent-hover: #3ab8b0;
+    --jevah-accent-soft: #6ee7de;
+    --jevah-border: rgba(148, 163, 184, 0.18);
+    --jevah-shadow: rgba(0, 0, 0, 0.35);
+    --jevah-hero-from: #0f1f2d;
+    --jevah-hero-via: #0d1a24;
+    --jevah-hero-to: #0a141c;
+    --jevah-nav: rgba(15, 26, 34, 0.92);
+    --jevah-footer: #060b14;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    font-family: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body,
+  #root,
+  button,
+  input,
+  optgroup,
+  select,
+  textarea {
+    font-family: inherit;
+  }
+
+  body {
+    background-color: var(--jevah-bg);
+    color: var(--jevah-text);
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+}
+
+@supports (padding: max(0px)) {
+  .safe-pb {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+}
 
 /* JEVAH Custom Colors */
 .text-cream-50 {
@@ -154,4 +211,215 @@ body {
 .animate-slide-in-menu-item {
   animation: slideInFromRight 0.4s ease-out forwards;
   opacity: 0;
+}
+
+/* Admin feedback overlays */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes sheetIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes toastIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) translateX(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) translateX(0);
+  }
+}
+
+@keyframes drawerIn {
+  from {
+    opacity: 0.6;
+    transform: translateX(-100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes drawerPanelIn {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes listItemIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes softPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+.admin-page-enter {
+  animation: pageEnter 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.admin-list-item {
+  animation: listItemIn 380ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.admin-drawer-in {
+  animation: drawerIn 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.admin-panel-in {
+  animation: drawerPanelIn 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.admin-sheet-in {
+  animation: sheetIn 240ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.admin-fade-in {
+  animation: fadeIn 180ms ease-out both;
+}
+
+.admin-online-dot {
+  animation: softPulse 2.2s ease-in-out infinite;
+}
+
+/* ── Premium custom scrollbar ── */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.4) transparent;
+}
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(148, 163, 184, 0.4);
+  border-radius: 100px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(148, 163, 184, 0.7);
+}
+
+/* Admin nav active glow */
+.admin-nav-active {
+  box-shadow: 0 4px 14px rgba(37, 110, 99, 0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+}
+
+/* Nav items scrollbar */
+.admin-nav {
+  scrollbar-width: none;
+}
+.admin-nav::-webkit-scrollbar {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-page-enter,
+  .admin-list-item,
+  .admin-drawer-in,
+  .admin-panel-in,
+  .admin-sheet-in,
+  .admin-fade-in,
+  .admin-online-dot {
+    animation: none !important;
+  }
+}
+
+/* ── Auth split-panel layout ─────────────────────────────────────────────────
+   .auth-root         → full viewport height, no overflow (scroll root)
+   .auth-promo        → left panel, FIXED in place, never scrolls
+   .auth-form-panel   → right panel, independently scrollable
+──────────────────────────────────────────────────────────────────────────── */
+.auth-root {
+  height: 100dvh;
+  overflow: hidden;
+  display: flex;
+}
+
+/* The promo panel occupies its own height but never scrolls */
+.auth-promo {
+  position: sticky;   /* sticky within flex — effectively pinned */
+  top: 0;
+  height: 100dvh;
+  flex-shrink: 0;
+  overflow: hidden;   /* content clips, nothing scrolls */
+}
+
+/* The form side scrolls independently */
+.auth-form-panel {
+  flex: 1 1 0%;
+  min-width: 0;
+  height: 100dvh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.35) transparent;
+}
+.auth-form-panel::-webkit-scrollbar {
+  width: 4px;
+}
+.auth-form-panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+.auth-form-panel::-webkit-scrollbar-thumb {
+  background-color: rgba(148, 163, 184, 0.35);
+  border-radius: 100px;
+}
+
+/* Submit button shimmer on hover */
+@keyframes authShimmer {
+  from { transform: translateX(-100%) skewX(-15deg); }
+  to   { transform: translateX(250%)  skewX(-15deg); }
+}
+.auth-submit-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+  transform: translateX(-100%) skewX(-15deg);
+}
+.auth-submit-btn:not(:disabled):hover::after {
+  animation: authShimmer 0.7s ease forwards;
+}
+
+/* Promo headline — preserve newlines */
+.auth-promo h2 {
+  white-space: pre-line;
 }

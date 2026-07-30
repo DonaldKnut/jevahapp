@@ -1,147 +1,472 @@
-import { Disclosure, Transition } from "@headlessui/react";
-import { Bars3Icon, XMarkIcon } from "@heroicons/react/16/solid";
-import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import JevahLogo from "../components/JevahLogo";
-import ButtonLink from "../common/ButtonLink";
+import ThemeToggle from "../components/ThemeToggle";
 import { useScroll } from "../hooks/useScroll";
+import {
+  ChevronDownIcon,
+  MusicalNoteIcon,
+  UserGroupIcon,
+  SparklesIcon,
+  CalendarDaysIcon,
+  ChatBubbleLeftRightIcon,
+  AcademicCapIcon,
+  ArrowRightIcon,
+  InformationCircleIcon,
+  EnvelopeIcon,
+} from "@heroicons/react/24/outline";
 
-function Nav() {
-  const isScrolled = useScroll(100);
-  
-  const textLinkClasses =
-    "text-gray-900 hover:text-[#FFA500] active:text-[#FFA500] font-medium transition-colors";
+// ── Mega Menu 1: Music & Artists ──────────────────────────────────────────
+const musicAndArtistsMenu = [
+  {
+    title: "Gospel Music",
+    description: "Stream inspiring worship, praise, and gospel tracks",
+    href: "/music",
+    icon: MusicalNoteIcon,
+    badge: "Popular",
+    color: "bg-amber-50 text-amber-600 border-amber-200/60",
+  },
+  {
+    title: "Gospel Artists & Ministries",
+    description: "Discover verified artists, worship leaders, and choirs",
+    href: "/artists/popular",
+    icon: UserGroupIcon,
+    badge: "Verified",
+    color: "bg-teal-50 text-teal-600 border-teal-200/60",
+  },
+  {
+    title: "Sermons & Audio",
+    description: "Listen to life-changing sermons & spiritual audio",
+    href: "/sermons",
+    icon: AcademicCapIcon,
+    badge: null,
+    color: "bg-sky-50 text-sky-600 border-sky-200/60",
+  },
+  {
+    title: "Creator Studio & Registration",
+    description: "Register as an artist, upload music & track streams",
+    href: "/creators",
+    icon: SparklesIcon,
+    badge: "Studio",
+    color: "bg-emerald-50 text-emerald-600 border-emerald-200/60",
+  },
+];
 
-  const navLinks = [
-    { href: "/", children: "Home" },
-    { href: "#features", children: "Features" },
-    { href: "/about", children: "About Us" },
-    { href: "/contact", children: "Contact" },
-  ];
+// ── Mega Menu 2: About & Community ──────────────────────────────────────────
+const aboutAndCommunityMenu = [
+  {
+    title: "About Jevah",
+    description: "Our vision, mission, and commitment to spiritual growth",
+    href: "/about",
+    icon: InformationCircleIcon,
+    badge: null,
+    color: "bg-teal-50 text-teal-600 border-teal-200/60",
+  },
+  {
+    title: "Community Forum",
+    description: "Connect, share testimonies, and pray with believers",
+    href: "/forum",
+    icon: ChatBubbleLeftRightIcon,
+    badge: null,
+    color: "bg-purple-50 text-purple-600 border-purple-200/60",
+  },
+  {
+    title: "Faith Events & Conferences",
+    description: "Discover upcoming faith events, conferences & services",
+    href: "/events",
+    icon: CalendarDaysIcon,
+    badge: "Live",
+    color: "bg-rose-50 text-rose-600 border-rose-200/60",
+  },
+  {
+    title: "Contact & Support",
+    description: "Get in touch with our team or request prayer support",
+    href: "/contact",
+    icon: EnvelopeIcon,
+    badge: null,
+    color: "bg-indigo-50 text-indigo-600 border-indigo-200/60",
+  },
+];
+
+export default function Nav() {
+  const isScrolled = useScroll(60);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [activeMega, setActiveMega] = useState<"music" | "about" | null>(null);
+  const location = useLocation();
+
+  // Close menus on route change
+  useEffect(() => {
+    setMobileOpen(false);
+    setActiveMega(null);
+  }, [location.pathname]);
+
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileOpen]);
 
   return (
-    <Disclosure as="nav">
-      {({ open }) => (
-        <>
-          <div
-            className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+    <header className="relative z-50">
+      {/* ── Main Navigation Bar ── */}
+      <nav
+        className={`fixed left-0 right-0 top-0 z-50 transition-all duration-300 ${
               isScrolled
-                ? "bg-white/80 backdrop-blur-md shadow-lg"
-                : "bg-gradient-to-br from-blue-100 via-teal-50 to-green-100"
-            }`}
-          >
-            <div className="relative flex h-[15vh] max-w-7xl items-center justify-between px-8 lg:px-12 xl:mx-auto">
-            {/* Logo - Left */}
-            <Link to="/" className="z-10">
-              <JevahLogo width={128} height={64} />
+            ? "border-b border-jevah-border bg-[var(--jevah-nav)] shadow-md backdrop-blur-xl"
+            : "bg-gradient-to-r from-[var(--jevah-hero-from)] via-[var(--jevah-hero-via)] to-[var(--jevah-hero-to)] backdrop-blur-md"
+        }`}
+      >
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:h-20 sm:px-8 lg:px-12">
+          {/* Brand Logo */}
+          <Link to="/" className="z-10 shrink-0 transition-transform active:scale-95">
+            <JevahLogo width={112} height={52} />
             </Link>
 
-            {/* Menu Items - Center */}
-            <div className="absolute left-1/2 hidden -translate-x-1/2 items-center space-x-4 sm:flex lg:space-x-8">
-              {navLinks.map((link, index) => (
-                <Link key={index} to={link.href} className={textLinkClasses}>
-                  {link.children}
+          {/* Desktop Nav Links */}
+          <div className="hidden items-center gap-1 md:flex lg:gap-2">
+            <NavLink
+              to="/"
+              end
+              className={({ isActive }) =>
+                `rounded-full px-4 py-2 text-sm font-semibold transition-all ${
+                  isActive
+                    ? "bg-[#256E63]/10 text-[#256E63] dark:bg-jevah-accent/15 dark:text-jevah-accent"
+                    : "text-gray-700 hover:bg-black/5 hover:text-gray-900 dark:text-jevah-text-muted dark:hover:bg-white/5 dark:hover:text-jevah-text"
+                }`
+              }
+            >
+              Home
+            </NavLink>
+
+            {/* ── Mega Menu 1 Trigger: Music & Artists ── */}
+            <div
+              className="relative"
+              onMouseEnter={() => setActiveMega("music")}
+              onMouseLeave={() => setActiveMega(null)}
+            >
+              <button
+                type="button"
+                onClick={() => setActiveMega((v) => (v === "music" ? null : "music"))}
+                className={`group inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold transition-all ${
+                  activeMega === "music"
+                    ? "bg-[#256E63]/10 text-[#256E63]"
+                    : "text-gray-700 hover:bg-black/5 hover:text-gray-900"
+                }`}
+                aria-expanded={activeMega === "music"}
+              >
+                Music & Artists
+                <ChevronDownIcon
+                  className={`h-4 w-4 transition-transform duration-300 ${
+                    activeMega === "music" ? "rotate-180 text-[#256E63]" : "text-gray-400 group-hover:text-gray-600"
+                  }`}
+                />
+              </button>
+
+              {/* Mega Dropdown Panel 1 */}
+              <div
+                className={`absolute left-1/2 top-full -translate-x-1/2 pt-3 transition-all duration-300 ${
+                  activeMega === "music"
+                    ? "pointer-events-auto translate-y-0 opacity-100"
+                    : "pointer-events-none translate-y-2 opacity-0"
+                }`}
+              >
+                <div className="w-[620px] overflow-hidden rounded-3xl border border-gray-100 bg-white p-6 shadow-2xl shadow-black/10 ring-1 ring-black/5 backdrop-blur-xl">
+                  <div className="grid grid-cols-2 gap-3">
+                    {musicAndArtistsMenu.map((item) => {
+                      const Icon = item.icon;
+                      return (
+                        <Link
+                          key={item.title}
+                          to={item.href}
+                          onClick={() => setActiveMega(null)}
+                          className="group flex items-start gap-3.5 rounded-2xl p-3.5 transition-all duration-200 hover:bg-slate-50 hover:shadow-sm"
+                        >
+                          <div
+                            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border ${item.color} transition-transform duration-200 group-hover:scale-105`}
+                          >
+                            <Icon className="h-5 w-5" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-bold text-gray-900 group-hover:text-[#256E63]">
+                                {item.title}
+                              </span>
+                              {item.badge && (
+                                <span className="rounded-full bg-[#256E63]/10 px-2 py-0.5 text-[10px] font-bold text-[#256E63]">
+                                  {item.badge}
+                                </span>
+                              )}
+                            </div>
+                            <p className="mt-0.5 line-clamp-1 text-xs text-gray-500">
+                              {item.description}
+                            </p>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+
+                  {/* Mega Menu Banner */}
+                  <div className="mt-4 flex items-center justify-between rounded-2xl bg-gradient-to-r from-[#0B1A1F] to-[#12263a] p-4 text-white">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 backdrop-blur-md">
+                        <SparklesIcon className="h-5 w-5 text-[#4ECDC4]" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold text-white">Are you a Gospel Artist?</p>
+                        <p className="text-[11px] text-white/60">Register & upload your tracks to Jevah.</p>
+                      </div>
+                    </div>
+                    <Link
+                      to="/creators/apply"
+                      onClick={() => setActiveMega(null)}
+                      className="inline-flex items-center gap-1.5 rounded-full bg-[#256E63] px-3.5 py-1.5 text-xs font-bold text-white transition hover:bg-[#1e5a52] active:scale-95"
+                    >
+                      Register Artist
+                      <ArrowRightIcon className="h-3.5 w-3.5" />
                 </Link>
-              ))}
+                  </div>
+                </div>
+              </div>
             </div>
 
-            {/* CTA Button - Right */}
-            <div className="z-10 flex items-center gap-4">
-              <ButtonLink
-                href="#download"
-                children={"Download App"}
-                className="hidden rounded-full bg-jevah-green px-5 py-3 text-white transition-all duration-300 hover:scale-105 hover:bg-jevah-green-hover hover:shadow-lg active:bg-jevah-green-hover sm:flex"
-              />
-              <Disclosure.Button className="text-gray-900 rounded-md p-2 hover:bg-white/50 hover:text-gray-900 sm:hidden">
-                {open ? (
-                  <XMarkIcon className="block h-6 w-6" />
-                ) : (
-                  <Bars3Icon className="block h-6 w-6" />
-                )}
-              </Disclosure.Button>
+            {/* ── Mega Menu 2 Trigger: About & Community ── */}
+            <div
+              className="relative"
+              onMouseEnter={() => setActiveMega("about")}
+              onMouseLeave={() => setActiveMega(null)}
+            >
+              <button
+                type="button"
+                onClick={() => setActiveMega((v) => (v === "about" ? null : "about"))}
+                className={`group inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold transition-all ${
+                  activeMega === "about"
+                    ? "bg-[#256E63]/10 text-[#256E63]"
+                    : "text-gray-700 hover:bg-black/5 hover:text-gray-900"
+                }`}
+                aria-expanded={activeMega === "about"}
+              >
+                About & Community
+                <ChevronDownIcon
+                  className={`h-4 w-4 transition-transform duration-300 ${
+                    activeMega === "about" ? "rotate-180 text-[#256E63]" : "text-gray-400 group-hover:text-gray-600"
+                  }`}
+                />
+              </button>
+
+              {/* Mega Dropdown Panel 2 */}
+              <div
+                className={`absolute left-1/2 top-full -translate-x-1/2 pt-3 transition-all duration-300 ${
+                  activeMega === "about"
+                    ? "pointer-events-auto translate-y-0 opacity-100"
+                    : "pointer-events-none translate-y-2 opacity-0"
+                }`}
+              >
+                <div className="w-[600px] overflow-hidden rounded-3xl border border-gray-100 bg-white p-6 shadow-2xl shadow-black/10 ring-1 ring-black/5 backdrop-blur-xl">
+                  <div className="grid grid-cols-2 gap-3">
+                    {aboutAndCommunityMenu.map((item) => {
+                      const Icon = item.icon;
+                      return (
+                        <Link
+                          key={item.title}
+                          to={item.href}
+                          onClick={() => setActiveMega(null)}
+                          className="group flex items-start gap-3.5 rounded-2xl p-3.5 transition-all duration-200 hover:bg-slate-50 hover:shadow-sm"
+                        >
+                          <div
+                            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border ${item.color} transition-transform duration-200 group-hover:scale-105`}
+                          >
+                            <Icon className="h-5 w-5" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-bold text-gray-900 group-hover:text-[#256E63]">
+                                {item.title}
+                              </span>
+                              {item.badge && (
+                                <span className="rounded-full bg-rose-500/10 px-2 py-0.5 text-[10px] font-bold text-rose-600">
+                                  {item.badge}
+                                </span>
+                              )}
+                            </div>
+                            <p className="mt-0.5 line-clamp-1 text-xs text-gray-500">
+                              {item.description}
+                            </p>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
             </div>
+            </div>
+
+            <NavLink
+              to="/creators"
+              className={({ isActive }) =>
+                `rounded-full px-4 py-2 text-sm font-semibold transition-all ${
+                  isActive
+                    ? "bg-[#256E63]/10 text-[#256E63] dark:bg-jevah-accent/15 dark:text-jevah-accent"
+                    : "text-gray-700 hover:bg-black/5 hover:text-gray-900 dark:text-jevah-text-muted dark:hover:bg-white/5 dark:hover:text-jevah-text"
+                }`
+              }
+            >
+              Creators
+            </NavLink>
+          </div>
+
+          {/* Desktop Right Actions */}
+          <div className="z-10 flex items-center gap-2 sm:gap-3">
+            <ThemeToggle variant="icon" />
+            <Link
+              to="/login"
+              className="hidden rounded-full border border-[#256E63]/30 px-5 py-2 text-sm font-bold text-[#256E63] transition hover:border-[#256E63] hover:bg-[#256E63]/5 active:scale-95 md:inline-flex"
+            >
+              Admin
+            </Link>
+            <a
+              href="/#download"
+              className="hidden rounded-full bg-[#256E63] px-6 py-2.5 text-sm font-bold text-white shadow-sm shadow-[#256E63]/25 transition hover:bg-[#1e5a52] hover:shadow-md active:scale-95 sm:inline-flex"
+            >
+              Download App
+            </a>
+
+            {/* ── Dope Animated Hamburger Icon Button ── */}
+            <button
+              type="button"
+              onClick={() => setMobileOpen((v) => !v)}
+              className="relative z-50 flex h-11 w-11 items-center justify-center rounded-2xl bg-black/5 text-gray-900 transition hover:bg-black/10 active:scale-90 md:hidden"
+              aria-label={mobileOpen ? "Close menu" : "Open menu"}
+            >
+              <div className="flex h-5 w-5 flex-col justify-between">
+                <span
+                  className={`h-0.5 w-full rounded-full bg-gray-900 transition-all duration-300 ease-in-out ${
+                    mobileOpen ? "translate-y-[9px] rotate-45" : ""
+                  }`}
+                />
+                <span
+                  className={`h-0.5 w-full rounded-full bg-gray-900 transition-all duration-200 ease-in-out ${
+                    mobileOpen ? "scale-x-0 opacity-0" : ""
+                  }`}
+                />
+                <span
+                  className={`h-0.5 w-full rounded-full bg-gray-900 transition-all duration-300 ease-in-out ${
+                    mobileOpen ? "-translate-y-[9px] -rotate-45" : ""
+                  }`}
+                />
+              </div>
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      {/* ── Premium Mobile Menu Drawer ── */}
+      <div
+        className={`fixed inset-0 z-40 bg-[#060E18]/60 backdrop-blur-md transition-opacity duration-300 md:hidden ${
+          mobileOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        }`}
+        onClick={() => setMobileOpen(false)}
+        aria-hidden="true"
+      />
+
+      <div
+        className={`fixed left-3 right-3 top-20 z-50 max-h-[calc(100vh-6rem)] overflow-y-auto rounded-3xl border border-white/40 bg-white/95 p-5 shadow-2xl shadow-black/20 backdrop-blur-2xl transition-all duration-300 ease-out md:hidden ${
+          mobileOpen
+            ? "translate-y-0 scale-100 opacity-100 pointer-events-auto"
+            : "-translate-y-6 scale-95 opacity-0 pointer-events-none"
+        }`}
+      >
+        <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+          <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#256E63]">
+            Navigation
+          </p>
+          <span className="rounded-full bg-[#256E63]/10 px-2.5 py-0.5 text-[10px] font-bold text-[#256E63]">
+            Jevah App
+          </span>
+        </div>
+
+        {/* Links list */}
+        <div className="mt-3 space-y-1">
+          <Link
+            to="/"
+            onClick={() => setMobileOpen(false)}
+            className="flex items-center justify-between rounded-2xl px-4 py-3 text-base font-bold text-gray-900 transition hover:bg-[#256E63]/8 hover:text-[#256E63]"
+          >
+            Home
+            <ArrowRightIcon className="h-4 w-4 text-gray-300" />
+          </Link>
+
+          {/* Mobile Category Grid: Music & Artists */}
+          <div className="my-2 rounded-2xl bg-slate-50 p-3 ring-1 ring-slate-100">
+            <p className="px-2 pb-2 text-[10px] font-bold uppercase tracking-wider text-gray-400">
+              Music & Artists
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              {musicAndArtistsMenu.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <Link
+                    key={item.title}
+                    to={item.href}
+                    onClick={() => setMobileOpen(false)}
+                    className="flex flex-col gap-1.5 rounded-xl bg-white p-2.5 shadow-sm transition active:scale-95"
+                  >
+                    <div className={`flex h-8 w-8 items-center justify-center rounded-lg border ${item.color}`}>
+                      <Icon className="h-4 w-4" />
+                    </div>
+                    <span className="text-xs font-bold text-gray-900 line-clamp-1">{item.title}</span>
+                  </Link>
+                );
+              })}
+            </div>
+                </div>
+
+          {/* Mobile Category Grid: About & Community */}
+          <div className="my-2 rounded-2xl bg-slate-50 p-3 ring-1 ring-slate-100">
+            <p className="px-2 pb-2 text-[10px] font-bold uppercase tracking-wider text-gray-400">
+              About & Community
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              {aboutAndCommunityMenu.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <Link
+                    key={item.title}
+                    to={item.href}
+                    onClick={() => setMobileOpen(false)}
+                    className="flex flex-col gap-1.5 rounded-xl bg-white p-2.5 shadow-sm transition active:scale-95"
+                  >
+                    <div className={`flex h-8 w-8 items-center justify-center rounded-lg border ${item.color}`}>
+                      <Icon className="h-4 w-4" />
+                    </div>
+                    <span className="text-xs font-bold text-gray-900 line-clamp-1">{item.title}</span>
+                  </Link>
+                );
+              })}
             </div>
           </div>
-          <Transition
-            show={open}
-            enter="transition-opacity duration-300"
-            enterFrom="opacity-0"
-            enterTo="opacity-100"
-            leave="transition-opacity duration-300"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
-          >
-            <div className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm sm:hidden" />
-          </Transition>
-          <Transition
-            show={open}
-            enter="transition-transform duration-500 ease-out"
-            enterFrom="translate-x-full"
-            enterTo="translate-x-0"
-            leave="transition-transform duration-300 ease-in"
-            leaveFrom="translate-x-0"
-            leaveTo="translate-x-full"
-          >
-            <Disclosure.Panel className="fixed inset-y-0 right-0 z-[70] w-80 bg-white shadow-2xl sm:hidden">
-              {/* Header with Logo and Close Button */}
-              <div className="flex items-center justify-between border-b border-gray-200 bg-gradient-to-br from-blue-100 via-teal-50 to-green-100 px-6 py-6">
-                <Disclosure.Button 
-                  as={Link} 
-                  to="/" 
-                  className="flex items-center opacity-0 transition-all duration-500"
-                  style={{ 
-                    animation: open ? 'slideInFromRight 0.5s ease-out 0.15s forwards' : 'none'
-                  }}
-                >
-                  <JevahLogo width={100} height={50} />
-                </Disclosure.Button>
-                <Disclosure.Button 
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-white/80 text-gray-900 transition-all duration-300 hover:bg-white hover:scale-110 opacity-0"
-                  style={{ 
-                    animation: open ? 'slideInFromRight 0.5s ease-out 0.15s forwards' : 'none'
-                  }}
-                >
-                  <XMarkIcon className="h-6 w-6" />
-                </Disclosure.Button>
-              </div>
+        </div>
 
-              {/* Menu Items */}
-              <div className="flex h-[calc(100vh-15vh-80px)] flex-col justify-between px-6 py-8">
-                <div className="space-y-2">
-                  {navLinks.map((link, index) => (
-                    <Disclosure.Button
-                      key={index}
-                      as={Link}
-                      to={link.href}
-                      className="block rounded-lg px-4 py-4 text-left text-lg font-medium text-gray-900 transition-all duration-300 hover:bg-gray-50 hover:text-[#FFA500] hover:translate-x-2 opacity-0"
-                      style={{ 
-                        animation: open ? `slideInFromRight 0.5s ease-out ${0.3 + index * 0.1}s forwards` : 'none'
-                      }}
-                    >
-                      {link.children}
-                    </Disclosure.Button>
-                  ))}
-                </div>
-
-                {/* Download App Button */}
-                <div className="mt-auto pt-6">
-                  <Disclosure.Button
-                    as={Link}
-                    to="#download"
-                    className="block w-full rounded-full bg-jevah-green px-6 py-4 text-center text-lg font-semibold text-white transition-all duration-300 hover:bg-jevah-green-hover hover:shadow-lg hover:scale-105 opacity-0"
-                    style={{ 
-                      animation: open ? 'slideInFromRight 0.5s ease-out 0.7s forwards' : 'none'
-                    }}
+        {/* Action Buttons */}
+        <div className="mt-5 space-y-2.5 border-t border-gray-100 pt-4">
+          <Link
+            to="/login"
+            onClick={() => setMobileOpen(false)}
+            className="flex w-full items-center justify-center rounded-2xl border-2 border-[#256E63] py-3.5 text-base font-bold text-[#256E63] transition hover:bg-[#256E63]/5 active:scale-95"
+          >
+            Admin sign-in
+          </Link>
+          <a
+            href="/#download"
+            onClick={() => setMobileOpen(false)}
+            className="flex w-full items-center justify-center rounded-2xl bg-[#256E63] py-3.5 text-base font-bold text-white shadow-lg shadow-[#256E63]/25 transition hover:bg-[#1e5a52] active:scale-95"
                   >
                     Download App
-                  </Disclosure.Button>
+          </a>
                 </div>
               </div>
-            </Disclosure.Panel>
-          </Transition>
-        </>
-      )}
-    </Disclosure>
+    </header>
   );
 }
-
-export default Nav;
