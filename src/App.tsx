@@ -45,6 +45,9 @@ import AnnouncementsPage from "./pages/admin/Announcements";
 import CategoriesPage from "./pages/admin/Categories";
 import NotificationsPage from "./pages/admin/Notifications";
 import EmailLogPage from "./pages/admin/EmailLog";
+import ComposeMarketingEmailPage from "./pages/admin/ComposeMarketingEmail";
+import ComposeArtistOnboardPage from "./pages/admin/ComposeArtistOnboard";
+import EmailUnsubscribe from "./pages/EmailUnsubscribe";
 
 function HomePage() {
   return (
@@ -80,6 +83,7 @@ function App() {
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/creators/login" element={<Login />} />
+            <Route path="/email/unsubscribe" element={<EmailUnsubscribe />} />
 
             <Route
               path="/admin"
@@ -97,6 +101,14 @@ function App() {
               <Route path="audio" element={<AudioLibraryPage />} />
               <Route path="artists" element={<ArtistsPage />} />
               <Route path="email" element={<ComposeEmailPage />} />
+              <Route
+                path="email/marketing"
+                element={<ComposeMarketingEmailPage />}
+              />
+              <Route
+                path="email/artist-onboard"
+                element={<ComposeArtistOnboardPage />}
+              />
               <Route path="email/log" element={<EmailLogPage />} />
               <Route path="announcements" element={<AnnouncementsPage />} />
               <Route path="categories" element={<CategoriesPage />} />

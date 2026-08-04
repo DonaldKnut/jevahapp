@@ -59,6 +59,8 @@ export interface DashboardAnalytics {
   };
   verification?: {
     unverifiedArtists?: number;
+    pendingCreatorApplications?: number;
+    activeArtistsMissingOnboardEmail?: number;
   };
   content?: {
     total?: number;
@@ -66,6 +68,7 @@ export interface DashboardAnalytics {
   media?: {
     total?: number;
   };
+  reminders?: Array<string | { message?: string; code?: string; to?: string }>;
   [key: string]: unknown;
 }
 

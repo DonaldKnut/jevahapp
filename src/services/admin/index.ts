@@ -4,6 +4,7 @@
  */
 export * from "./dashboard";
 export * from "./users";
+export * from "./email";
 export * from "./reports";
 export * from "./moderation";
 export * from "./audio";

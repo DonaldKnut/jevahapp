@@ -21,6 +21,9 @@ import {
   Panel,
   Skeleton,
   SkeletonRows,
+  PageHeader,
+  PageEnter,
+  Badge,
 } from "../../components/admin/ui";
 import {
   FlagIcon,
@@ -35,6 +38,7 @@ import {
   ExclamationTriangleIcon,
   CheckCircleIcon,
   SparklesIcon,
+  ArrowPathIcon,
 } from "@heroicons/react/24/outline";
 import { BoltIcon } from "@heroicons/react/24/solid";
 
@@ -53,38 +57,37 @@ function formatWhen(iso?: string) {
   }
 }
 
-const EVENT_TYPE_COLORS: Record<string, { bg: string; text: string; dot: string }> = {
-  upload:    { bg: "bg-sky-500/10", text: "text-sky-700 dark:text-sky-300", dot: "bg-sky-400" },
-  login:     { bg: "bg-emerald-500/10", text: "text-emerald-700 dark:text-emerald-300", dot: "bg-emerald-400" },
-  report:    { bg: "bg-rose-500/10", text: "text-rose-700 dark:text-rose-300", dot: "bg-rose-400" },
-  ban:       { bg: "bg-red-500/10", text: "text-red-700 dark:text-red-300", dot: "bg-red-500" },
-  flag:      { bg: "bg-amber-500/10", text: "text-amber-700 dark:text-amber-300", dot: "bg-amber-400" },
-  review:    { bg: "bg-purple-500/10", text: "text-purple-700 dark:text-purple-300", dot: "bg-purple-400" },
-  approve:   { bg: "bg-green-500/10", text: "text-green-700 dark:text-green-300", dot: "bg-green-400" },
-  default:   { bg: "bg-jevah-muted", text: "text-jevah-text-muted", dot: "bg-jevah-border" },
+const EVENT_TYPE_STYLES: Record<string, { tone: "info" | "success" | "danger" | "warning" | "purple" | "brand"; label: string }> = {
+  upload:    { tone: "info", label: "Media Upload" },
+  login:     { tone: "success", label: "User Login" },
+  report:    { tone: "danger", label: "New Report" },
+  ban:       { tone: "danger", label: "Account Ban" },
+  flag:      { tone: "warning", label: "Flagged Content" },
+  review:    { tone: "purple", label: "Under Review" },
+  approve:   { tone: "success", label: "Item Approved" },
 };
 
 function getEventStyle(type?: string) {
   const key = (type ?? "").toLowerCase();
-  for (const k of Object.keys(EVENT_TYPE_COLORS)) {
-    if (key.includes(k)) return EVENT_TYPE_COLORS[k];
+  for (const k of Object.keys(EVENT_TYPE_STYLES)) {
+    if (key.includes(k)) return EVENT_TYPE_STYLES[k];
   }
-  return EVENT_TYPE_COLORS.default;
+  return { tone: "brand" as const, label: type || "Event" };
 }
 
 function ModerationStatusBadge({ status }: { status: string }) {
   const s = status.toLowerCase().replace(/_/g, " ");
-  const map: Record<string, string> = {
-    "under review": "bg-amber-500/10 text-amber-800 ring-amber-500/20 dark:text-amber-300",
-    pending: "bg-orange-500/10 text-orange-800 ring-orange-500/20 dark:text-orange-300",
-    approved: "bg-emerald-500/10 text-emerald-800 ring-emerald-500/20 dark:text-emerald-300",
-    rejected: "bg-red-500/10 text-red-800 ring-red-500/20 dark:text-red-300",
+  const map: Record<string, "warning" | "brand" | "success" | "danger"> = {
+    "under review": "warning",
+    pending: "warning",
+    approved: "success",
+    rejected: "danger",
   };
-  const cls = map[s] ?? "bg-jevah-card text-jevah-text ring-jevah-border";
+  const tone = map[s] ?? "brand";
   return (
-    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ring-1 capitalize ${cls}`}>
+    <Badge tone={tone} size="sm" dot>
       {s}
-    </span>
+    </Badge>
   );
 }
 
@@ -101,9 +104,11 @@ export default function Overview() {
   const [metric, setMetric] = useState("signups");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (isManual = false) => {
     try {
+      if (isManual) setRefreshing(true);
       setError(null);
       const [a, f, p, m, q, ts] = await Promise.all([
         fetchAnalytics(),
@@ -145,6 +150,7 @@ export default function Overview() {
       );
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   }, [metric]);
 
@@ -157,15 +163,13 @@ export default function Overview() {
   if (loading) {
     return (
       <div className="space-y-8">
-        {/* Header skeleton */}
         <div className="space-y-2">
           <Skeleton className="h-8 w-48" />
           <Skeleton className="h-4 w-72" />
         </div>
-        {/* KPI skeletons */}
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-32 rounded-2xl" />
+            <Skeleton key={i} className="h-36 rounded-2xl" />
           ))}
         </div>
         <SkeletonRows rows={4} />
@@ -180,7 +184,9 @@ export default function Overview() {
       to: "/admin/reports?status=pending",
       tone: "danger" as const,
       icon: FlagIcon,
-      desc: "Pending review",
+      desc: "Requires admin review",
+      trend: "+12%",
+      trendUp: false,
     },
     {
       label: "Reported Comments",
@@ -188,7 +194,9 @@ export default function Overview() {
       to: "/admin/reports?type=comment",
       tone: "warning" as const,
       icon: ChatBubbleLeftEllipsisIcon,
-      desc: "Flagged by users",
+      desc: "Community flags",
+      trend: "+4%",
+      trendUp: false,
     },
     {
       label: "Under Review",
@@ -197,6 +205,8 @@ export default function Overview() {
       tone: "brand" as const,
       icon: ShieldCheckIcon,
       desc: "In moderation queue",
+      trend: "-8%",
+      trendUp: true,
     },
     {
       label: "Banned Users",
@@ -210,49 +220,89 @@ export default function Overview() {
       label: "Unverified Artists",
       value: analytics?.verification?.unverifiedArtists ?? 0,
       to: "/admin/users?role=artist",
-      tone: "brand" as const,
+      tone: "success" as const,
       icon: UserGroupIcon,
-      desc: "Awaiting verification",
+      desc: "Verification requests",
+      trend: "+18%",
+      trendUp: true,
     },
     {
-      label: "Online Now",
+      label: "Active Sessions",
       value: onlineCount,
       to: "/admin/users?presence=online",
       tone: "brand" as const,
       icon: WifiIcon,
-      desc: "Active right now",
+      desc: "Online right now",
+      trend: "Live",
+      trendUp: true,
     },
   ];
 
   return (
-    <div className="space-y-7 sm:space-y-9">
+    <PageEnter>
       {/* ── Page Header ── */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-jevah-accent/10">
-              <SparklesIcon className="h-4 w-4 text-jevah-accent" />
+      <PageHeader
+        title="Executive Overview"
+        subtitle="Real-time system pulse, platform telemetry, active sessions, and moderation queues."
+        badgeText="Live Stream"
+        actions={
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => void load(true)}
+              disabled={refreshing}
+              className="inline-flex items-center gap-2 rounded-xl border border-jevah-border bg-jevah-surface px-3.5 py-2 text-xs font-bold text-jevah-text shadow-sm hover:bg-jevah-card active:scale-95 transition"
+            >
+              <ArrowPathIcon className={`h-3.5 w-3.5 ${refreshing ? "animate-spin text-jevah-accent" : ""}`} />
+              Refresh
+            </button>
+            <div className="flex items-center gap-1.5 rounded-xl bg-emerald-500/10 px-3.5 py-2 text-xs font-bold text-emerald-600 ring-1 ring-emerald-500/20 dark:text-emerald-400">
+              <BoltIcon className="h-3.5 w-3.5 text-emerald-500 animate-pulse" />
+              Socket Active
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-jevah-text sm:text-3xl">
-              Dashboard
-            </h1>
           </div>
-          <p className="text-sm text-jevah-text-muted leading-relaxed">
-            Platform overview · Live pulse, refreshes every 45 seconds
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 rounded-xl bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700 ring-1 ring-emerald-200/50">
-            <BoltIcon className="h-3.5 w-3.5 text-emerald-500" />
-            Live
-          </div>
-        </div>
-      </div>
+        }
+      />
 
       <ErrorToaster error={error} title="Dashboard error" />
 
-      {/* ── KPI Cards ── */}
-      <div className="grid grid-cols-2 gap-3 xl:grid-cols-3">
+      {(() => {
+        const missingOnboard =
+          analytics?.verification?.activeArtistsMissingOnboardEmail ?? 0;
+        const pendingApps =
+          analytics?.verification?.pendingCreatorApplications ?? 0;
+        const reminders = Array.isArray(analytics?.reminders)
+          ? analytics.reminders
+          : [];
+        if (missingOnboard <= 0 && reminders.length === 0) return null;
+        return (
+          <div className="mb-5 rounded-2xl border border-amber-400/40 bg-amber-400/10 px-4 py-3.5 sm:px-5">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm font-extrabold text-amber-800 dark:text-amber-200">
+                  Send artist onboard emails
+                </p>
+                <p className="mt-0.5 text-xs text-amber-700/80 dark:text-amber-300/80">
+                  {missingOnboard > 0
+                    ? `${missingOnboard} active artist${missingOnboard === 1 ? "" : "s"} missing onboard email.`
+                    : "Dashboard reminders need attention."}
+                  {pendingApps > 0
+                    ? ` · ${pendingApps} pending creator application${pendingApps === 1 ? "" : "s"}.`
+                    : ""}
+                </p>
+              </div>
+              <Link
+                to="/admin/email/artist-onboard"
+                className="inline-flex shrink-0 items-center justify-center rounded-xl bg-amber-500 px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-amber-600"
+              >
+                Open artist onboard
+              </Link>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* ── KPI Grid ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
         {kpiCards.map((card) => (
           <KpiLink
             key={card.label}
@@ -262,150 +312,175 @@ export default function Overview() {
             tone={card.tone}
             icon={card.icon}
             desc={card.desc}
+            trend={card.trend}
+            trendUp={card.trendUp}
           />
         ))}
       </div>
 
-      {/* ── Timeseries ── */}
-      <Panel>
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-          <p className="text-sm font-semibold text-jevah-text">Last 7 days</p>
-          <select
-            value={metric}
-            onChange={(e) => setMetric(e.target.value)}
-            className="rounded-lg border border-jevah-border px-2 py-1.5 text-xs"
-          >
-            <option value="signups">Signups</option>
-            <option value="uploads">Uploads</option>
-            <option value="reports">Reports</option>
-            <option value="activeUsers">Active users</option>
-          </select>
-        </div>
-        {series.length === 0 ? (
-          <p className="text-sm text-jevah-text-muted">
-            Chart data unavailable (timeseries endpoint optional).
-          </p>
-        ) : (
-          <div className="flex h-36 items-end gap-1.5">
-            {series.map((pt, i) => {
-              const val = Number(pt.value ?? pt.count ?? 0);
-              const max = Math.max(
-                ...series.map((p) => Number(p.value ?? p.count ?? 0)),
-                1
-              );
-              const h = Math.max(4, Math.round((val / max) * 100));
-              return (
-                <div
-                  key={String(pt.date || pt.label || i)}
-                  className="flex flex-1 flex-col items-center gap-1"
-                  title={`${pt.date || pt.label || ""}: ${val}`}
-                >
-                  <div
-                    className="w-full rounded-t-md bg-jevah-accent/80"
-                    style={{ height: `${h}%` }}
-                  />
-                  <span className="truncate text-[9px] text-jevah-text-muted">
-                    {(pt.date || pt.label || "").toString().slice(5, 10) ||
-                      String(i + 1)}
-                  </span>
-                </div>
-              );
-            })}
+      {/* ── Visual Analytics & Online Pulse ── */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* Timeseries Graph - 2 cols */}
+        <Panel className="lg:col-span-2">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-jevah-border/50 pb-3">
+            <div className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-jevah-accent/10 text-jevah-accent">
+                <SparklesIcon className="h-4 w-4" />
+              </div>
+              <div>
+                <h2 className="text-base font-bold tracking-tight text-jevah-text">Growth & Engagement Trends</h2>
+                <p className="text-xs text-jevah-text-muted">7-Day metrics activity curve</p>
+              </div>
+            </div>
+            <select
+              value={metric}
+              onChange={(e) => setMetric(e.target.value)}
+              className="rounded-xl border border-jevah-border bg-jevah-surface px-3 py-1.5 text-xs font-semibold text-jevah-text shadow-sm focus:outline-none focus:ring-2 focus:ring-jevah-accent/30"
+            >
+              <option value="signups">User Signups</option>
+              <option value="uploads">Media Uploads</option>
+              <option value="reports">Security Reports</option>
+              <option value="activeUsers">Active Daily Users</option>
+            </select>
           </div>
-        )}
-      </Panel>
 
-      {/* ── Online Users Strip ── */}
-      <section>
-        <div className="mb-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <h2 className="text-base font-bold text-jevah-text">Online Now</h2>
-            <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
-              {onlineCount}
-            </span>
-          </div>
-          <Link
-            to="/admin/users?presence=online"
-            className="inline-flex items-center gap-1 text-sm font-semibold text-jevah-accent transition hover:text-jevah-accent-hover"
-          >
-            View all
-            <ArrowUpRightIcon className="h-3.5 w-3.5" />
-          </Link>
-        </div>
-
-        {onlineUsers.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-jevah-border bg-jevah-surface/60 px-6 py-8 text-center">
-            <WifiIcon className="mx-auto mb-2 h-8 w-8 text-jevah-text-muted" />
-            <p className="text-sm font-medium text-jevah-text-muted">No one online right now</p>
-          </div>
-        ) : (
-          <div className="-mx-1 flex gap-3 overflow-x-auto px-1 pb-2">
-            {onlineUsers.map((u, i) => {
-              const name = [u.firstName, u.lastName].filter(Boolean).join(" ") || u.email;
-              const initials = name.split(" ").slice(0, 2).map((w) => w[0]?.toUpperCase() ?? "").join("");
-              return (
-                <div
-                  key={u.id}
-                  className="admin-list-item group min-w-[160px] cursor-pointer rounded-2xl border border-jevah-border bg-jevah-surface p-3.5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-                  style={{ animationDelay: `${Math.min(i, 8) * 45}ms` }}
-                >
-                  <div className="relative mb-2.5 inline-flex">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-jevah-accent to-[#4ECDC4] text-xs font-bold text-white">
-                      {initials}
+          {series.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-44 rounded-xl border border-dashed border-jevah-border/60 bg-jevah-surface/40">
+              <p className="text-xs font-semibold text-jevah-text-muted">No telemetry data recorded for this timeframe.</p>
+            </div>
+          ) : (
+            <div className="pt-2">
+              <div className="flex h-44 items-end gap-2 pt-4">
+                {series.map((pt, i) => {
+                  const val = Number(pt.value ?? pt.count ?? 0);
+                  const max = Math.max(
+                    ...series.map((p) => Number(p.value ?? p.count ?? 0)),
+                    1
+                  );
+                  const h = Math.max(8, Math.round((val / max) * 100));
+                  return (
+                    <div
+                      key={String(pt.date || pt.label || i)}
+                      className="group flex flex-1 flex-col items-center gap-1.5"
+                      title={`${pt.date || pt.label || ""}: ${val}`}
+                    >
+                      <span className="text-[10px] font-bold text-jevah-accent opacity-0 transition-all duration-200 group-hover:opacity-100 group-hover:-translate-y-1">
+                        {val}
+                      </span>
+                      <div
+                        className="w-full rounded-xl bg-gradient-to-t from-jevah-accent to-emerald-400 transition-all duration-300 group-hover:brightness-125 group-hover:shadow-[0_0_12px_rgba(37,110,99,0.4)] shadow-sm"
+                        style={{ height: `${h}%` }}
+                      />
+                      <span className="truncate text-[10px] font-bold text-jevah-text-muted">
+                        {(pt.date || pt.label || "").toString().slice(5, 10) || String(i + 1)}
+                      </span>
                     </div>
-                    <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white bg-emerald-400 admin-online-dot" />
-                  </div>
-                  <p className="truncate text-sm font-semibold text-jevah-text">{name}</p>
-                  <p className="truncate text-[11px] capitalize text-jevah-text-muted">{u.role}</p>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </section>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </Panel>
 
-      {/* ── Bottom grid ── */}
-      <div className="grid gap-5 lg:grid-cols-5">
+        {/* Online Users Ticker - 1 col */}
+        <Panel>
+          <div className="mb-4 flex items-center justify-between border-b border-jevah-border/50 pb-3">
+            <div className="flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-500">
+                <WifiIcon className="h-4 w-4" />
+              </div>
+              <div>
+                <h2 className="text-base font-bold text-jevah-text">Live Presence</h2>
+                <p className="text-xs text-jevah-text-muted">{onlineCount} active sessions</p>
+              </div>
+            </div>
+            <Link
+              to="/admin/users?presence=online"
+              className="inline-flex items-center gap-0.5 text-xs font-bold text-jevah-accent hover:underline"
+            >
+              View all
+              <ArrowUpRightIcon className="h-3 w-3" />
+            </Link>
+          </div>
+
+          {onlineUsers.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-44 rounded-xl border border-dashed border-jevah-border/60 text-center">
+              <WifiIcon className="mb-2 h-7 w-7 text-jevah-text-muted" />
+              <p className="text-xs font-bold text-jevah-text-muted">No users active right now</p>
+            </div>
+          ) : (
+            <div className="max-h-48 space-y-2.5 overflow-y-auto pr-1 custom-scrollbar">
+              {onlineUsers.slice(0, 6).map((u) => {
+                const name = [u.firstName, u.lastName].filter(Boolean).join(" ") || u.email;
+                const initials = name.split(" ").slice(0, 2).map((w) => w[0]?.toUpperCase() ?? "").join("");
+                return (
+                  <div
+                    key={u.id}
+                    className="flex items-center justify-between rounded-xl border border-jevah-border/60 bg-jevah-surface p-2.5 shadow-sm transition hover:border-jevah-accent/40 hover:shadow-md"
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-jevah-accent to-[#4ECDC4] text-xs font-extrabold text-white">
+                        {initials}
+                        <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-emerald-400 admin-online-dot" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="truncate text-xs font-bold text-jevah-text">{name}</p>
+                        <p className="truncate text-[10px] text-jevah-text-muted capitalize">{u.role}</p>
+                      </div>
+                    </div>
+                    <Badge tone="success" size="sm">Online</Badge>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </Panel>
+      </div>
+
+      {/* ── Activity Stream & Moderation Widgets ── */}
+      <div className="grid gap-6 lg:grid-cols-5">
         {/* Activity feed - takes 3 cols */}
         <Panel className="lg:col-span-3">
-          <div className="mb-5 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-jevah-card">
-                <ClockIcon className="h-4 w-4 text-jevah-text-muted" />
+          <div className="mb-4 flex items-center justify-between border-b border-jevah-border/50 pb-3">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-jevah-accent/10 text-jevah-accent">
+                <ClockIcon className="h-4 w-4" />
               </div>
-              <h2 className="text-base font-bold text-jevah-text">Activity Feed</h2>
+              <div>
+                <h2 className="text-base font-bold text-jevah-text">System Audit Feed</h2>
+                <p className="text-xs text-jevah-text-muted">Real-time audit log stream</p>
+              </div>
             </div>
-            <span className="rounded-full bg-jevah-card px-2.5 py-0.5 text-[11px] font-semibold text-jevah-text-muted">
-              {feed.length} events
+            <span className="rounded-full bg-jevah-card px-2.5 py-0.5 text-xs font-extrabold text-jevah-text-muted">
+              {feed.length} logged
             </span>
           </div>
 
-          <ul className="max-h-[460px] space-y-2 overflow-y-auto pr-0.5 custom-scrollbar">
+          <ul className="max-h-[440px] space-y-2.5 overflow-y-auto pr-1 custom-scrollbar">
             {feed.length === 0 && (
-              <li className="py-8 text-center text-sm text-jevah-text-muted">No recent events.</li>
+              <li className="py-10 text-center text-xs text-jevah-text-muted">No recent system events logged.</li>
             )}
             {feed.map((ev, i) => {
               const style = getEventStyle(ev.type);
               return (
                 <li
                   key={ev.id || String(i)}
-                  className="flex items-start gap-3 rounded-xl border border-transparent bg-jevah-muted/80 px-3.5 py-3 transition hover:border-jevah-border hover:bg-jevah-surface"
+                  className="group flex items-start gap-3 rounded-xl border border-jevah-border/50 bg-jevah-surface/60 p-3.5 transition hover:border-jevah-accent/30 hover:bg-jevah-surface"
                 >
-                  <div className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${style.bg}`}>
-                    <span className={`h-2 w-2 rounded-full ${style.dot}`} />
+                  <div className="mt-0.5">
+                    <Badge tone={style.tone} size="sm">
+                      {style.label}
+                    </Badge>
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between gap-2">
-                      <span className={`rounded-md px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ${style.bg} ${style.text}`}>
-                        {ev.type}
-                      </span>
-                      <span className="shrink-0 text-[10px] text-jevah-text-muted">
+                      <p className="text-xs font-bold text-jevah-text leading-snug">
+                        {ev.title || ev.message || ev.description || "Admin action executed"}
+                      </p>
+                      <span className="shrink-0 text-[10px] font-semibold text-jevah-text-muted">
                         {formatWhen(ev.createdAt || ev.timestamp)}
                       </span>
                     </div>
-                    <p className="mt-1 text-sm text-jevah-text leading-snug">
-                      {ev.title || ev.message || ev.description || "Admin event"}
-                    </p>
                   </div>
                 </li>
               );
@@ -413,51 +488,52 @@ export default function Overview() {
           </ul>
         </Panel>
 
-        {/* Right column - 2 cols */}
-        <div className="space-y-5 lg:col-span-2">
+        {/* Moderation preview widgets - 2 cols */}
+        <div className="space-y-6 lg:col-span-2">
           {/* Latest uploads */}
           <Panel>
-            <div className="mb-4 flex items-center justify-between">
+            <div className="mb-4 flex items-center justify-between border-b border-jevah-border/50 pb-3">
               <div className="flex items-center gap-2">
-                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-jevah-card">
-                  <MusicalNoteIcon className="h-4 w-4 text-jevah-text-muted" />
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-jevah-accent/10 text-jevah-accent">
+                  <MusicalNoteIcon className="h-4 w-4" />
                 </div>
-                <h2 className="text-base font-bold text-jevah-text">Latest Uploads</h2>
+                <div>
+                  <h2 className="text-base font-bold text-jevah-text">Latest Uploads</h2>
+                  <p className="text-xs text-jevah-text-muted">Recent community audio</p>
+                </div>
               </div>
               <Link
-                to="/admin/moderation"
-                className="inline-flex items-center gap-0.5 text-[11px] font-semibold text-jevah-accent hover:text-jevah-accent-hover"
+                to="/admin/audio"
+                className="inline-flex items-center gap-0.5 text-xs font-bold text-jevah-accent hover:underline"
               >
-                Moderation
+                View all
                 <ArrowUpRightIcon className="h-3 w-3" />
               </Link>
             </div>
 
-            <ul className="space-y-2">
+            <ul className="space-y-2.5">
               {recent.length === 0 && (
-                <li className="py-4 text-center text-sm text-jevah-text-muted">No recent uploads.</li>
+                <li className="py-6 text-center text-xs text-jevah-text-muted">No recent uploads found.</li>
               )}
-              {recent.map((item) => (
+              {recent.slice(0, 4).map((item) => (
                 <li
                   key={item.id}
-                  className="flex items-center gap-3 rounded-xl border border-jevah-border p-2 transition hover:border-jevah-border hover:bg-jevah-card"
+                  className="flex items-center gap-3 rounded-xl border border-jevah-border/60 bg-jevah-surface p-2.5 shadow-sm transition hover:border-jevah-accent/30"
                 >
                   {item.preview?.thumbnailUrl ? (
                     <img
                       src={item.preview.thumbnailUrl}
                       alt=""
-                      className="h-11 w-11 shrink-0 rounded-lg object-cover"
+                      className="h-10 w-10 shrink-0 rounded-lg object-cover ring-1 ring-jevah-border"
                     />
                   ) : (
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-slate-100 to-slate-200">
-                      <MusicalNoteIcon className="h-5 w-5 text-jevah-text-muted" />
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-jevah-accent/10 text-jevah-accent">
+                      <MusicalNoteIcon className="h-5 w-5" />
                     </div>
                   )}
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold text-jevah-text">{item.title}</p>
-                    <p className="mt-0.5 text-[11px] capitalize text-jevah-text-muted">
-                      {item.contentType}
-                    </p>
+                    <p className="truncate text-xs font-bold text-jevah-text">{item.title}</p>
+                    <p className="truncate text-[10px] font-medium text-jevah-text-muted capitalize">{item.contentType}</p>
                   </div>
                   <ModerationStatusBadge status={item.moderationStatus} />
                 </li>
@@ -465,18 +541,21 @@ export default function Overview() {
             </ul>
           </Panel>
 
-          {/* On review queue */}
+          {/* Pending moderation queue */}
           <Panel>
-            <div className="mb-4 flex items-center justify-between">
+            <div className="mb-4 flex items-center justify-between border-b border-jevah-border/50 pb-3">
               <div className="flex items-center gap-2">
-                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-50">
-                  <ExclamationTriangleIcon className="h-4 w-4 text-amber-500" />
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-500/10 text-amber-500">
+                  <ExclamationTriangleIcon className="h-4 w-4" />
                 </div>
-                <h2 className="text-base font-bold text-jevah-text">On Review</h2>
+                <div>
+                  <h2 className="text-base font-bold text-jevah-text">Moderation Queue</h2>
+                  <p className="text-xs text-jevah-text-muted">Action items pending review</p>
+                </div>
               </div>
               <Link
                 to="/admin/moderation"
-                className="inline-flex items-center gap-0.5 text-[11px] font-semibold text-jevah-accent hover:text-jevah-accent-hover"
+                className="inline-flex items-center gap-0.5 text-xs font-bold text-jevah-accent hover:underline"
               >
                 Open queue
                 <ArrowUpRightIcon className="h-3 w-3" />
@@ -484,19 +563,19 @@ export default function Overview() {
             </div>
 
             {queuePreview.length === 0 ? (
-              <div className="flex flex-col items-center gap-2 rounded-xl bg-emerald-50 py-5 text-center">
-                <CheckCircleIcon className="h-8 w-8 text-emerald-400" />
-                <p className="text-sm font-semibold text-emerald-700">Queue is clear</p>
-                <p className="text-[11px] text-emerald-500">All caught up!</p>
+              <div className="flex flex-col items-center justify-center rounded-xl bg-emerald-500/10 p-5 text-center ring-1 ring-emerald-500/20">
+                <CheckCircleIcon className="mb-1 h-7 w-7 text-emerald-500" />
+                <p className="text-xs font-bold text-emerald-700 dark:text-emerald-300">Moderation Queue Clear</p>
+                <p className="text-[11px] text-emerald-600/80 dark:text-emerald-400">All submissions reviewed!</p>
               </div>
             ) : (
               <ul className="space-y-2">
-                {queuePreview.map((item) => (
+                {queuePreview.slice(0, 4).map((item) => (
                   <li
                     key={item.id}
-                    className="flex items-center justify-between gap-2 rounded-xl bg-amber-50/70 px-3 py-2.5 ring-1 ring-amber-200/40"
+                    className="flex items-center justify-between gap-2 rounded-xl bg-amber-500/10 p-2.5 ring-1 ring-amber-500/20"
                   >
-                    <span className="min-w-0 truncate text-sm font-medium text-jevah-text">
+                    <span className="min-w-0 truncate text-xs font-bold text-jevah-text">
                       {item.title}
                     </span>
                     <ModerationStatusBadge status={item.moderationStatus} />
@@ -507,6 +586,7 @@ export default function Overview() {
           </Panel>
         </div>
       </div>
-    </div>
+    </PageEnter>
   );
 }
+

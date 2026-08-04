@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { fetchEmailLog } from "../../services/adminApi";
 import { ApiError } from "../../lib/api";
 import {
@@ -19,7 +20,28 @@ type LogRow = {
   createdAt?: string;
   status?: string;
   to?: string[];
+  meta?: {
+    kind?: string;
+    [key: string]: unknown;
+  };
+  kind?: string;
 };
+
+function emailKind(row: LogRow): string {
+  const k = row.meta?.kind || row.kind;
+  return typeof k === "string" ? k : "ops";
+}
+
+function kindBadge(kind: string): { label: string; tone: "info" | "success" | "warning" | "neutral" | "danger" } {
+  switch (kind) {
+    case "marketing":
+      return { label: "Marketing", tone: "info" };
+    case "artist_onboard":
+      return { label: "Artist onboard", tone: "success" };
+    default:
+      return { label: "Ops", tone: "neutral" };
+  }
+}
 
 export default function EmailLogPage() {
   const [items, setItems] = useState<LogRow[]>([]);
@@ -48,7 +70,15 @@ export default function EmailLogPage() {
     <div className="space-y-5">
       <PageHeader
         title="Email log"
-        subtitle="Recent admin sends and dry runs."
+        subtitle="Ops, marketing, and artist onboard sends (including dry runs)."
+        actions={
+          <Link
+            to="/admin/email"
+            className="rounded-2xl border border-jevah-border bg-jevah-surface px-4 py-2 text-sm font-semibold text-jevah-text hover:border-jevah-accent hover:text-jevah-accent"
+          >
+            Compose
+          </Link>
+        }
       />
 
       {error && (
@@ -63,27 +93,32 @@ export default function EmailLogPage() {
         <EmptyState title="No email activity yet" />
       ) : (
         <div className="space-y-3">
-          {items.map((row, i) => (
-            <Panel key={String(row.id || row._id || i)}>
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="font-semibold text-jevah-text">
-                  {row.subject || "Untitled"}
-                </p>
-                <div className="flex gap-1.5">
-                  {row.dryRun && <Badge tone="warning">Dry run</Badge>}
-                  <Badge tone="neutral">{row.status || "sent"}</Badge>
+          {items.map((row, i) => {
+            const kind = emailKind(row);
+            const badge = kindBadge(kind);
+            return (
+              <Panel key={String(row.id || row._id || i)}>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="font-semibold text-jevah-text">
+                    {row.subject || "Untitled"}
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    <Badge tone={badge.tone}>{badge.label}</Badge>
+                    {row.dryRun && <Badge tone="warning">Dry run</Badge>}
+                    <Badge tone="neutral">{row.status || "sent"}</Badge>
+                  </div>
                 </div>
-              </div>
-              <p className="mt-2 text-xs text-jevah-text-muted">
-                {row.createdAt
-                  ? new Date(row.createdAt).toLocaleString()
-                  : ""}
-                {row.recipientCount != null
-                  ? ` · ${row.recipientCount} recipients`
-                  : ""}
-              </p>
-            </Panel>
-          ))}
+                <p className="mt-2 text-xs text-jevah-text-muted">
+                  {row.createdAt
+                    ? new Date(row.createdAt).toLocaleString()
+                    : ""}
+                  {row.recipientCount != null
+                    ? ` · ${row.recipientCount} recipients`
+                    : ""}
+                </p>
+              </Panel>
+            );
+          })}
         </div>
       )}
     </div>
