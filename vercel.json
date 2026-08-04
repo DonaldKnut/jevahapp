@@ -1,0 +1,23 @@
+{
+  "redirects": [
+    {
+      "source": "/moderation",
+      "destination": "/admin/moderation",
+      "permanent": false
+    },
+    {
+      "source": "/reports",
+      "destination": "/admin/reports",
+      "permanent": false
+    },
+    {
+      "source": "/",
+      "has": [{ "type": "host", "value": "admin.jevahapp.com" }],
+      "destination": "/admin",
+      "permanent": false
+    }
+  ],
+  "rewrites": [
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
+  ]
+}

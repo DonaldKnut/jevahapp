@@ -1,6 +1,18 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
+function loginRedirectPath(
+  loginPath: string,
+  returnTo: string,
+  extraState?: Record<string, string>
+) {
+  const params = new URLSearchParams();
+  if (returnTo) params.set("from", returnTo);
+  if (extraState?.intent) params.set("intent", extraState.intent);
+  const qs = params.toString();
+  return qs ? `${loginPath}?${qs}` : loginPath;
+}
+
 export default function ProtectedRoute({
   children,
   requireAdmin = true,
@@ -11,6 +23,7 @@ export default function ProtectedRoute({
 }) {
   const { isAdmin, isAuthenticated, loading } = useAuth();
   const location = useLocation();
+  const returnTo = `${location.pathname}${location.search}${location.hash}`;
 
   if (loading) {
     return (
@@ -28,15 +41,21 @@ export default function ProtectedRoute({
   if (requireAdmin) {
     if (!isAdmin) {
       return (
-        <Navigate to="/login" replace state={{ from: location.pathname }} />
+        <Navigate
+          to={loginRedirectPath("/login", returnTo)}
+          replace
+          state={{ from: returnTo }}
+        />
       );
     }
   } else if (!isAuthenticated) {
     return (
       <Navigate
-        to="/creators/login"
+        to={loginRedirectPath("/creators/login", returnTo, {
+          intent: "creator",
+        })}
         replace
-        state={{ from: location.pathname, intent: "creator" }}
+        state={{ from: returnTo, intent: "creator" }}
       />
     );
   }

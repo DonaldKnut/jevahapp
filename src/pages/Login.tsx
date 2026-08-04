@@ -61,7 +61,8 @@ export default function Login() {
   const [search] = useSearchParams();
 
   const state = location.state as { from?: string; intent?: string } | null;
-  const from = state?.from || "";
+  const fromParam = search.get("from") || "";
+  const from = state?.from || fromParam || "";
 
   const variant = resolveVariant(
     location.pathname,
@@ -79,15 +80,16 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
 
   const defaultRedirect = useMemo(() => {
-    const dest =
-      from ||
-      search.get("from") ||
-      (isCreator ? "/creators/studio" : "/admin");
+    const dest = from || (isCreator ? "/creators/studio" : "/admin");
+    // Only allow in-app relative paths (block open redirects).
+    if (!dest.startsWith("/") || dest.startsWith("//")) {
+      return isCreator ? "/creators/studio" : "/admin";
+    }
     if (isCreator) {
       return dest.startsWith("/creators") ? dest : "/creators/studio";
     }
     return dest.startsWith("/admin") ? dest : "/admin";
-  }, [from, isCreator, search]);
+  }, [from, isCreator]);
 
   if (
     isCreator &&
@@ -98,7 +100,7 @@ export default function Login() {
   ) {
     return (
       <Navigate
-        to="/creators/login"
+        to={`/creators/login?from=${encodeURIComponent(from || "/creators/studio")}&intent=creator`}
         replace
         state={{ from: from || "/creators/studio", intent: "creator" }}
       />
@@ -110,12 +112,7 @@ export default function Login() {
       return <Navigate to={defaultRedirect} replace />;
     }
     if (isAdmin) {
-      return (
-        <Navigate
-          to={from.startsWith("/admin") ? from : "/admin"}
-          replace
-        />
-      );
+      return <Navigate to={defaultRedirect} replace />;
     }
   }
 
