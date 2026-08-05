@@ -13,6 +13,7 @@ import {
   getStoredUser,
   setAuthSession,
   ApiError,
+  API_BASE,
 } from "../lib/api";
 import {
   loginRequest,
@@ -164,11 +165,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         applySession(accessToken, res.user);
         return { ok: true as const };
       } catch (err) {
-        const message =
-          err instanceof ApiError
-            ? err.message
-            : "Unable to sign in. Check your connection and try again.";
-        return { ok: false as const, error: message };
+        if (err instanceof ApiError) {
+          return { ok: false as const, error: err.message };
+        }
+        const raw = err instanceof Error ? err.message : "";
+        const hint =
+          typeof window !== "undefined" &&
+          window.location.protocol === "https:" &&
+          API_BASE.startsWith("http://")
+            ? " Production site cannot call an http:// API (blocked). Set VITE_API_URL to https://api.jevahapp.com on Vercel."
+            : API_BASE.includes("localhost")
+              ? " App is still pointing at localhost — set VITE_API_URL to your Contabo API and redeploy."
+              : " Check network, CORS, or that the API is reachable.";
+        return {
+          ok: false as const,
+          error: `Unable to sign in (${raw || "network error"}).${hint}`,
+        };
       }
     },
     [applySession]

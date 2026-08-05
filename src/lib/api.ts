@@ -1,9 +1,35 @@
 import type { ApiErrorBody } from "../types/admin";
 
-const API_BASE = (import.meta.env.VITE_API_URL as string | undefined)?.replace(
-  /\/$/,
-  ""
-) || "http://localhost:4000/api";
+/**
+ * Resolve API base.
+ * - Prefer VITE_API_URL at build time (set this on Vercel).
+ * - If missing on a jevahapp/vercel host, fall back to production API
+ *   (avoids shipping `localhost:4000` to phones).
+ * Contabo serves `/health` and `/auth/*` without an `/api` prefix.
+ */
+function resolveApiBase(): string {
+  const fromEnv = (import.meta.env.VITE_API_URL as string | undefined)?.replace(
+    /\/$/,
+    ""
+  );
+  if (fromEnv) return fromEnv;
+
+  if (typeof window !== "undefined") {
+    const host = window.location.hostname;
+    if (
+      host === "jevahapp.com" ||
+      host.endsWith(".jevahapp.com") ||
+      host.endsWith(".vercel.app")
+    ) {
+      return "https://api.jevahapp.com";
+    }
+  }
+
+  // Local Vite default — match Contabo/local server (no /api prefix).
+  return "http://localhost:4000";
+}
+
+const API_BASE = resolveApiBase();
 
 const TOKEN_KEY = "accessToken";
 const USER_KEY = "adminUser";
