@@ -173,7 +173,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           typeof window !== "undefined" &&
           window.location.protocol === "https:" &&
           API_BASE.startsWith("http://")
-            ? " Production site cannot call an http:// API (blocked). Set VITE_API_URL to https://api.jevahapp.com on Vercel."
+            ? " Production site cannot call an http:// API (blocked). Set VITE_API_URL to https://api.jevahapp.com/api on Vercel."
             : API_BASE.includes("localhost")
               ? " App is still pointing at localhost — set VITE_API_URL to your Contabo API and redeploy."
               : " Check network, CORS, or that the API is reachable.";

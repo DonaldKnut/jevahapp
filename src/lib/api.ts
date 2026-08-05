@@ -1,18 +1,21 @@
 import type { ApiErrorBody } from "../types/admin";
 
 /**
- * Resolve API base.
- * - Prefer VITE_API_URL at build time (set this on Vercel).
- * - If missing on a jevahapp/vercel host, fall back to production API
- *   (avoids shipping `localhost:4000` to phones).
- * Contabo serves `/health` and `/auth/*` without an `/api` prefix.
+ * Resolve API base. Routes are mounted under `/api`, so every base ends there
+ * and callers pass paths like `/auth/login`.
+ *
+ * VITE_API_URL is accepted with or without the `/api` suffix; an origin-only
+ * value is upgraded so we never ship `https://api.jevahapp.com/auth/login`
+ * (that 404s as "Route not found").
  */
+function withApiSuffix(base: string): string {
+  const trimmed = base.replace(/\/+$/, "");
+  return /\/api$/.test(trimmed) ? trimmed : `${trimmed}/api`;
+}
+
 function resolveApiBase(): string {
-  const fromEnv = (import.meta.env.VITE_API_URL as string | undefined)?.replace(
-    /\/$/,
-    ""
-  );
-  if (fromEnv) return fromEnv;
+  const fromEnv = import.meta.env.VITE_API_URL as string | undefined;
+  if (fromEnv) return withApiSuffix(fromEnv);
 
   if (typeof window !== "undefined") {
     const host = window.location.hostname;
@@ -21,12 +24,11 @@ function resolveApiBase(): string {
       host.endsWith(".jevahapp.com") ||
       host.endsWith(".vercel.app")
     ) {
-      return "https://api.jevahapp.com";
+      return "https://api.jevahapp.com/api";
     }
   }
 
-  // Local Vite default — match Contabo/local server (no /api prefix).
-  return "http://localhost:4000";
+  return "http://localhost:4000/api";
 }
 
 const API_BASE = resolveApiBase();
@@ -94,6 +96,7 @@ export async function apiRequest<T>(
   }
 
   const res = await fetch(`${API_BASE}${path.startsWith("/") ? path : `/${path}`}`, {
+    credentials: "include",
     ...rest,
     headers,
     body: body !== undefined ? JSON.stringify(body) : undefined,
