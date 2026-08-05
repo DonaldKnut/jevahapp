@@ -12,11 +12,20 @@ import {
   EmptyState,
   Field,
   PageHeader,
-  Panel,
   SkeletonRows,
+  PageEnter,
   inputClass,
 } from "../../components/admin/ui";
+import AdminModal from "../../components/admin/AdminModal";
 import { useFeedback } from "../../components/admin/Feedback";
+import {
+  MegaphoneIcon,
+  PlusIcon,
+  PaperAirplaneIcon,
+  ClockIcon,
+  CheckCircleIcon,
+  CalendarIcon,
+} from "@heroicons/react/24/outline";
 
 type Announcement = {
   id?: string;
@@ -61,6 +70,11 @@ export default function AnnouncementsPage() {
     void load();
   }, [load]);
 
+  function closeModal() {
+    if (busy) return;
+    setOpen(false);
+  }
+
   async function onCreate(e: FormEvent) {
     e.preventDefault();
     setBusy(true);
@@ -91,7 +105,7 @@ export default function AnnouncementsPage() {
     setBusy(true);
     try {
       await patchAnnouncement(id, { status: "published", published: true });
-      toast.success("Published");
+      toast.success("Announcement published to app");
       await load();
     } catch (err) {
       toast.error(
@@ -103,17 +117,34 @@ export default function AnnouncementsPage() {
     }
   }
 
+  const publishedCount = items.filter((a) => a.status === "published").length;
+  const draftCount = items.filter((a) => a.status !== "published").length;
+
   return (
-    <div className="space-y-5">
+    <PageEnter>
       <PageHeader
-        title="Announcements"
-        subtitle="Broadcast drafts and publish to the app."
+        title="Broadcast Announcements"
+        subtitle="Create & publish official messages broadcast to all platform users & congregations."
+        badgeText="Announcements"
         actions={
-          <Button className="w-full sm:w-auto" onClick={() => setOpen(true)}>
-            New draft
+          <Button onClick={() => setOpen(true)}>
+            <PlusIcon className="h-4 w-4" />
+            New Announcement
           </Button>
         }
       />
+
+      {/* Stats */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-4 shadow-sm">
+          <p className="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">Published Live</p>
+          <p className="mt-1 text-2xl font-black text-emerald-600 dark:text-emerald-400">{publishedCount}</p>
+        </div>
+        <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 p-4 shadow-sm">
+          <p className="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-300">Saved Drafts</p>
+          <p className="mt-1 text-2xl font-black text-amber-600 dark:text-amber-400">{draftCount}</p>
+        </div>
+      </div>
 
       {error && (
         <Alert tone="error" onRetry={() => void load()}>
@@ -125,86 +156,122 @@ export default function AnnouncementsPage() {
         <SkeletonRows rows={3} />
       ) : items.length === 0 ? (
         <EmptyState
-          title="No announcements"
-          action={<Button onClick={() => setOpen(true)}>New draft</Button>}
+          title="No Announcements Created"
+          description="Broadcast messages will reach all active platform users and congregation members."
+          icon={MegaphoneIcon}
+          action={
+            <Button onClick={() => setOpen(true)}>New Announcement</Button>
+          }
         />
       ) : (
-        <div className="space-y-3">
-          {items.map((a) => (
-            <Panel key={annId(a)}>
-              <div className="flex flex-wrap items-start justify-between gap-2">
-                <div>
-                  <p className="font-semibold text-jevah-text">
-                    {a.title || "Untitled"}
-                  </p>
-                  <p className="mt-1 text-sm text-jevah-text-muted line-clamp-2">
-                    {a.body || a.message}
-                  </p>
+        <div className="space-y-4">
+          {items.map((a, i) => (
+            <div
+              key={annId(a)}
+              className="admin-list-item group rounded-3xl border border-jevah-border/80 bg-jevah-surface p-6 shadow-sm transition hover:border-jevah-accent/20 hover:shadow-md"
+              style={{ animationDelay: `${Math.min(i, 10) * 40}ms` }}
+            >
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="flex items-start gap-3 min-w-0 flex-1">
+                  <div className={`mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ${a.status === "published" ? "bg-emerald-500/15 text-emerald-600" : "bg-amber-500/15 text-amber-600"}`}>
+                    {a.status === "published" ? (
+                      <CheckCircleIcon className="h-5 w-5" />
+                    ) : (
+                      <ClockIcon className="h-5 w-5" />
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-extrabold text-jevah-text text-lg leading-snug">
+                      {a.title || "Untitled Announcement"}
+                    </p>
+                    <p className="mt-2 text-sm text-jevah-text-muted font-medium leading-relaxed line-clamp-3">
+                      {a.body || a.message}
+                    </p>
+                    {a.createdAt && (
+                      <p className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-jevah-text-muted">
+                        <CalendarIcon className="h-3.5 w-3.5" />
+                        {new Date(a.createdAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+                      </p>
+                    )}
+                  </div>
                 </div>
-                <Badge
-                  tone={
-                    a.status === "published" ? "success" : "neutral"
-                  }
-                >
-                  {a.status || "draft"}
-                </Badge>
+                <div className="flex flex-col items-end gap-2 shrink-0">
+                  <Badge tone={a.status === "published" ? "success" : "warning"} size="sm" dot>
+                    {a.status || "draft"}
+                  </Badge>
+                  {a.status !== "published" && (
+                    <Button
+                      size="sm"
+                      disabled={busy}
+                      onClick={() => void publish(a)}
+                    >
+                      <PaperAirplaneIcon className="h-3.5 w-3.5" />
+                      Publish
+                    </Button>
+                  )}
+                </div>
               </div>
-              {a.status !== "published" && (
-                <Button
-                  className="mt-3"
-                  disabled={busy}
-                  onClick={() => void publish(a)}
-                >
-                  Publish
-                </Button>
-              )}
-            </Panel>
+            </div>
           ))}
         </div>
       )}
 
-      {open && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:items-center sm:p-4">
-          <form
-            onSubmit={(e) => void onCreate(e)}
-            className="w-full max-w-md rounded-t-3xl bg-jevah-surface p-6 sm:rounded-2xl"
-          >
-            <h3 className="text-lg font-semibold">New announcement</h3>
-            <div className="mt-4 space-y-3">
-              <Field label="Title">
-                <input
-                  required
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className={inputClass}
-                />
-              </Field>
-              <Field label="Body">
-                <textarea
-                  required
-                  rows={5}
-                  value={body}
-                  onChange={(e) => setBody(e.target.value)}
-                  className={inputClass}
-                />
-              </Field>
-            </div>
-            <div className="mt-5 flex gap-2">
-              <Button
-                type="button"
-                variant="ghost"
-                className="flex-1"
-                onClick={() => setOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" className="flex-1" disabled={busy}>
-                Save draft
-              </Button>
-            </div>
-          </form>
-        </div>
-      )}
-    </div>
+      <AdminModal
+        open={open}
+        onClose={closeModal}
+        title="Compose New Announcement"
+        subtitle="Drafts are saved privately — publish when ready to broadcast."
+        busy={busy}
+        icon={<MegaphoneIcon className="h-5 w-5" />}
+        footer={
+          <div className="flex gap-2.5">
+            <Button
+              type="button"
+              variant="ghost"
+              className="flex-1"
+              disabled={busy}
+              onClick={closeModal}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              form="announcement-create-form"
+              className="flex-1"
+              disabled={busy || !title.trim() || !body.trim()}
+            >
+              {busy ? "Saving..." : "Save as Draft"}
+            </Button>
+          </div>
+        }
+      >
+        <form
+          id="announcement-create-form"
+          onSubmit={(e) => void onCreate(e)}
+          className="space-y-4"
+        >
+          <Field label="Announcement Title">
+            <input
+              required
+              autoFocus
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className={inputClass}
+              placeholder="e.g. Sunday Service Update — Week 23"
+            />
+          </Field>
+          <Field label="Broadcast Message Body">
+            <textarea
+              required
+              rows={6}
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+              className={inputClass}
+              placeholder="Write the full announcement message that will be shown to all users..."
+            />
+          </Field>
+        </form>
+      </AdminModal>
+    </PageEnter>
   );
 }

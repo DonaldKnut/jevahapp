@@ -15,9 +15,20 @@ import {
   PageHeader,
   Panel,
   SkeletonRows,
+  PageEnter,
   inputClass,
 } from "../../components/admin/ui";
+import AdminModal from "../../components/admin/AdminModal";
 import { useFeedback } from "../../components/admin/Feedback";
+import {
+  BuildingLibraryIcon,
+  MagnifyingGlassIcon,
+  PlusIcon,
+  MapPinIcon,
+  EnvelopeIcon,
+  PhoneIcon,
+  UserIcon,
+} from "@heroicons/react/24/outline";
 
 type Church = {
   id?: string;
@@ -90,6 +101,11 @@ export default function ChurchesPage() {
     void load();
   }, [load]);
 
+  function closeCreate() {
+    if (busy) return;
+    setCreateOpen(false);
+  }
+
   async function toggleVerify(c: Church) {
     const id = churchId(c);
     if (!id) return;
@@ -104,7 +120,10 @@ export default function ChurchesPage() {
       await load();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Verification failed.");
-      toast.error("Verification failed", err instanceof ApiError ? err.message : undefined);
+      toast.error(
+        "Verification failed",
+        err instanceof ApiError ? err.message : undefined
+      );
     } finally {
       setBusy(false);
     }
@@ -134,13 +153,13 @@ export default function ChurchesPage() {
     setBusy(true);
     try {
       await createAdminChurch({
-        name: form.name,
-        state: form.state,
-        lga: form.lga || undefined,
-        address: form.address || undefined,
-        contactName: form.contactName || undefined,
-        contactEmail: form.contactEmail || undefined,
-        contactPhone: form.contactPhone || undefined,
+        name: form.name.trim(),
+        state: form.state.trim(),
+        lga: form.lga.trim() || undefined,
+        address: form.address.trim() || undefined,
+        contactName: form.contactName.trim() || undefined,
+        contactEmail: form.contactEmail.trim() || undefined,
+        contactPhone: form.contactPhone.trim() || undefined,
         source: form.source || undefined,
         isListed: form.isListed,
         isVerified: form.isVerified,
@@ -151,32 +170,65 @@ export default function ChurchesPage() {
       await load();
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Create failed.");
-      toast.error("Create failed", err instanceof ApiError ? err.message : undefined);
+      toast.error(
+        "Create failed",
+        err instanceof ApiError ? err.message : undefined
+      );
     } finally {
       setBusy(false);
     }
   }
 
+  const verifiedCount = churches.filter((c) => c.isVerified || c.verified).length;
+  const listedCount = churches.filter((c) => c.isListed !== false).length;
+
   return (
-    <div className="space-y-5">
+    <PageEnter>
       <PageHeader
-        title="Churches"
-        subtitle="Onboarding catalog — listed churches appear in places suggest."
+        title="Church Directory"
+        subtitle="Catalog of affiliated ministry bodies & worship spaces listed in community search."
+        badgeText="Congregations"
         actions={
-          <Button className="w-full sm:w-auto" onClick={() => setCreateOpen(true)}>
-            Add church
+          <Button
+            onClick={() => {
+              setForm(emptyForm);
+              setCreateOpen(true);
+            }}
+          >
+            <PlusIcon className="h-4 w-4" />
+            Add New Church
           </Button>
         }
       />
 
+      {/* Stats row */}
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
+        <div className="rounded-2xl border border-jevah-border/80 bg-jevah-surface p-4 shadow-sm">
+          <p className="text-xs font-bold uppercase tracking-wider text-jevah-text-muted">Total Directory</p>
+          <p className="mt-1 text-2xl font-black text-jevah-text">{churches.length}</p>
+        </div>
+        <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-4 shadow-sm">
+          <p className="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">Verified Congregations</p>
+          <p className="mt-1 text-2xl font-black text-emerald-600 dark:text-emerald-400">{verifiedCount}</p>
+        </div>
+        <div className="rounded-2xl border border-jevah-accent/20 bg-jevah-accent/10 p-4 shadow-sm col-span-2 lg:col-span-1">
+          <p className="text-xs font-bold uppercase tracking-wider text-jevah-accent">Listed in Onboarding</p>
+          <p className="mt-1 text-2xl font-black text-jevah-accent">{listedCount}</p>
+        </div>
+      </div>
+
+      {/* Filter toolbar */}
       <Panel>
-        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search churches"
-            className={inputClass}
-          />
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="relative">
+            <MagnifyingGlassIcon className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-jevah-text-muted" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by name, city, or state..."
+              className={`${inputClass} pl-10`}
+            />
+          </div>
           <select
             value={verifiedFilter}
             onChange={(e) =>
@@ -184,9 +236,9 @@ export default function ChurchesPage() {
             }
             className={inputClass}
           >
-            <option value="">All verification</option>
-            <option value="true">Verified</option>
-            <option value="false">Unverified</option>
+            <option value="">All Verification Status</option>
+            <option value="true">Verified Only</option>
+            <option value="false">Unverified Only</option>
           </select>
           <select
             value={listedFilter}
@@ -195,9 +247,9 @@ export default function ChurchesPage() {
             }
             className={inputClass}
           >
-            <option value="">All listing</option>
-            <option value="true">Listed</option>
-            <option value="false">Hidden</option>
+            <option value="">All Listing Status</option>
+            <option value="true">Listed in Search</option>
+            <option value="false">Hidden from Search</option>
           </select>
           <Button variant="secondary" onClick={() => void load()}>
             Refresh
@@ -215,58 +267,94 @@ export default function ChurchesPage() {
         <SkeletonRows rows={4} />
       ) : churches.length === 0 ? (
         <EmptyState
-          title="No churches yet"
-          description="Add a church or adjust filters."
-          action={<Button onClick={() => setCreateOpen(true)}>Add church</Button>}
+          title="No Churches Found"
+          description="Add a new congregation to the onboarding catalog or adjust filter criteria."
+          icon={BuildingLibraryIcon}
+          action={
+            <Button
+              onClick={() => {
+                setForm(emptyForm);
+                setCreateOpen(true);
+              }}
+            >
+              Add Church
+            </Button>
+          }
         />
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {churches.map((c, i) => {
             const verified = Boolean(c.isVerified ?? c.verified);
             const listed = c.isListed !== false;
+            const location = [c.lga, c.city, c.state, c.country].filter(Boolean).join(", ");
+
             return (
               <div
                 key={churchId(c)}
-                className="admin-list-item rounded-2xl border border-jevah-border bg-jevah-surface p-4 shadow-sm"
+                className="admin-list-item group flex flex-col justify-between rounded-3xl border border-jevah-border/80 bg-jevah-surface p-5 shadow-sm transition hover:-translate-y-1 hover:border-jevah-accent/30 hover:shadow-md"
                 style={{ animationDelay: `${Math.min(i, 10) * 40}ms` }}
               >
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <p className="truncate font-semibold text-jevah-text">
-                      {c.name || "Untitled church"}
-                    </p>
-                    <p className="mt-1 text-sm text-jevah-text-muted">
-                      {[c.lga, c.city, c.state, c.country]
-                        .filter(Boolean)
-                        .join(" · ") || "No location"}
-                    </p>
+                <div>
+                  <div className="flex items-start justify-between gap-3 border-b border-jevah-border/40 pb-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-jevah-accent/10 text-jevah-accent ring-1 ring-jevah-accent/20">
+                        <BuildingLibraryIcon className="h-6 w-6" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="truncate font-extrabold text-jevah-text text-base">
+                          {c.name || "Untitled Church"}
+                        </p>
+                        {c.contactName && (
+                          <p className="truncate text-xs font-semibold text-jevah-text-muted flex items-center gap-1 mt-0.5">
+                            <UserIcon className="h-3 w-3" /> {c.contactName}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-end gap-1 shrink-0">
+                      <Badge tone={verified ? "success" : "neutral"} size="sm" dot>
+                        {verified ? "Verified" : "Unverified"}
+                      </Badge>
+                      <Badge tone={listed ? "brand" : "warning"} size="sm">
+                        {listed ? "Listed" : "Hidden"}
+                      </Badge>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 space-y-2 text-xs font-medium text-jevah-text-muted">
+                    <div className="flex items-center gap-2">
+                      <MapPinIcon className="h-4 w-4 shrink-0 text-jevah-accent" />
+                      <span className="truncate">{location || "Location not specified"}</span>
+                    </div>
                     {c.contactEmail && (
-                      <p className="mt-1 truncate text-xs text-jevah-text-muted">
-                        {c.contactEmail}
-                      </p>
+                      <div className="flex items-center gap-2">
+                        <EnvelopeIcon className="h-4 w-4 shrink-0 text-sky-500" />
+                        <span className="truncate">{c.contactEmail}</span>
+                      </div>
+                    )}
+                    {c.contactPhone && (
+                      <div className="flex items-center gap-2">
+                        <PhoneIcon className="h-4 w-4 shrink-0 text-emerald-500" />
+                        <span className="truncate">{c.contactPhone}</span>
+                      </div>
                     )}
                   </div>
-                  <div className="flex flex-col items-end gap-1">
-                    <Badge tone={verified ? "success" : "neutral"}>
-                      {verified ? "Verified" : "Unverified"}
-                    </Badge>
-                    <Badge tone={listed ? "brand" : "warning"}>
-                      {listed ? "Listed" : "Hidden"}
-                    </Badge>
-                  </div>
                 </div>
-                <div className="mt-4 flex gap-2">
+
+                <div className="mt-5 flex gap-2 pt-3 border-t border-jevah-border/40">
                   <Button
                     variant={verified ? "secondary" : "primary"}
-                    className="flex-1 min-h-9 text-xs"
+                    size="sm"
+                    className="flex-1"
                     disabled={busy}
                     onClick={() => void toggleVerify(c)}
                   >
                     {verified ? "Unverify" : "Verify"}
                   </Button>
                   <Button
-                    variant="secondary"
-                    className="flex-1 min-h-9 text-xs"
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
                     disabled={busy}
                     onClick={() => void toggleListed(c)}
                   >
@@ -279,113 +367,139 @@ export default function ChurchesPage() {
         </div>
       )}
 
-      {createOpen && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:items-center sm:p-4">
-          <form
-            onSubmit={onCreate}
-            className="max-h-[92dvh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-jevah-surface p-6 shadow-xl sm:rounded-2xl"
-          >
-            <h3 className="text-lg font-semibold">Add church</h3>
-            <div className="mt-4 space-y-3">
-              <Field label="Name">
-                <input
-                  required
-                  value={form.name}
-                  onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                  className={inputClass}
-                />
-              </Field>
-              <Field label="State">
-                <input
-                  required
-                  value={form.state}
-                  onChange={(e) => setForm((f) => ({ ...f, state: e.target.value }))}
-                  className={inputClass}
-                />
-              </Field>
-              <Field label="LGA (optional)">
-                <input
-                  value={form.lga}
-                  onChange={(e) => setForm((f) => ({ ...f, lga: e.target.value }))}
-                  className={inputClass}
-                />
-              </Field>
-              <Field label="Address (optional)">
-                <input
-                  value={form.address}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, address: e.target.value }))
-                  }
-                  className={inputClass}
-                />
-              </Field>
-              <Field label="Contact name">
-                <input
-                  value={form.contactName}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, contactName: e.target.value }))
-                  }
-                  className={inputClass}
-                />
-              </Field>
-              <Field label="Contact email">
-                <input
-                  type="email"
-                  value={form.contactEmail}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, contactEmail: e.target.value }))
-                  }
-                  className={inputClass}
-                />
-              </Field>
-              <Field label="Contact phone">
-                <input
-                  value={form.contactPhone}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, contactPhone: e.target.value }))
-                  }
-                  className={inputClass}
-                />
-              </Field>
-              <label className="flex items-center gap-2 text-sm text-jevah-text-muted">
-                <input
-                  type="checkbox"
-                  checked={form.isListed}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, isListed: e.target.checked }))
-                  }
-                  className="h-4 w-4 rounded border-jevah-border text-jevah-accent"
-                />
-                List in onboarding search
-              </label>
-              <label className="flex items-center gap-2 text-sm text-jevah-text-muted">
-                <input
-                  type="checkbox"
-                  checked={form.isVerified}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, isVerified: e.target.checked }))
-                  }
-                  className="h-4 w-4 rounded border-jevah-border text-jevah-accent"
-                />
-                Mark verified
-              </label>
-            </div>
-            <div className="mt-5 flex gap-2">
-              <Button
-                type="button"
-                variant="ghost"
-                className="flex-1"
-                onClick={() => setCreateOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" className="flex-1" disabled={busy}>
-                Create
-              </Button>
-            </div>
-          </form>
-        </div>
-      )}
-    </div>
+      {/* Creation Modal */}
+      <AdminModal
+        open={createOpen}
+        onClose={closeCreate}
+        title="Add New Church Congregation"
+        subtitle="Cataloged churches appear in onboarding suggestion lists."
+        busy={busy}
+        footer={
+          <div className="flex gap-2.5">
+            <Button
+              type="button"
+              variant="ghost"
+              className="flex-1"
+              disabled={busy}
+              onClick={closeCreate}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              form="church-create-form"
+              className="flex-1"
+              disabled={busy || !form.name.trim() || !form.state.trim()}
+            >
+              {busy ? "Registering..." : "Register Church"}
+            </Button>
+          </div>
+        }
+      >
+        <form
+          id="church-create-form"
+          onSubmit={(e) => void onCreate(e)}
+          className="space-y-4"
+        >
+          <Field label="Church / Ministry Name">
+            <input
+              required
+              autoFocus
+              value={form.name}
+              onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+              className={inputClass}
+              placeholder="e.g. Grace Assembly Cathedral"
+            />
+          </Field>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="State">
+              <input
+                required
+                value={form.state}
+                onChange={(e) => setForm((f) => ({ ...f, state: e.target.value }))}
+                className={inputClass}
+                placeholder="Lagos"
+              />
+            </Field>
+            <Field label="LGA">
+              <input
+                value={form.lga}
+                onChange={(e) => setForm((f) => ({ ...f, lga: e.target.value }))}
+                className={inputClass}
+                placeholder="Ikeja"
+              />
+            </Field>
+          </div>
+          <Field label="Address Description">
+            <input
+              value={form.address}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, address: e.target.value }))
+              }
+              className={inputClass}
+              placeholder="12 Commercial Avenue"
+            />
+          </Field>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Pastor / Contact Name">
+              <input
+                value={form.contactName}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, contactName: e.target.value }))
+                }
+                className={inputClass}
+                placeholder="Pastor John"
+              />
+            </Field>
+            <Field label="Contact Phone">
+              <input
+                value={form.contactPhone}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, contactPhone: e.target.value }))
+                }
+                className={inputClass}
+                placeholder="+234..."
+              />
+            </Field>
+          </div>
+          <Field label="Contact Email">
+            <input
+              type="email"
+              value={form.contactEmail}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, contactEmail: e.target.value }))
+              }
+              className={inputClass}
+              placeholder="info@grace chapel.org"
+            />
+          </Field>
+          <div className="space-y-2 pt-2">
+            <label className="flex items-center gap-2.5 text-xs font-semibold text-jevah-text">
+              <input
+                type="checkbox"
+                checked={form.isListed}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, isListed: e.target.checked }))
+                }
+                className="h-4 w-4 rounded border-jevah-border text-jevah-accent"
+              />
+              Publish in user onboarding search catalog
+            </label>
+            <label className="flex items-center gap-2.5 text-xs font-semibold text-jevah-text">
+              <input
+                type="checkbox"
+                checked={form.isVerified}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, isVerified: e.target.checked }))
+                }
+                className="h-4 w-4 rounded border-jevah-border text-jevah-accent"
+              />
+              Mark congregation as verified
+            </label>
+          </div>
+        </form>
+      </AdminModal>
+    </PageEnter>
   );
 }
+

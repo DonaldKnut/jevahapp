@@ -30,9 +30,18 @@ import {
   PageHeader,
   Panel,
   SkeletonRows,
+  PageEnter,
   inputClass,
 } from "../../components/admin/ui";
 import { useFeedback } from "../../components/admin/Feedback";
+import {
+  UsersIcon,
+  MagnifyingGlassIcon,
+  EnvelopeIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
 
 const ROLES = [
   "learner",
@@ -66,9 +75,7 @@ export default function UsersPage() {
   const [warnSubject, setWarnSubject] = useState("Notice from Jevah");
   const [warnMessage, setWarnMessage] = useState("");
   const [warnEmail, setWarnEmail] = useState(true);
-  const [detailUser, setDetailUser] = useState<Record<string, unknown> | null>(
-    null
-  );
+  const [detailUser, setDetailUser] = useState<Record<string, unknown> | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
@@ -133,6 +140,14 @@ export default function UsersPage() {
       else next.add(id);
       return next;
     });
+  }
+
+  function toggleAll() {
+    if (selected.size === users.length) {
+      setSelected(new Set());
+    } else {
+      setSelected(new Set(users.map((u) => u.id)));
+    }
   }
 
   function onSearch(e: FormEvent) {
@@ -287,175 +302,104 @@ export default function UsersPage() {
     }
   }
 
-  function UserCard({ u }: { u: AdminUser }) {
-    const name =
-      [u.firstName, u.lastName].filter(Boolean).join(" ") || "Unnamed user";
-    return (
-      <div className="rounded-2xl border border-jevah-border bg-jevah-surface p-4 shadow-sm">
-        <div className="flex items-start gap-3">
-          <input
-            type="checkbox"
-            className="mt-1 h-4 w-4"
-            checked={selected.has(u.id)}
-            onChange={() => toggle(u.id)}
-          />
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <p className="font-semibold text-jevah-text">{name}</p>
-              {isSuperAdminEmail(u.email) && <Badge tone="warning">Master</Badge>}
-              {u.isBanned && <Badge tone="danger">Banned</Badge>}
-            </div>
-            <p className="truncate text-sm text-jevah-text-muted">{u.email}</p>
-            <div className="mt-2 flex flex-wrap items-center gap-3">
-              <OnlineDot online={u.isOnline} />
-              {isSuperAdmin && !isSuperAdminEmail(u.email) ? (
-                <select
-                  value={u.role}
-                  disabled={busy}
-                  onChange={(e) => void changeRole(u, e.target.value)}
-                  className="rounded-lg border border-jevah-border px-2 py-1 text-xs capitalize"
-                >
-                  {ROLES.map((r) => (
-                    <option key={r} value={r}>
-                      {r}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <span className="text-xs capitalize text-jevah-text-muted">{u.role}</span>
-              )}
-            </div>
-            <div className="mt-3 flex flex-wrap gap-2">
-              <Button
-                variant="secondary"
-                className="min-h-9 px-3 text-xs"
-                disabled={busy}
-                onClick={() => void openDetail(u)}
-              >
-                Detail
-              </Button>
-              <Button
-                variant="secondary"
-                className="min-h-9 px-3 text-xs"
-                disabled={busy}
-                onClick={() => void toggleVerify(u, "isVerifiedArtist")}
-              >
-                Artist: {u.isVerifiedArtist ? "yes" : "no"}
-              </Button>
-              <Button
-                variant="secondary"
-                className="min-h-9 px-3 text-xs"
-                disabled={busy}
-                onClick={() => void toggleVerify(u, "isVerifiedCreator")}
-              >
-                Creator: {u.isVerifiedCreator ? "yes" : "no"}
-              </Button>
-              <Button
-                variant="secondary"
-                className="min-h-9 px-3 text-xs"
-                disabled={busy || isSuperAdminEmail(u.email)}
-                onClick={() => {
-                  setWarnTarget(u);
-                  setWarnSubject("Notice from Jevah");
-                  setWarnMessage("");
-                }}
-              >
-                Warn
-              </Button>
-              {u.isBanned ? (
-                <Button
-                  variant="primary"
-                  className="min-h-9 px-3 text-xs"
-                  onClick={() => void doUnban(u)}
-                >
-                  Unban
-                </Button>
-              ) : (
-                <Button
-                  variant="danger"
-                  className="min-h-9 px-3 text-xs"
-                  disabled={isSuperAdminEmail(u.email)}
-                  onClick={() => setBanTarget(u)}
-                >
-                  Ban
-                </Button>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-5">
+    <PageEnter>
       <PageHeader
-        title="Users"
-        subtitle={`${onlineCount} online · ${total} in this view${
-          isSuperAdmin ? ` · Master: ${SUPER_ADMIN_EMAIL}` : ""
-        }`}
+        title="User Management"
+        subtitle={`Directory of registered platform members · ${onlineCount} active now · ${total} records`}
+        badgeText="User Directory"
         actions={
           <Button
             disabled={selected.size === 0}
             onClick={() => setEmailOpen(true)}
-            className="w-full sm:w-auto"
+            variant="primary"
           >
-            Email selected ({selected.size})
+            <EnvelopeIcon className="h-4 w-4" />
+            Email Selected ({selected.size})
           </Button>
         }
       />
 
+      {/* ── Metric Summary Bar ── */}
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <div className="rounded-2xl border border-jevah-border/80 bg-jevah-surface p-4 shadow-sm">
+          <p className="text-xs font-bold uppercase tracking-wider text-jevah-text-muted">Total Accounts</p>
+          <p className="mt-1 text-2xl font-black text-jevah-text">{total.toLocaleString()}</p>
+        </div>
+        <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-4 shadow-sm">
+          <p className="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">Online Now</p>
+          <p className="mt-1 text-2xl font-black text-emerald-600 dark:text-emerald-400">{onlineCount}</p>
+        </div>
+        <div className="rounded-2xl border border-jevah-accent/20 bg-jevah-accent/10 p-4 shadow-sm">
+          <p className="text-xs font-bold uppercase tracking-wider text-jevah-accent">Selected</p>
+          <p className="mt-1 text-2xl font-black text-jevah-accent">{selected.size}</p>
+        </div>
+        <div className="rounded-2xl border border-jevah-border/80 bg-jevah-surface p-4 shadow-sm">
+          <p className="text-xs font-bold uppercase tracking-wider text-jevah-text-muted">Super Admin</p>
+          <p className="mt-1 truncate text-xs font-bold text-jevah-text">{SUPER_ADMIN_EMAIL}</p>
+        </div>
+      </div>
+
+      {/* ── Search & Filter Controls ── */}
       <Panel>
-        <form onSubmit={onSearch} className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search name or email"
-            className={inputClass}
-          />
-          <select
-            value={role}
-            onChange={(e) => {
-              const next = new URLSearchParams(params);
-              if (e.target.value) next.set("role", e.target.value);
-              else next.delete("role");
-              next.delete("presence");
-              next.set("page", "1");
-              setParams(next);
-            }}
-            className={inputClass}
-          >
-            <option value="">All roles</option>
-            {ROLES.map((r) => (
-              <option key={r} value={r}>
-                {r}
-              </option>
-            ))}
-          </select>
-          <select
-            value={presence || (isBanned === "true" ? "banned" : "")}
-            onChange={(e) => {
-              const next = new URLSearchParams(params);
-              next.delete("isBanned");
-              next.delete("presence");
-              if (e.target.value === "online" || e.target.value === "offline") {
-                next.set("presence", e.target.value);
-              } else if (e.target.value === "banned") {
-                next.set("isBanned", "true");
-              }
-              next.set("page", "1");
-              setParams(next);
-            }}
-            className={inputClass}
-          >
-            <option value="">All status</option>
-            <option value="online">Online</option>
-            <option value="offline">Offline</option>
-            <option value="banned">Banned</option>
-          </select>
-          <Button type="submit" variant="secondary">
-            Apply filters
-          </Button>
+        <form onSubmit={onSearch} className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="relative flex-1">
+            <MagnifyingGlassIcon className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-jevah-text-muted" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by name or email address..."
+              className={`${inputClass} pl-10`}
+            />
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2.5">
+            <select
+              value={role}
+              onChange={(e) => {
+                const next = new URLSearchParams(params);
+                if (e.target.value) next.set("role", e.target.value);
+                else next.delete("role");
+                next.delete("presence");
+                next.set("page", "1");
+                setParams(next);
+              }}
+              className={`${inputClass} w-auto min-w-[140px]`}
+            >
+              <option value="">All Roles</option>
+              {ROLES.map((r) => (
+                <option key={r} value={r}>
+                  {r.replace("_", " ")}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={presence || (isBanned === "true" ? "banned" : "")}
+              onChange={(e) => {
+                const next = new URLSearchParams(params);
+                next.delete("isBanned");
+                next.delete("presence");
+                if (e.target.value === "online" || e.target.value === "offline") {
+                  next.set("presence", e.target.value);
+                } else if (e.target.value === "banned") {
+                  next.set("isBanned", "true");
+                }
+                next.set("page", "1");
+                setParams(next);
+              }}
+              className={`${inputClass} w-auto min-w-[140px]`}
+            >
+              <option value="">All Statuses</option>
+              <option value="online">Online</option>
+              <option value="offline">Offline</option>
+              <option value="banned">Banned</option>
+            </select>
+
+            <Button type="submit" variant="secondary">
+              Apply
+            </Button>
+          </div>
         </form>
       </Panel>
 
@@ -465,62 +409,215 @@ export default function UsersPage() {
         </Alert>
       )}
 
+      {/* ── User Directory Table ── */}
       {loading ? (
-        <SkeletonRows rows={5} />
+        <SkeletonRows rows={6} />
       ) : users.length === 0 ? (
-        <EmptyState title="No users found" description="Try another filter or search." />
+        <EmptyState
+          title="No Users Found"
+          description="No user accounts match your current filter parameters."
+          icon={UsersIcon}
+        />
       ) : (
-        <div className="grid gap-3 md:grid-cols-2">
-          {users.map((u, i) => (
-            <div
-              key={u.id}
-              className="admin-list-item"
-              style={{ animationDelay: `${Math.min(i, 10) * 40}ms` }}
-            >
-              <UserCard u={u} />
-            </div>
-          ))}
-        </div>
+        <Panel padding={false} className="overflow-hidden">
+          <div className="overflow-x-auto custom-scrollbar">
+            <table className="w-full text-left text-sm">
+              <thead className="border-b border-jevah-border/60 bg-jevah-card/60 text-xs font-bold uppercase tracking-wider text-jevah-text-muted">
+                <tr>
+                  <th className="px-4 py-3.5 w-10">
+                    <input
+                      type="checkbox"
+                      className="h-4 w-4 rounded border-jevah-border text-jevah-accent"
+                      checked={selected.size === users.length && users.length > 0}
+                      onChange={toggleAll}
+                    />
+                  </th>
+                  <th className="px-4 py-3.5">User Profile</th>
+                  <th className="px-4 py-3.5">Role</th>
+                  <th className="px-4 py-3.5">Presence</th>
+                  <th className="px-4 py-3.5">Badges</th>
+                  <th className="px-4 py-3.5 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-jevah-border/40">
+                {users.map((u) => {
+                  const name = [u.firstName, u.lastName].filter(Boolean).join(" ") || "Unnamed User";
+                  const initials = name.split(" ").slice(0, 2).map((w) => w[0]?.toUpperCase() ?? "").join("");
+                  return (
+                    <tr key={u.id} className="transition hover:bg-jevah-card/50">
+                      <td className="px-4 py-4">
+                        <input
+                          type="checkbox"
+                          className="h-4 w-4 rounded border-jevah-border text-jevah-accent"
+                          checked={selected.has(u.id)}
+                          onChange={() => toggle(u.id)}
+                        />
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-jevah-accent to-[#4ECDC4] text-xs font-black text-white shadow-sm">
+                            {initials}
+                          </div>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <p className="font-bold text-jevah-text truncate">{name}</p>
+                              {isSuperAdminEmail(u.email) && <Badge tone="warning" size="sm">Master</Badge>}
+                              {u.isBanned && <Badge tone="danger" size="sm">Banned</Badge>}
+                            </div>
+                            <p className="text-xs text-jevah-text-muted truncate">{u.email}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-4">
+                        {isSuperAdmin && !isSuperAdminEmail(u.email) ? (
+                          <select
+                            value={u.role}
+                            disabled={busy}
+                            onChange={(e) => void changeRole(u, e.target.value)}
+                            className="rounded-xl border border-jevah-border/80 bg-jevah-surface px-2.5 py-1 text-xs font-semibold capitalize shadow-sm focus:ring-2 focus:ring-jevah-accent/30"
+                          >
+                            {ROLES.map((r) => (
+                              <option key={r} value={r}>
+                                {r.replace("_", " ")}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          <span className="text-xs font-bold capitalize text-jevah-text-muted">{u.role}</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-4">
+                        <OnlineDot online={u.isOnline} />
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="flex flex-wrap gap-1.5">
+                          <button
+                            onClick={() => void toggleVerify(u, "isVerifiedArtist")}
+                            className={`rounded-full px-2 py-0.5 text-[10px] font-bold ring-1 transition ${
+                              u.isVerifiedArtist
+                                ? "bg-emerald-500/10 text-emerald-600 ring-emerald-500/20"
+                                : "bg-jevah-card text-jevah-text-muted ring-jevah-border"
+                            }`}
+                          >
+                            Artist: {u.isVerifiedArtist ? "Verified" : "No"}
+                          </button>
+                          <button
+                            onClick={() => void toggleVerify(u, "isVerifiedCreator")}
+                            className={`rounded-full px-2 py-0.5 text-[10px] font-bold ring-1 transition ${
+                              u.isVerifiedCreator
+                                ? "bg-jevah-accent/10 text-jevah-accent ring-jevah-accent/20"
+                                : "bg-jevah-card text-jevah-text-muted ring-jevah-border"
+                            }`}
+                          >
+                            Creator: {u.isVerifiedCreator ? "Verified" : "No"}
+                          </button>
+                        </div>
+                      </td>
+                      <td className="px-4 py-4 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            disabled={busy}
+                            onClick={() => void openDetail(u)}
+                          >
+                            Inspect
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            disabled={busy || isSuperAdminEmail(u.email)}
+                            onClick={() => {
+                              setWarnTarget(u);
+                              setWarnSubject("Notice from Jevah");
+                              setWarnMessage("");
+                            }}
+                          >
+                            Warn
+                          </Button>
+                          {u.isBanned ? (
+                            <Button
+                              variant="success"
+                              size="sm"
+                              onClick={() => void doUnban(u)}
+                            >
+                              Unban
+                            </Button>
+                          ) : (
+                            <Button
+                              variant="danger"
+                              size="sm"
+                              disabled={isSuperAdminEmail(u.email)}
+                              onClick={() => setBanTarget(u)}
+                            >
+                              Ban
+                            </Button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </Panel>
       )}
 
-      <div className="flex items-center justify-center gap-2">
-        <Button
-          variant="secondary"
-          disabled={page <= 1}
-          onClick={() => {
-            const next = new URLSearchParams(params);
-            next.set("page", String(page - 1));
-            setParams(next);
-          }}
-        >
-          Previous
-        </Button>
-        <span className="px-2 text-sm text-jevah-text-muted">Page {page}</span>
-        <Button
-          variant="secondary"
-          onClick={() => {
-            const next = new URLSearchParams(params);
-            next.set("page", String(page + 1));
-            setParams(next);
-          }}
-        >
-          Next
-        </Button>
+      {/* ── Pagination Footer ── */}
+      <div className="flex items-center justify-between border-t border-jevah-border/50 pt-4">
+        <p className="text-xs font-semibold text-jevah-text-muted">
+          Showing page {page} · {users.length} items
+        </p>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="secondary"
+            size="sm"
+            disabled={page <= 1}
+            onClick={() => {
+              const next = new URLSearchParams(params);
+              next.set("page", String(page - 1));
+              setParams(next);
+            }}
+          >
+            <ChevronLeftIcon className="h-3.5 w-3.5" />
+            Previous
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => {
+              const next = new URLSearchParams(params);
+              next.set("page", String(page + 1));
+              setParams(next);
+            }}
+          >
+            Next
+            <ChevronRightIcon className="h-3.5 w-3.5" />
+          </Button>
+        </div>
       </div>
 
+      {/* ── Ban Modal ── */}
       {banTarget && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-0 sm:items-center sm:p-4">
-          <div className="w-full max-w-md rounded-t-3xl bg-jevah-surface p-6 shadow-xl sm:rounded-2xl">
-            <h3 className="text-lg font-semibold">Ban {banTarget.email}</h3>
-            <div className="mt-4 space-y-3">
-              <Field label="Reason">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md rounded-3xl bg-jevah-surface p-6 shadow-2xl ring-1 ring-jevah-border admin-sheet-in">
+            <div className="flex items-center justify-between border-b border-jevah-border/50 pb-3">
+              <h3 className="text-lg font-bold text-jevah-text">Restrict {banTarget.email}</h3>
+              <button onClick={() => setBanTarget(null)} className="text-jevah-text-muted hover:text-jevah-text">
+                <XMarkIcon className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="mt-4 space-y-4">
+              <Field label="Ban Reason">
                 <input
                   value={banReason}
                   onChange={(e) => setBanReason(e.target.value)}
+                  placeholder="Violating Terms of Service"
                   className={inputClass}
                 />
               </Field>
-              <Field label="Duration (days)">
+              <Field label="Restriction Duration (Days)">
                 <input
                   type="number"
                   min={1}
@@ -529,17 +626,17 @@ export default function UsersPage() {
                   className={inputClass}
                 />
               </Field>
-              <label className="flex items-center gap-2 text-sm text-jevah-text-muted">
+              <label className="flex items-center gap-2.5 text-xs font-semibold text-jevah-text">
                 <input
                   type="checkbox"
                   checked={revokeSessions}
                   onChange={(e) => setRevokeSessions(e.target.checked)}
                   className="h-4 w-4 rounded border-jevah-border text-jevah-accent"
                 />
-                Revoke sessions (force logout)
+                Revoke active JWT sessions (Immediate Force Logout)
               </label>
             </div>
-            <div className="mt-5 flex gap-2">
+            <div className="mt-6 flex gap-2.5">
               <Button variant="ghost" className="flex-1" onClick={() => setBanTarget(null)}>
                 Cancel
               </Button>
@@ -549,45 +646,52 @@ export default function UsersPage() {
                 disabled={busy}
                 onClick={() => void submitBan()}
               >
-                Confirm ban
+                Confirm Restriction
               </Button>
             </div>
           </div>
         </div>
       )}
 
+      {/* ── Warn Modal ── */}
       {warnTarget && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-0 sm:items-center sm:p-4">
-          <div className="w-full max-w-md rounded-t-3xl bg-jevah-surface p-6 shadow-xl sm:rounded-2xl">
-            <h3 className="text-lg font-semibold">Warn {warnTarget.email}</h3>
-            <div className="mt-4 space-y-3">
-              <Field label="Subject">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md rounded-3xl bg-jevah-surface p-6 shadow-2xl ring-1 ring-jevah-border admin-sheet-in">
+            <div className="flex items-center justify-between border-b border-jevah-border/50 pb-3">
+              <h3 className="text-lg font-bold text-jevah-text">Send Warning to {warnTarget.email}</h3>
+              <button onClick={() => setWarnTarget(null)} className="text-jevah-text-muted hover:text-jevah-text">
+                <XMarkIcon className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="mt-4 space-y-4">
+              <Field label="Subject Line">
                 <input
                   value={warnSubject}
                   onChange={(e) => setWarnSubject(e.target.value)}
                   className={inputClass}
                 />
               </Field>
-              <Field label="Message">
+              <Field label="Warning Content">
                 <textarea
                   required
                   rows={4}
                   value={warnMessage}
                   onChange={(e) => setWarnMessage(e.target.value)}
+                  placeholder="Please maintain community guidelines when posting comments..."
                   className={inputClass}
                 />
               </Field>
-              <label className="flex items-center gap-2 text-sm text-jevah-text-muted">
+              <label className="flex items-center gap-2.5 text-xs font-semibold text-jevah-text">
                 <input
                   type="checkbox"
                   checked={warnEmail}
                   onChange={(e) => setWarnEmail(e.target.checked)}
                   className="h-4 w-4 rounded border-jevah-border text-jevah-accent"
                 />
-                Also send email
+                Dispatch directly to registered email
               </label>
             </div>
-            <div className="mt-5 flex gap-2">
+            <div className="mt-6 flex gap-2.5">
               <Button variant="ghost" className="flex-1" onClick={() => setWarnTarget(null)}>
                 Cancel
               </Button>
@@ -596,43 +700,51 @@ export default function UsersPage() {
                 disabled={busy || !warnMessage.trim()}
                 onClick={() => void submitWarn()}
               >
-                Send warning
+                Send Warning
               </Button>
             </div>
           </div>
         </div>
       )}
 
+      {/* ── Compose Email Modal ── */}
       {emailOpen && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:items-center sm:p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <form
             onSubmit={sendEmail}
-            className="w-full max-w-lg rounded-t-3xl bg-jevah-surface p-6 shadow-xl sm:rounded-2xl"
+            className="w-full max-w-lg rounded-3xl bg-jevah-surface p-6 shadow-2xl ring-1 ring-jevah-border admin-sheet-in"
           >
-            <h3 className="text-lg font-semibold">Compose email</h3>
-            <p className="mt-1 text-xs text-jevah-text-muted">
-              To: {selectedEmails.join(", ") || "—"}
+            <div className="flex items-center justify-between border-b border-jevah-border/50 pb-3">
+              <h3 className="text-lg font-bold text-jevah-text">Email Selected Users ({selected.size})</h3>
+              <button onClick={() => setEmailOpen(false)} className="text-jevah-text-muted hover:text-jevah-text">
+                <XMarkIcon className="h-5 w-5" />
+              </button>
+            </div>
+            <p className="mt-2 text-xs font-medium text-jevah-text-muted truncate">
+              Recipients: {selectedEmails.join(", ") || "—"}
             </p>
-            <div className="mt-4 space-y-3">
-              <Field label="Subject">
+            <div className="mt-4 space-y-4">
+              <Field label="Email Subject">
                 <input
                   required
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
+                  placeholder="Important updates regarding your Jevah account"
                   className={inputClass}
                 />
               </Field>
-              <Field label="Message">
+              <Field label="Email Message Body">
                 <textarea
                   required
                   rows={5}
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
+                  placeholder="Dear community member..."
                   className={inputClass}
                 />
               </Field>
             </div>
-            <div className="mt-5 flex gap-2">
+            <div className="mt-6 flex gap-2.5">
               <Button
                 type="button"
                 variant="ghost"
@@ -642,32 +754,36 @@ export default function UsersPage() {
                 Cancel
               </Button>
               <Button type="submit" className="flex-1" disabled={busy}>
-                Send
+                Send Dispatch
               </Button>
             </div>
           </form>
         </div>
       )}
 
+      {/* ── Detail Inspector Drawer ── */}
       {(detailLoading || detailUser) && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 sm:items-center sm:p-4">
-          <div className="max-h-[90dvh] w-full max-w-lg overflow-y-auto rounded-t-3xl bg-jevah-surface p-6 shadow-xl sm:rounded-2xl">
-            <div className="flex items-center justify-between gap-2">
-              <h3 className="text-lg font-semibold">User detail</h3>
-              <Button variant="ghost" onClick={() => setDetailUser(null)}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="max-h-[85dvh] w-full max-w-xl overflow-y-auto rounded-3xl bg-jevah-surface p-6 shadow-2xl ring-1 ring-jevah-border custom-scrollbar admin-sheet-in">
+            <div className="flex items-center justify-between border-b border-jevah-border/50 pb-3">
+              <h3 className="text-lg font-bold text-jevah-text">User Telemetry Inspector</h3>
+              <Button variant="ghost" size="sm" onClick={() => setDetailUser(null)}>
                 Close
               </Button>
             </div>
             {detailLoading ? (
-              <p className="mt-6 text-sm text-jevah-text-muted">Loading…</p>
+              <div className="py-12 text-center text-sm font-semibold text-jevah-text-muted">
+                Fetching profile data...
+              </div>
             ) : (
-              <pre className="mt-4 overflow-x-auto rounded-xl bg-jevah-muted p-3 text-[11px] leading-relaxed text-jevah-text">
+              <pre className="mt-4 overflow-x-auto rounded-2xl border border-jevah-border/60 bg-jevah-card p-4 text-[11px] font-mono leading-relaxed text-jevah-text custom-scrollbar">
                 {JSON.stringify(detailUser, null, 2)}
               </pre>
             )}
           </div>
         </div>
       )}
-    </div>
+    </PageEnter>
   );
 }
+
