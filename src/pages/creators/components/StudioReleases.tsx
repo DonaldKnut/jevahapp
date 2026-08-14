@@ -16,13 +16,15 @@ import {
   MusicalNoteIcon,
   TrashIcon,
   RocketLaunchIcon,
+  SparklesIcon,
+  FolderPlusIcon,
 } from "@heroicons/react/24/outline";
 
 const TYPES: { id: ReleaseType; label: string; hint: string }[] = [
-  { id: "single", label: "Single", hint: "1 track" },
-  { id: "ep", label: "EP", hint: "2–6 tracks" },
-  { id: "album", label: "Album", hint: "7+ tracks" },
-  { id: "mixtape", label: "Mixtape", hint: "Loose set" },
+  { id: "single", label: "Single", hint: "1 Track" },
+  { id: "ep", label: "EP", hint: "2–6 Tracks" },
+  { id: "album", label: "Album", hint: "7+ Tracks" },
+  { id: "mixtape", label: "Mixtape", hint: "Collection" },
 ];
 
 export default function StudioReleases() {
@@ -55,7 +57,7 @@ export default function StudioReleases() {
     setBusy(true);
     try {
       const r = await createRelease({ title: title.trim(), type });
-      toast.success("Release created", "Add tracks from Upload");
+      toast.success("Release created", "You can now add tracks to this release");
       setTitle("");
       setCreating(false);
       setReleases((prev) => [r, ...prev]);
@@ -72,15 +74,15 @@ export default function StudioReleases() {
   async function onPublish(r: ReleaseCard) {
     const ok = await confirm({
       title: "Publish this release?",
-      message: `"${r.title}" will appear on your public Artists profile. All tracks must be ready.`,
-      confirmLabel: "Publish",
+      message: `"${r.title}" will be published live on your public Artist profile.`,
+      confirmLabel: "Publish Release",
       tone: "primary",
     });
     if (!ok) return;
     setBusy(true);
     try {
       const next = await publishRelease(r.id);
-      toast.success("Published", next.title);
+      toast.success("Release Published", next.title);
       await load();
     } catch (err) {
       const msg = err instanceof ApiError ? err.message : "Publish failed.";
@@ -89,8 +91,8 @@ export default function StudioReleases() {
         /TYPE_HINT_MISMATCH/i.test(JSON.stringify(err.body || msg))
       ) {
         const skip = await confirm({
-          title: "Track count doesn’t match release type",
-          message: "Publish anyway?",
+          title: "Track count mismatch",
+          message: "Publish anyway despite track count warning?",
           confirmLabel: "Publish anyway",
           tone: "warning",
         });
@@ -119,7 +121,7 @@ export default function StudioReleases() {
       title: "Remove release?",
       message:
         r.status === "draft"
-          ? "Draft will be deleted."
+          ? "Draft release will be deleted."
           : "Release will be archived.",
       confirmLabel: "Remove",
       tone: "danger",
@@ -138,159 +140,217 @@ export default function StudioReleases() {
   }
 
   return (
-    <section>
-      <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+    <section className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-jevah-border/70 bg-jevah-surface/90 p-6 shadow-2xl backdrop-blur-2xl">
         <div>
-          <h2 className="text-2xl font-black tracking-tight text-jevah-text">
-            Discography
-          </h2>
-          <p className="mt-1 text-sm text-jevah-text-muted">
-            Singles, EPs, and albums on the Artists shelf — never mixed into
-            Copyright-free.
-          </p>
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-jevah-accent/15 text-jevah-accent ring-1 ring-jevah-accent/25">
+              <SparklesIcon className="h-5 w-5" />
+            </div>
+            <div>
+              <h2 className="text-xl font-black tracking-tight text-jevah-text">
+                Discography & Releases
+              </h2>
+              <p className="text-xs font-semibold text-jevah-text-muted">
+                Package your singles, EPs, and albums for listener discography views
+              </p>
+            </div>
+          </div>
         </div>
+
         <button
           type="button"
           onClick={() => setCreating((v) => !v)}
-          className="inline-flex items-center gap-1.5 rounded-full bg-jevah-accent px-4 py-2.5 text-xs font-extrabold text-white shadow-md shadow-jevah-accent/20 hover:bg-jevah-accent-hover"
+          className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-jevah-accent to-emerald-600 px-5 py-3 text-xs font-extrabold text-white shadow-lg shadow-jevah-accent/25 transition hover:scale-[1.02] active:scale-95"
         >
           <PlusIcon className="h-4 w-4" />
-          New release
+          Create New Release
         </button>
       </div>
 
+      {/* Creation Modal / Inline Drawer */}
       {creating && (
         <form
           onSubmit={(e) => void onCreate(e)}
-          className="mb-6 space-y-3 rounded-3xl border border-jevah-accent/25 bg-gradient-to-br from-jevah-accent/10 via-jevah-surface to-jevah-surface p-5"
+          className="relative overflow-hidden rounded-3xl border border-jevah-accent/30 bg-gradient-to-br from-jevah-accent/10 via-jevah-surface to-jevah-surface p-6 shadow-2xl backdrop-blur-2xl"
         >
-          <input
-            required
-            autoFocus
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className={inputClass}
-            placeholder="Release title"
-          />
-          <div className="flex flex-wrap gap-2">
-            {TYPES.map((t) => (
-              <button
-                key={t.id}
-                type="button"
-                onClick={() => setType(t.id)}
-                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
-                  type === t.id
-                    ? "bg-jevah-accent text-white"
-                    : "border border-jevah-border text-jevah-text-muted"
-                }`}
-              >
-                {t.label}
-                <span className="ml-1 opacity-70">{t.hint}</span>
-              </button>
-            ))}
-          </div>
-          <div className="flex gap-2">
+          <div className="flex items-center justify-between pb-4 mb-4 border-b border-jevah-border/50">
+            <h3 className="text-sm font-black text-jevah-text flex items-center gap-2">
+              <FolderPlusIcon className="h-4 w-4 text-jevah-accent" />
+              New Release Details
+            </h3>
             <button
               type="button"
               onClick={() => setCreating(false)}
-              className="rounded-xl border border-jevah-border px-4 py-2 text-xs font-bold text-jevah-text-muted"
+              className="text-xs font-bold text-jevah-text-muted hover:text-jevah-text"
             >
-              Cancel
+              Close
             </button>
-            <button
-              type="submit"
-              disabled={busy}
-              className="rounded-xl bg-jevah-accent px-4 py-2 text-xs font-bold text-white disabled:opacity-50"
-            >
-              {busy ? "Creating…" : "Create draft"}
-            </button>
+          </div>
+
+          <div className="space-y-4">
+            <label className="block">
+              <span className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-jevah-text-muted">
+                Release Title
+              </span>
+              <input
+                required
+                autoFocus
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className={inputClass}
+                placeholder="e.g. Grace & Victory (Deluxe Album)"
+              />
+            </label>
+
+            <div>
+              <span className="mb-2 block text-xs font-bold uppercase tracking-wider text-jevah-text-muted">
+                Select Release Package Type
+              </span>
+              <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+                {TYPES.map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => setType(t.id)}
+                    className={`flex flex-col items-center justify-center rounded-2xl p-3.5 text-center transition-all ${
+                      type === t.id
+                        ? "bg-gradient-to-r from-jevah-accent to-emerald-600 text-white shadow-md ring-2 ring-white/20"
+                        : "border border-jevah-border/80 bg-jevah-card/60 text-jevah-text-muted hover:bg-jevah-card"
+                    }`}
+                  >
+                    <span className="text-xs font-black">{t.label}</span>
+                    <span className="text-[10px] opacity-75">{t.hint}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={() => setCreating(false)}
+                className="rounded-2xl border border-jevah-border/80 px-5 py-2.5 text-xs font-bold text-jevah-text-muted hover:bg-jevah-card"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={busy}
+                className="rounded-2xl bg-gradient-to-r from-jevah-accent to-emerald-600 px-6 py-2.5 text-xs font-black text-white shadow-lg disabled:opacity-50"
+              >
+                {busy ? "Creating Release…" : "Save Draft Release"}
+              </button>
+            </div>
           </div>
         </form>
       )}
 
+      {/* Releases Cards Grid */}
       {loading ? (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
+        <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 xl:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <div
               key={i}
-              className="aspect-square animate-pulse rounded-3xl bg-jevah-card"
+              className="aspect-square animate-pulse rounded-3xl bg-jevah-card/60"
             />
           ))}
         </div>
       ) : releases.length === 0 ? (
-        <div className="rounded-3xl border border-dashed border-jevah-border bg-jevah-surface/70 px-6 py-16 text-center">
-          <MusicalNoteIcon className="mx-auto h-10 w-10 text-jevah-accent/50" />
-          <p className="mt-3 text-sm font-semibold text-jevah-text-muted">
-            No releases yet. Start a single or EP, then drop tracks into it.
+        <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-jevah-border/80 bg-jevah-surface/60 px-6 py-16 text-center">
+          <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-jevah-accent/10 text-jevah-accent ring-1 ring-jevah-accent/25">
+            <MusicalNoteIcon className="h-8 w-8" />
+          </div>
+          <h3 className="mt-4 text-base font-black text-jevah-text">No releases created</h3>
+          <p className="mt-1 max-w-sm text-xs font-medium text-jevah-text-muted">
+            Start a single, EP, or album package to categorize your uploaded tracks on your public profile.
           </p>
         </div>
       ) : (
-        <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
+        <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 xl:grid-cols-4">
           {releases.map((r) => {
             const count = r.trackCount ?? r.tracks?.length ?? 0;
             return (
-              <li
+              <div
                 key={r.id}
-                className="group overflow-hidden rounded-3xl border border-jevah-border/70 bg-jevah-surface/90 shadow-sm transition hover:-translate-y-0.5 hover:shadow-[0_12px_32px_var(--jevah-shadow)]"
+                className="group relative overflow-hidden rounded-3xl border border-jevah-border/70 bg-jevah-surface/90 shadow-lg backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:border-jevah-accent/40 hover:shadow-2xl"
               >
-                <div className="relative aspect-square bg-jevah-card">
+                {/* Cover Art Container */}
+                <div className="relative aspect-square w-full overflow-hidden bg-gradient-to-br from-jevah-accent/20 to-teal-500/10">
                   {r.coverUrl ? (
                     <img
                       src={r.coverUrl}
-                      alt=""
-                      className="h-full w-full object-cover"
+                      alt={r.title}
+                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-jevah-accent">
-                      <MusicalNoteIcon className="h-12 w-12 opacity-40" />
+                      <MusicalNoteIcon className="h-14 w-14 opacity-30" />
                     </div>
                   )}
-                  <div className="absolute inset-x-0 bottom-0 flex gap-1.5 bg-gradient-to-t from-black/70 to-transparent p-3 opacity-0 transition group-hover:opacity-100">
+
+                  {/* Status Badge Overlay */}
+                  <span className={`absolute top-3 left-3 rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-wider backdrop-blur-md shadow-md ${
+                    r.status === "published"
+                      ? "bg-emerald-500/90 text-white ring-1 ring-white/20"
+                      : "bg-amber-500/90 text-white ring-1 ring-white/20"
+                  }`}>
+                    {r.status || "Draft"}
+                  </span>
+
+                  {/* Hover Actions Bar */}
+                  <div className="absolute inset-x-0 bottom-0 flex gap-2 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-3.5 opacity-0 transition-opacity duration-300 group-hover:opacity-100 backdrop-blur-xs">
                     <Link
                       to={`/creators/studio/upload?releaseId=${encodeURIComponent(r.id)}`}
-                      className="flex-1 rounded-full bg-white px-2 py-1.5 text-center text-[10px] font-extrabold text-[#0b1a1f]"
+                      className="flex-1 rounded-2xl bg-white py-2 text-center text-xs font-black text-[#0b1a1f] shadow-md transition hover:scale-105"
                     >
-                      Add track
+                      Add Tracks
                     </Link>
                     {r.status !== "published" && (
                       <button
                         type="button"
                         disabled={busy}
                         onClick={() => void onPublish(r)}
-                        className="inline-flex items-center gap-1 rounded-full bg-jevah-accent px-2.5 py-1.5 text-[10px] font-extrabold text-white"
+                        className="inline-flex items-center gap-1 rounded-2xl bg-gradient-to-r from-jevah-accent to-emerald-600 px-3.5 py-2 text-xs font-black text-white shadow-md"
                       >
-                        <RocketLaunchIcon className="h-3 w-3" />
+                        <RocketLaunchIcon className="h-3.5 w-3.5" />
                         Publish
                       </button>
                     )}
                   </div>
                 </div>
-                <div className="p-3.5">
-                  <p className="truncate font-bold text-jevah-text">{r.title}</p>
-                  <p className="mt-0.5 text-[11px] font-semibold capitalize text-jevah-text-muted">
-                    {r.type || "single"} · {r.status || "draft"} · {count}{" "}
-                    {count === 1 ? "track" : "tracks"}
-                  </p>
-                  {r.publishedAt || r.releaseDate ? (
-                    <p className="mt-0.5 text-[10px] text-jevah-text-muted">
-                      {new Date(
-                        r.publishedAt || r.releaseDate || ""
-                      ).toLocaleDateString()}
-                    </p>
-                  ) : null}
-                  <button
-                    type="button"
-                    onClick={() => void onDelete(r)}
-                    className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold text-rose-600/80 hover:text-rose-600 dark:text-rose-400"
-                  >
-                    <TrashIcon className="h-3 w-3" />
-                    Remove
-                  </button>
+
+                {/* Release Card Details */}
+                <div className="p-4 space-y-1">
+                  <p className="truncate font-extrabold text-sm text-jevah-text">{r.title}</p>
+                  <div className="flex items-center justify-between text-xs text-jevah-text-muted font-medium pt-1">
+                    <span className="capitalize font-bold text-jevah-accent">
+                      {r.type || "single"}
+                    </span>
+                    <span>{count} {count === 1 ? "track" : "tracks"}</span>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2 border-t border-jevah-border/40 text-[11px]">
+                    <span className="text-jevah-text-muted">
+                      {r.publishedAt || r.releaseDate
+                        ? new Date(r.publishedAt || r.releaseDate || "").toLocaleDateString()
+                        : "Unpublished"}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => void onDelete(r)}
+                      className="inline-flex items-center gap-1 font-bold text-rose-500/80 hover:text-rose-500 transition"
+                    >
+                      <TrashIcon className="h-3.5 w-3.5" />
+                      Delete
+                    </button>
+                  </div>
                 </div>
-              </li>
+              </div>
             );
           })}
-        </ul>
+        </div>
       )}
     </section>
   );

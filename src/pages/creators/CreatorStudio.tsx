@@ -281,7 +281,7 @@ export default function CreatorStudio() {
     .slice(0, 8);
 
   return (
-    <div className="creator-shell jevah-dashboard-shell flex min-h-dvh font-sans antialiased">
+    <div className="creator-shell jevah-dashboard-shell flex h-dvh overflow-hidden font-sans antialiased bg-jevah-dashboard-bg">
       <StudioSidebar
         view={view}
         onView={setView}
@@ -289,43 +289,49 @@ export default function CreatorStudio() {
         name={name}
       />
 
-      <div className="flex min-h-dvh min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 border-b border-jevah-border/70 bg-jevah-surface/90 backdrop-blur-xl">
-          <div className="flex items-center justify-between gap-3 px-3 py-2.5 sm:px-5">
-            <div className="flex items-center gap-2 lg:hidden">
-              <div className="inline-flex rounded-lg bg-white px-1.5 py-0.5 shadow-sm">
-                <JevahLogo width={44} height={18} />
+      <div className="flex h-dvh min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+        {/* Top Header Bar */}
+        <header className="z-30 shrink-0 border-b border-jevah-border/70 bg-jevah-surface/90 backdrop-blur-2xl">
+          <div className="flex items-center justify-between gap-4 px-4 py-3 sm:px-6">
+            <div className="flex items-center gap-3 lg:hidden">
+              <div className="inline-flex rounded-xl bg-white px-2 py-1 shadow-md">
+                <JevahLogo width={48} height={20} />
               </div>
             </div>
-            <p className="hidden truncate text-sm font-bold text-jevah-text-muted lg:block">
-              {view === "home"
-                ? "Your desk"
-                : view === "catalog"
-                  ? "Every track you own"
-                  : view === "releases"
-                    ? "How the catalog is packaged"
-                    : view === "insights"
-                      ? "Who’s listening"
-                      : "How the public sees you"}
-            </p>
-            <div className="flex items-center gap-1.5">
+
+            <div className="hidden lg:flex items-center gap-2.5">
+              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+              <p className="truncate text-xs font-black uppercase tracking-wider text-jevah-text-muted">
+                {view === "home"
+                  ? "Creator Overview & Desk"
+                  : view === "catalog"
+                    ? "Full Audio Track Catalog"
+                    : view === "releases"
+                      ? "Discography & Package Management"
+                      : view === "insights"
+                        ? "Real-Time Audience Analytics"
+                        : "Public Brand & Profile Settings"}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2.5">
               {me.capabilities.canUploadTracks && (
                 <Link
                   to="/creators/studio/upload"
-                  className="inline-flex items-center gap-1.5 rounded-full bg-jevah-accent px-3.5 py-2 text-xs font-extrabold text-white shadow-sm hover:bg-jevah-accent-hover"
+                  className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-jevah-accent to-emerald-600 px-4 py-2 text-xs font-extrabold text-white shadow-md shadow-jevah-accent/20 transition hover:scale-[1.02] active:scale-95"
                 >
-                  <ArrowUpTrayIcon className="h-3.5 w-3.5" />
-                  Upload
+                  <ArrowUpTrayIcon className="h-4 w-4" />
+                  <span className="hidden sm:inline">Upload Track</span>
                 </Link>
               )}
               <ThemeToggle variant="icon" />
               <button
                 type="button"
                 onClick={() => void logout().then(() => navigate("/creators"))}
-                className="inline-flex items-center gap-1.5 rounded-xl px-2.5 py-2 text-xs font-bold text-jevah-text-muted hover:bg-rose-500/10 hover:text-rose-600"
+                className="inline-flex items-center gap-1.5 rounded-2xl px-3 py-2 text-xs font-bold text-jevah-text-muted hover:bg-rose-500/10 hover:text-rose-600 transition"
               >
-                <ArrowRightOnRectangleIcon className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">Log out</span>
+                <ArrowRightOnRectangleIcon className="h-4 w-4" />
+                <span className="hidden sm:inline">Sign out</span>
               </button>
             </div>
           </div>
@@ -333,7 +339,7 @@ export default function CreatorStudio() {
         </header>
 
         <main
-          className={`min-w-0 flex-1 overflow-y-auto ${playing ? "pb-32" : "pb-10"}`}
+          className={`min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain studio-custom-scrollbar ${playing ? "pb-32" : "pb-12"}`}
         >
           <ErrorToaster error={error} title="Studio error" />
 
@@ -346,7 +352,7 @@ export default function CreatorStudio() {
                 status={me.status}
                 bio={
                   me.artist?.bio ||
-                  "Your catalog, audience, and public artist page — in one desk."
+                  "Your music, stream analytics, discography, and public creator brand — all in one desk."
                 }
                 trackCount={tracks.length}
                 totalPlays={totalPlays}
@@ -356,7 +362,7 @@ export default function CreatorStudio() {
                 publicPath={me.capabilities.publicProfilePath}
                 onEdit={() => setView("profile")}
               />
-              <div className="mx-auto max-w-6xl space-y-6 px-4 py-6 sm:px-6">
+              <div className="mx-auto max-w-7xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
                 <CreatorHubByStep
                   me={me}
                   tracks={tracks}
@@ -365,8 +371,8 @@ export default function CreatorStudio() {
                 {hubReady && recent.length > 0 && (
                   <StudioCatalog
                     tracks={recent}
-                    heading="Recently added"
-                    subheading="Latest uploads — open Catalog for the full library"
+                    heading="Recent Uploads"
+                    subheading="Latest uploaded audio tracks — switch to Catalog for full library"
                     compact
                     activeId={playing ? trackId(playing) : null}
                     playing={isPlaying}
@@ -388,7 +394,7 @@ export default function CreatorStudio() {
           )}
 
           {view === "catalog" && (
-            <div className="mx-auto max-w-6xl space-y-6 px-4 py-6 sm:px-6">
+            <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
               {tracks.length === 0 ? (
                 <CreatorHubByStep
                   me={me}
@@ -409,7 +415,7 @@ export default function CreatorStudio() {
           )}
 
           {view === "releases" && (
-            <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
+            <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
               {me.capabilities.canUploadTracks || me.status === "active" ? (
                 <StudioReleases />
               ) : (
@@ -423,7 +429,7 @@ export default function CreatorStudio() {
           )}
 
           {view === "insights" && (
-            <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
+            <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
               {hubReady ? (
                 <CreatorAnalyticsDashboard
                   analytics={analytics}
@@ -442,7 +448,7 @@ export default function CreatorStudio() {
           )}
 
           {view === "profile" && (
-            <div className="mx-auto max-w-3xl space-y-6 px-4 py-6 sm:px-6">
+            <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
               {me.capabilities.canEditProfile ? (
                 <StudioProfileForm
                   artist={me.artist}
@@ -456,7 +462,9 @@ export default function CreatorStudio() {
                   onUpload={() => navigate("/creators/studio/upload")}
                 />
               )}
-              <MarketingEmailPrefsCard />
+              <div className="max-w-3xl">
+                <MarketingEmailPrefsCard />
+              </div>
             </div>
           )}
         </main>
