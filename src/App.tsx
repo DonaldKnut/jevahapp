@@ -119,6 +119,14 @@ function App() {
             </Route>
 
             <Route
+              path="/creators/apply"
+              element={
+                <ProtectedRoute requireAdmin={false}>
+                  <CreatorApply />
+                </ProtectedRoute>
+              }
+            />
+            <Route
               path="/creators/studio"
               element={
                 <ProtectedRoute requireAdmin={false}>
@@ -149,14 +157,6 @@ function App() {
               <Route path="/ebooks" element={<Ebooks />} />
               <Route path="/blog" element={<Blog />} />
               <Route path="/creators" element={<CreatorsLanding />} />
-              <Route
-                path="/creators/apply"
-                element={
-                  <ProtectedRoute requireAdmin={false}>
-                    <CreatorApply />
-                  </ProtectedRoute>
-                }
-              />
               <Route path="/artists/:slug" element={<ArtistPublicProfile />} />
             </Route>
           </Routes>

@@ -143,7 +143,7 @@ export default function CreatorUpload() {
 
   return (
     <div className="creator-shell jevah-dashboard-shell min-h-dvh font-sans antialiased transition-colors duration-300">
-      <header className="sticky top-0 z-30 border-b border-jevah-border/70 bg-jevah-surface/90 backdrop-blur-xl">
+      <header className="studio-topbar sticky top-0 z-30">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3.5 sm:px-6">
           <div className="flex items-center gap-3">
             <div className="inline-flex rounded-xl bg-white px-2 py-1 shadow-sm">

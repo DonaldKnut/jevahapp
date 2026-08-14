@@ -84,6 +84,33 @@ export function fieldErrorsFromZod(
   return out;
 }
 
+const FIELD_ORDER: Array<keyof CreatorApplyInput> = [
+  "creatorTypes",
+  "displayName",
+  "genres",
+  "bio",
+  "instagram",
+  "youtube",
+  "spotify",
+  "avatarUrl",
+  "applicationNote",
+];
+
+export function firstApplyErrorKey(
+  errors: CreatorApplyFieldErrors
+): keyof CreatorApplyInput | null {
+  return FIELD_ORDER.find((k) => Boolean(errors[k])) ?? null;
+}
+
+/** Submit-time Zod gate. Never send the API payload until this succeeds. */
+export function parseCreatorApply(values: CreatorApplyInput):
+  | { ok: true; data: CreatorApplyValues }
+  | { ok: false; errors: CreatorApplyFieldErrors } {
+  const parsed = creatorApplySchema.safeParse(values);
+  if (parsed.success) return { ok: true, data: parsed.data };
+  return { ok: false, errors: fieldErrorsFromZod(parsed.error) };
+}
+
 /** Required vs optional mirrors Spotify for Artists access forms. */
 export const CREATOR_APPLY_FIELDS = {
   creatorTypes: { label: "I am a…", required: true },

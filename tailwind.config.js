@@ -13,6 +13,11 @@ export default {
         "system-ui",
         "sans-serif",
       ],
+      serif: [
+        '"Cormorant Garamond"',
+        "Georgia",
+        "serif",
+      ],
       mono: [
         "ui-monospace",
         "SFMono-Regular",

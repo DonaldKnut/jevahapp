@@ -11,9 +11,9 @@ import { ErrorToaster } from "../../components/ErrorToaster";
 import ApplyPromoAside from "./components/ApplyPromoAside";
 import ApplyFormFields from "./components/ApplyFormFields";
 import {
-  creatorApplySchema,
-  fieldErrorsFromZod,
+  firstApplyErrorKey,
   GENRE_OPTIONS,
+  parseCreatorApply,
   type CreatorApplyFieldErrors,
   type CreatorApplyInput,
 } from "./schemas/creatorApply";
@@ -110,14 +110,31 @@ export default function CreatorApply() {
     });
   }
 
+  function focusFirstError(errs: CreatorApplyFieldErrors) {
+    const key = firstApplyErrorKey(errs);
+    if (!key) return;
+    window.requestAnimationFrame(() => {
+      const el = document.querySelector<HTMLElement>(
+        `[data-apply-field="${key}"]`
+      );
+      el?.scrollIntoView({ behavior: "smooth", block: "center" });
+      const focusable = el?.matches("input, textarea, button")
+        ? el
+        : el?.querySelector<HTMLElement>("input, textarea, button");
+      focusable?.focus();
+    });
+  }
+
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
-    const parsed = creatorApplySchema.safeParse(values);
-    if (!parsed.success) {
-      const errs = fieldErrorsFromZod(parsed.error);
-      setFieldErrors(errs);
-      const first = Object.values(errs)[0];
-      setError(first || "Fix the highlighted fields.");
+    const parsed = parseCreatorApply(values);
+    if (!parsed.ok) {
+      setFieldErrors(parsed.errors);
+      const firstKey = firstApplyErrorKey(parsed.errors);
+      const first = (firstKey && parsed.errors[firstKey]) || "Fix the highlighted fields.";
+      setError(first);
+      toast.error("Check your application", first);
+      focusFirstError(parsed.errors);
       return;
     }
 

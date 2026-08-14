@@ -65,7 +65,7 @@ export default function ApplyFormFields({
 }: Props) {
   return (
     <div className="space-y-7">
-      <section>
+      <section data-apply-field="creatorTypes">
         <FieldLabel field="creatorTypes" />
         <div className="grid gap-2 sm:grid-cols-3">
           {CREATOR_TYPE_OPTIONS.map((t) => {
@@ -98,7 +98,7 @@ export default function ApplyFormFields({
         <FieldError message={errors.creatorTypes} />
       </section>
 
-      <label className="block">
+      <label className="block" data-apply-field="displayName">
         <FieldLabel field="displayName" />
         <input
           value={values.displayName}
@@ -112,7 +112,7 @@ export default function ApplyFormFields({
         <FieldError message={errors.displayName} />
       </label>
 
-      <section>
+      <section data-apply-field="genres">
         <FieldLabel field="genres" />
         <div className="flex flex-wrap gap-2">
           {GENRE_OPTIONS.map((g) => {
@@ -138,7 +138,7 @@ export default function ApplyFormFields({
         <FieldError message={errors.genres} />
       </section>
 
-      <label className="block">
+      <label className="block" data-apply-field="bio">
         <FieldLabel field="bio" />
         <textarea
           rows={4}
@@ -170,7 +170,7 @@ export default function ApplyFormFields({
           Artists social links.
         </p>
         <div className="grid gap-3 sm:grid-cols-3">
-          <label className="block">
+          <label className="block" data-apply-field="instagram">
             <span className="mb-1.5 block text-xs font-medium text-jevah-text-muted">
               Instagram
             </span>
@@ -184,7 +184,7 @@ export default function ApplyFormFields({
             />
             <FieldError message={errors.instagram} />
           </label>
-          <label className="block">
+          <label className="block" data-apply-field="youtube">
             <span className="mb-1.5 block text-xs font-medium text-jevah-text-muted">
               YouTube
             </span>
@@ -198,7 +198,7 @@ export default function ApplyFormFields({
             />
             <FieldError message={errors.youtube} />
           </label>
-          <label className="block">
+          <label className="block" data-apply-field="spotify">
             <span className="mb-1.5 block text-xs font-medium text-jevah-text-muted">
               Spotify
             </span>
@@ -215,7 +215,7 @@ export default function ApplyFormFields({
         </div>
       </section>
 
-      <label className="block">
+      <label className="block" data-apply-field="avatarUrl">
         <FieldLabel field="avatarUrl" />
         <input
           value={values.avatarUrl}
@@ -228,7 +228,7 @@ export default function ApplyFormFields({
         <FieldError message={errors.avatarUrl} />
       </label>
 
-      <label className="block">
+      <label className="block" data-apply-field="applicationNote">
         <FieldLabel field="applicationNote" />
         <textarea
           rows={3}

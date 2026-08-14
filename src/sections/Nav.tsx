@@ -3,6 +3,8 @@ import { Link, NavLink, useLocation } from "react-router-dom";
 import JevahLogo from "../components/JevahLogo";
 import ThemeToggle from "../components/ThemeToggle";
 import { useScroll } from "../hooks/useScroll";
+import { useAuth } from "../context/AuthContext";
+import { sessionDashboardPath } from "../lib/sessionHome";
 import {
   ChevronDownIcon,
   MusicalNoteIcon,
@@ -93,6 +95,11 @@ export default function Nav() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [activeMega, setActiveMega] = useState<"music" | "about" | null>(null);
   const location = useLocation();
+  const { isAuthenticated, isAdmin, loading } = useAuth();
+  const dashboardPath =
+    !loading
+      ? sessionDashboardPath({ isAuthenticated, isAdmin })
+      : null;
 
   // Close menus on route change
   useEffect(() => {
@@ -320,18 +327,29 @@ export default function Nav() {
           {/* Desktop Right Actions */}
           <div className="z-10 flex items-center gap-2 sm:gap-3">
             <ThemeToggle variant="icon" />
-            <Link
-              to="/creators/login"
-              className="hidden rounded-full border border-[var(--jevah-auth-creator-accent)]/40 px-4 py-2 text-sm font-bold text-[var(--jevah-auth-creator-accent)] transition hover:bg-[var(--jevah-auth-creator-accent)]/10 active:scale-95 md:inline-flex"
-            >
-              Creator
-            </Link>
-            <Link
-              to="/login"
-              className="hidden rounded-full border border-jevah-accent/30 px-4 py-2 text-sm font-bold text-jevah-accent transition hover:border-jevah-accent hover:bg-jevah-accent/5 active:scale-95 md:inline-flex"
-            >
-              Admin
-            </Link>
+            {dashboardPath ? (
+              <Link
+                to={dashboardPath}
+                className="hidden rounded-full bg-[#256E63] px-5 py-2.5 text-sm font-bold text-white shadow-sm shadow-[#256E63]/25 transition hover:bg-[#1e5a52] active:scale-95 md:inline-flex"
+              >
+                Dashboard
+              </Link>
+            ) : !loading ? (
+              <>
+                <Link
+                  to="/creators/login"
+                  className="hidden rounded-full border border-[var(--jevah-auth-creator-accent)]/40 px-4 py-2 text-sm font-bold text-[var(--jevah-auth-creator-accent)] transition hover:bg-[var(--jevah-auth-creator-accent)]/10 active:scale-95 md:inline-flex"
+                >
+                  Creator
+                </Link>
+                <Link
+                  to="/login"
+                  className="hidden rounded-full border border-jevah-accent/30 px-4 py-2 text-sm font-bold text-jevah-accent transition hover:border-jevah-accent hover:bg-jevah-accent/5 active:scale-95 md:inline-flex"
+                >
+                  Admin
+                </Link>
+              </>
+            ) : null}
             <a
               href="/#download"
               className="hidden rounded-full bg-[#256E63] px-6 py-2.5 text-sm font-bold text-white shadow-sm shadow-[#256E63]/25 transition hover:bg-[#1e5a52] hover:shadow-md active:scale-95 sm:inline-flex"
@@ -462,22 +480,32 @@ export default function Nav() {
 
         {/* Action Buttons */}
         <div className="mt-5 space-y-2.5 border-t border-jevah-border pt-4">
-          <div className="grid grid-cols-2 gap-2">
+          {dashboardPath ? (
             <Link
-              to="/login"
+              to={dashboardPath}
               onClick={() => setMobileOpen(false)}
-              className="flex items-center justify-center rounded-2xl border-2 border-jevah-accent py-3 text-sm font-bold text-jevah-accent transition hover:bg-jevah-accent/5 active:scale-95"
+              className="flex w-full items-center justify-center rounded-2xl bg-jevah-accent py-3.5 text-base font-bold text-white shadow-lg shadow-jevah-accent/25 transition hover:bg-jevah-accent-hover active:scale-95"
             >
-              Admin
+              Dashboard
             </Link>
-            <Link
-              to="/creators/login"
-              onClick={() => setMobileOpen(false)}
-              className="flex items-center justify-center rounded-2xl border-2 border-[var(--jevah-auth-creator-accent)] py-3 text-sm font-bold text-[var(--jevah-auth-creator-accent)] transition hover:bg-[var(--jevah-auth-creator-accent)]/10 active:scale-95"
-            >
-              Creator
-            </Link>
-          </div>
+          ) : !loading ? (
+            <div className="grid grid-cols-2 gap-2">
+              <Link
+                to="/login"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center justify-center rounded-2xl border-2 border-jevah-accent py-3 text-sm font-bold text-jevah-accent transition hover:bg-jevah-accent/5 active:scale-95"
+              >
+                Admin
+              </Link>
+              <Link
+                to="/creators/login"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center justify-center rounded-2xl border-2 border-[var(--jevah-auth-creator-accent)] py-3 text-sm font-bold text-[var(--jevah-auth-creator-accent)] transition hover:bg-[var(--jevah-auth-creator-accent)]/10 active:scale-95"
+              >
+                Creator
+              </Link>
+            </div>
+          ) : null}
           <a
             href="/#download"
             onClick={() => setMobileOpen(false)}

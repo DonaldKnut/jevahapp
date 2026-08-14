@@ -291,7 +291,7 @@ export default function CreatorStudio() {
 
       <div className="flex h-dvh min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         {/* Top Header Bar */}
-        <header className="z-30 shrink-0 border-b border-jevah-border/70 bg-jevah-surface/90 backdrop-blur-2xl">
+        <header className="studio-topbar z-30 shrink-0">
           <div className="flex items-center justify-between gap-4 px-4 py-3 sm:px-6">
             <div className="flex items-center gap-3 lg:hidden">
               <div className="inline-flex rounded-xl bg-white px-2 py-1 shadow-md">
