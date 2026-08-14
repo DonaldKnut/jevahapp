@@ -1,5 +1,13 @@
 /** Shared media / track catalog shapes (admin + creators + public listen). */
 
+export type TrackReleaseRef = {
+  id: string;
+  title: string;
+  coverUrl?: string | null;
+  type?: string;
+  slug?: string;
+};
+
 export type TrackCard = {
   id: string;
   _id?: string;
@@ -24,6 +32,22 @@ export type TrackCard = {
   playCount?: number;
   createdAt?: string;
   updatedAt?: string;
+  /** Nested media (canonical Track) — prefer normalizeTrackCard before play */
+  audio?: {
+    playbackUrl?: string | null;
+    fileUrl?: string | null;
+    url?: string | null;
+    durationSec?: number | null;
+  };
+  artwork?: {
+    url?: string | null;
+    coverUrl?: string | null;
+    thumbnailUrl?: string | null;
+  };
+  release?: TrackReleaseRef | null;
+  releaseId?: string | null;
+  trackNumber?: number | null;
+  discNumber?: number | null;
 };
 
 export type CopyrightFreeSong = {

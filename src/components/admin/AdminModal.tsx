@@ -17,8 +17,8 @@ type AdminModalProps = {
   footer?: ReactNode;
   /** Optional header illustration / icon chip */
   icon?: ReactNode;
-  /** Wider sheet for upload forms */
-  size?: "md" | "lg";
+  /** Wider sheet for upload / inspect forms */
+  size?: "md" | "lg" | "xl";
   /** Prevent close while submitting */
   busy?: boolean;
 };
@@ -82,14 +82,14 @@ export default function AdminModal({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[100] flex items-end justify-center p-0 sm:items-center sm:p-4"
+      className="fixed inset-0 z-[110] flex items-end justify-center p-0 sm:items-center sm:p-4"
       role="presentation"
     >
       <button
         type="button"
         aria-label="Close dialog"
         className={cn(
-          "absolute inset-0 bg-black/75 backdrop-blur-md transition-opacity duration-300 ease-out",
+          "absolute inset-0 bg-[var(--jevah-overlay)] backdrop-blur-md transition-opacity duration-300 ease-out",
           visible ? "opacity-100" : "opacity-0"
         )}
         onClick={requestClose}
@@ -101,7 +101,11 @@ export default function AdminModal({
         aria-labelledby={titleId}
         className={cn(
           "relative z-10 flex max-h-[min(92dvh,900px)] w-full flex-col overflow-hidden rounded-t-3xl border border-jevah-border/80 bg-jevah-surface/95 shadow-[0_25px_70px_rgba(0,0,0,0.35)] backdrop-blur-2xl transition-all duration-300 ease-out sm:rounded-3xl",
-          size === "lg" ? "max-w-none sm:max-w-xl" : "max-w-none sm:max-w-md",
+          size === "xl"
+            ? "max-w-none sm:max-w-2xl"
+            : size === "lg"
+              ? "max-w-none sm:max-w-xl"
+              : "max-w-none sm:max-w-md",
           visible
             ? "translate-y-0 scale-100 opacity-100"
             : "translate-y-8 scale-[0.96] opacity-0 sm:translate-y-4"

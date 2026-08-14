@@ -279,14 +279,14 @@ export default function Overview() {
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-sm font-extrabold text-amber-800 dark:text-amber-200">
-                  Send artist onboard emails
+                  Artists still need a welcome email
                 </p>
                 <p className="mt-0.5 text-xs text-amber-700/80 dark:text-amber-300/80">
                   {missingOnboard > 0
-                    ? `${missingOnboard} active artist${missingOnboard === 1 ? "" : "s"} missing onboard email.`
-                    : "Dashboard reminders need attention."}
+                    ? `${missingOnboard} approved artist${missingOnboard === 1 ? "" : "s"} haven’t gotten the Studio invite yet.`
+                    : "A few creator reminders need a look."}
                   {pendingApps > 0
-                    ? ` · ${pendingApps} pending creator application${pendingApps === 1 ? "" : "s"}.`
+                    ? ` · ${pendingApps} application${pendingApps === 1 ? "" : "s"} waiting for review.`
                     : ""}
                 </p>
               </div>
@@ -294,7 +294,7 @@ export default function Overview() {
                 to="/admin/email/artist-onboard"
                 className="inline-flex shrink-0 items-center justify-center rounded-xl bg-amber-500 px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-amber-600"
               >
-                Open artist onboard
+                Send welcome emails
               </Link>
             </div>
           </div>

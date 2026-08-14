@@ -207,8 +207,8 @@ export default function AdminShell() {
                 cn(
                   "group flex items-center rounded-2xl text-sm font-semibold transition-all duration-200",
                   compact
-                    ? "w-full justify-center px-2 py-2.5"
-                    : "gap-3 px-3.5 py-2.5",
+                    ? "w-full justify-center px-2 py-3"
+                    : "gap-3 px-3.5 py-3",
                   isActive
                     ? "admin-nav-active bg-jevah-accent text-white shadow-md shadow-jevah-accent/30"
                     : "text-white/70 hover:bg-white/10 hover:text-white"
@@ -228,7 +228,7 @@ export default function AdminShell() {
                     <Icon className="h-4 w-4" />
                   </span>
                   {!compact && (
-                    <span className="flex-1 truncate tracking-tight">{label}</span>
+                    <span className="flex-1 leading-snug tracking-tight">{label}</span>
                   )}
                 </>
               )}
@@ -246,7 +246,7 @@ export default function AdminShell() {
         <aside
           className={cn(
             "jevah-dashboard-sidebar sticky top-0 hidden h-dvh shrink-0 flex-col border-r border-white/10 text-white backdrop-blur-2xl transition-[width] duration-300 ease-out lg:flex",
-            collapsed ? "w-[76px]" : "w-[240px] xl:w-[260px]"
+            collapsed ? "w-[76px]" : "w-[268px] xl:w-[292px]"
           )}
         >
           {/* Brand header with logo */}
@@ -258,13 +258,13 @@ export default function AdminShell() {
           >
             <div
               className={cn(
-                "inline-flex rounded-2xl bg-white/95 shadow-md shadow-black/20 ring-1 ring-white/20",
-                collapsed ? "px-1.5 py-1" : "px-3 py-1.5"
+                "inline-flex rounded-xl bg-white/95 shadow-md shadow-black/20 ring-1 ring-white/20",
+                collapsed ? "px-1 py-0.5" : "px-2 py-1"
               )}
             >
               <JevahLogo
-                width={collapsed ? 48 : 84}
-                height={collapsed ? 20 : 34}
+                width={collapsed ? 36 : 56}
+                height={collapsed ? 16 : 24}
               />
             </div>
             {!collapsed && (
@@ -473,7 +473,7 @@ export default function AdminShell() {
               </button>
 
               <div className="min-w-0 flex-1 text-center">
-                <JevahLogo width={68} height={28} />
+                <JevahLogo width={40} height={17} />
               </div>
 
               <div className="flex items-center gap-1.5">
@@ -512,7 +512,7 @@ export default function AdminShell() {
               <div className="jevah-dashboard-sidebar absolute inset-y-0 left-0 flex w-[min(100%,22rem)] flex-col pb-[env(safe-area-inset-bottom)] admin-drawer-in">
                 <div className="flex items-center justify-between px-3 py-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
                   <div className="inline-flex rounded-xl bg-white px-2 py-1 shadow-sm">
-                    <JevahLogo width={72} height={30} />
+                    <JevahLogo width={48} height={20} />
                   </div>
                   <button
                     type="button"

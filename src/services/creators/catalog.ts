@@ -1,6 +1,10 @@
 import { apiRequest } from "../../lib/api";
 import { listFromUnknown, unwrapData } from "../../lib/api/unwrap";
 import { entityId } from "../../lib/api/unwrap";
+import {
+  normalizeTrackCard,
+  normalizeTrackList,
+} from "../../lib/mediaParts/normalizeTrack";
 import type { ArtistCard } from "../../types/creator";
 import type { TrackCard } from "../../types/media";
 
@@ -13,7 +17,9 @@ export async function fetchPublicArtist(slug: string) {
 export async function fetchPublicArtistTracks(slug: string) {
   const res = await apiRequest(`/artists/${slug}/tracks`, { auth: false });
   const data = unwrapData(res);
-  return listFromUnknown<TrackCard>(data, ["tracks", "items", "data"]);
+  return normalizeTrackList(
+    listFromUnknown<TrackCard>(data, ["tracks", "items", "data"])
+  );
 }
 
 export async function fetchMusicTracks(params: {
@@ -22,6 +28,7 @@ export async function fetchMusicTracks(params: {
   genre?: string;
   page?: number;
   limit?: number;
+  releaseId?: string;
 }) {
   const q = new URLSearchParams();
   if (params.lane) q.set("lane", params.lane);
@@ -29,11 +36,14 @@ export async function fetchMusicTracks(params: {
   if (params.genre) q.set("genre", params.genre);
   if (params.page) q.set("page", String(params.page));
   if (params.limit) q.set("limit", String(params.limit));
+  if (params.releaseId) q.set("releaseId", params.releaseId);
   const res = await apiRequest(`/music/tracks?${q.toString()}`, {
     auth: false,
   });
   const data = unwrapData(res);
-  return listFromUnknown<TrackCard>(data, ["tracks", "items", "data"]);
+  return normalizeTrackList(
+    listFromUnknown<TrackCard>(data, ["tracks", "items", "data"])
+  );
 }
 
 export async function fetchCopyrightFreeTracks() {
@@ -51,7 +61,7 @@ export async function fetchCopyrightFreeTracks() {
       fileUrl?: string;
       duration?: number | string;
     };
-    return {
+    return normalizeTrackCard({
       id: entityId(row),
       title: row.title || "Untitled",
       artistName: row.artistName || row.singer,
@@ -68,6 +78,8 @@ export async function fetchCopyrightFreeTracks() {
       lane: "curated",
       processingStatus: "ready",
       playCount: row.playCount,
-    } as TrackCard;
+      audio: row.audio,
+      artwork: row.artwork,
+    });
   });
 }

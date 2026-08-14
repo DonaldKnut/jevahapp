@@ -29,6 +29,7 @@ import ChurchRecipientPicker, {
   type ChurchOption,
 } from "./components/ChurchRecipientPicker";
 import EmailComposeTabs from "./components/EmailComposeTabs";
+import EmailRichEditor from "../../components/admin/EmailRichEditor";
 
 export default function ComposeEmailPage() {
   const { toast } = useFeedback();
@@ -55,6 +56,7 @@ export default function ComposeEmailPage() {
 
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
+  const [html, setHtml] = useState("");
   const [dryRun, setDryRun] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -296,7 +298,8 @@ export default function ComposeEmailPage() {
           userIds: userIds.length ? userIds : undefined,
           emails: manualEmailList.length ? manualEmailList : undefined,
           subject,
-          message,
+          message: message || undefined,
+          html: html || undefined,
           dryRun,
         });
         toast.success(
@@ -311,7 +314,8 @@ export default function ComposeEmailPage() {
         await sendAdminEmail({
           churchIds: ids,
           subject,
-          message,
+          message: message || undefined,
+          html: html || undefined,
           dryRun,
         });
         toast.success(
@@ -322,6 +326,7 @@ export default function ComposeEmailPage() {
       if (!dryRun) {
         setSubject("");
         setMessage("");
+        setHtml("");
         setManualEmails("");
         setSelectedUserIds(new Set());
         setChurchIds(new Set());
@@ -460,7 +465,7 @@ export default function ComposeEmailPage() {
               />
             )}
 
-            <Field label="Subject Line">
+            <Field label="Subject">
               <input
                 required
                 value={subject}
@@ -470,14 +475,18 @@ export default function ComposeEmailPage() {
               />
             </Field>
 
-            <Field label="Email Body">
-              <textarea
-                required
-                rows={8}
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                className={`${inputClass} font-mono text-sm`}
-                placeholder="Write your full email message here..."
+            <Field
+              label="Message"
+              helperText="Use the toolbar for bold, lists, links, and headings."
+            >
+              <EmailRichEditor
+                value={html}
+                disabled={busy}
+                placeholder="Write your email here…"
+                onChange={(nextHtml, plain) => {
+                  setHtml(nextHtml);
+                  setMessage(plain);
+                }}
               />
             </Field>
 

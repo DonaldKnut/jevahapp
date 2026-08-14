@@ -155,8 +155,8 @@ export default function ArtistsPage() {
         onboardMessage: onboardMessage.trim() || undefined,
       },
       sendOnboardEmail
-        ? "Activated — onboard email queued"
-        : "Activated — send onboard email from Compose when ready"
+        ? "Activated — welcome email queued"
+        : "Activated — you can welcome them later from email"
     );
     setActivateTarget(null);
     setSendOnboardEmail(true);
@@ -419,9 +419,17 @@ export default function ArtistsPage() {
         <form
           id="artist-stub-form"
           onSubmit={(e) => void onCreate(e)}
-          className="space-y-4"
+          className="relative space-y-4 overflow-hidden rounded-2xl border border-jevah-accent/25 bg-gradient-to-br from-jevah-accent/20 via-jevah-surface to-emerald-500/10 p-4 shadow-inner sm:p-5"
         >
-          <div className="flex items-center gap-3 rounded-2xl border border-jevah-accent/30 bg-gradient-to-br from-jevah-accent/15 via-jevah-surface to-jevah-surface p-4 shadow-sm">
+          <div
+            className="pointer-events-none absolute inset-0 opacity-40"
+            aria-hidden
+            style={{
+              background:
+                "radial-gradient(ellipse 80% 60% at 0% 0%, rgba(37,110,99,0.28), transparent 55%), radial-gradient(ellipse 50% 40% at 100% 100%, rgba(78,205,196,0.18), transparent 50%)",
+            }}
+          />
+          <div className="relative z-10 flex items-start gap-3 rounded-2xl border border-white/40 bg-jevah-surface/80 p-4 shadow-sm backdrop-blur-md dark:border-white/10">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-jevah-accent/20 text-jevah-accent ring-1 ring-jevah-accent/30">
               <SparklesIcon className="h-5 w-5" />
             </div>
@@ -429,25 +437,27 @@ export default function ArtistsPage() {
               Registers an artist profile stub in outreach status. They can link this record upon sign-up.
             </p>
           </div>
-          <Field label="Stage / Artist Display Name *">
-            <input
-              required
-              autoFocus
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className={inputClass}
-              placeholder="e.g. Grace Worship Collective"
-            />
-          </Field>
-          <Field label="Contact Email Address">
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className={inputClass}
-              placeholder="artist@ministry.org"
-            />
-          </Field>
+          <div className="relative z-10 space-y-4">
+            <Field label="Stage / Artist Display Name *">
+              <input
+                required
+                autoFocus
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className={inputClass}
+                placeholder="e.g. Grace Worship Collective"
+              />
+            </Field>
+            <Field label="Contact Email Address">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className={inputClass}
+                placeholder="artist@ministry.org"
+              />
+            </Field>
+          </div>
         </form>
       </AdminModal>
 
@@ -496,34 +506,34 @@ export default function ArtistsPage() {
             />
             <span>
               <span className="block text-sm font-bold text-jevah-text">
-                Send artist onboard email
+                Email them a welcome invite
               </span>
               <span className="mt-0.5 block text-xs text-jevah-text-muted">
-                Ops invite for Music → Artists upload. Not a marketing email.
+                Tells them Studio is ready. Not a promo email.
               </span>
             </span>
           </label>
           {sendOnboardEmail && (
-            <Field label="Optional note">
+            <Field label="Optional note in the email">
               <textarea
                 rows={3}
                 value={onboardMessage}
                 onChange={(e) => setOnboardMessage(e.target.value)}
                 className={inputClass}
-                placeholder="Congrats — you're live!"
+                placeholder="Congrats — you're live. Upload your first track in Studio."
               />
             </Field>
           )}
           {!sendOnboardEmail && (
             <p className="text-xs text-amber-700 dark:text-amber-300">
-              Without this, use{" "}
+              You can still send a welcome later from{" "}
               <a
                 href="/admin/email/artist-onboard"
                 className="font-bold underline"
               >
-                Artist onboard compose
-              </a>{" "}
-              later (dashboard will remind you).
+                Welcome artists
+              </a>
+              . The dashboard will remind you.
             </p>
           )}
         </div>

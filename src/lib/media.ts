@@ -8,6 +8,7 @@ export {
   trackPlaybackUrl,
   trackArtist,
   trackDuration,
+  trackThumb,
   trackProcessing,
   formatTrackDuration,
   copyrightFreeToTrack,
@@ -24,10 +25,22 @@ export {
   signedExpiryLabel,
 } from "./mediaParts/preview";
 export {
+  TRACK_GENRES,
+  TRACK_GENRE_LABELS,
+  genreLabel,
+  type TrackGenre,
+} from "./mediaParts/genres";
+export {
+  normalizeTrackCard,
+  normalizeTrackList,
+  normalizeCopyrightFree,
+} from "./mediaParts/normalizeTrack";
+export {
   AUDIO_MAX_BYTES,
   COVER_MAX_BYTES,
   type TrackCard,
   type CopyrightFreeSong,
   type TrackUploadIntent,
   type PresignSlot,
+  type TrackReleaseRef,
 } from "../types/media";

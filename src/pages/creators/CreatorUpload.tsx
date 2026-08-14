@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   createCreatorUploadIntent,
   fetchCreatorMe,
@@ -11,6 +11,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useFeedback } from "../../components/admin/Feedback";
 import { inputClass } from "../../components/ui/forms";
 import { usePresignedTrackUpload } from "../../hooks/usePresignedTrackUpload";
+import { TRACK_GENRES, genreLabel } from "../../lib/media";
 import JevahLogo from "../../components/JevahLogo";
 import {
   ArrowLeftIcon,
@@ -24,13 +25,15 @@ import UploadSubmitPanel from "./components/UploadSubmitPanel";
 export default function CreatorUpload() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const releaseId = params.get("releaseId") || undefined;
   const { toast } = useFeedback();
   const fileRef = useRef<HTMLInputElement>(null);
   const coverRef = useRef<HTMLInputElement>(null);
 
   const [me, setMe] = useState<CreatorMe | null>(null);
   const [title, setTitle] = useState("");
-  const [genre, setGenre] = useState("gospel");
+  const [genre, setGenre] = useState<string>("gospel");
   const [category, setCategory] = useState("worship");
   const [language, setLanguage] = useState("en");
   const [publish, setPublish] = useState(true);
@@ -112,6 +115,7 @@ export default function CreatorUpload() {
         audioFile,
         coverFile,
         publish,
+        extraIntent: releaseId ? { releaseId } : undefined,
       });
       toast.success(publish ? "Published" : "Saved as draft");
       navigate("/creators/studio", { replace: true });
@@ -177,8 +181,9 @@ export default function CreatorUpload() {
                     Upload a Track
                   </h1>
                   <p className="mt-0.5 text-xs font-medium text-jevah-text-muted">
-                    Fill in track details, drag &amp; drop audio/cover files,
-                    then publish to your catalog.
+                    {releaseId
+                      ? "This track will be attached to your selected release (Artists shelf only)."
+                      : "Fill in track details, drag & drop audio/cover files, then publish to your catalog."}
                   </p>
                 </div>
               </div>
@@ -210,12 +215,17 @@ export default function CreatorUpload() {
                       <span className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-jevah-text-muted">
                         Genre
                       </span>
-                      <input
+                      <select
                         value={genre}
                         onChange={(e) => setGenre(e.target.value)}
-                        placeholder="gospel"
                         className={inputClass}
-                      />
+                      >
+                        {TRACK_GENRES.map((g) => (
+                          <option key={g} value={g}>
+                            {genreLabel(g)}
+                          </option>
+                        ))}
+                      </select>
                     </label>
                     <label className="block">
                       <span className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-jevah-text-muted">

@@ -1,5 +1,9 @@
 import { apiRequest } from "../../lib/api";
 import { listFromUnknown, unwrapData } from "../../lib/api/unwrap";
+import {
+  normalizeTrackCard,
+  normalizeTrackList,
+} from "../../lib/mediaParts/normalizeTrack";
 import type { TrackCard, TrackUploadIntent } from "../../types/media";
 
 export async function listMyCreatorTracks(params?: {
@@ -11,7 +15,9 @@ export async function listMyCreatorTracks(params?: {
   if (params?.limit) q.set("limit", String(params.limit));
   const res = await apiRequest(`/creators/me/tracks?${q.toString()}`);
   const data = unwrapData(res);
-  return listFromUnknown<TrackCard>(data, ["tracks", "items", "data"]);
+  return normalizeTrackList(
+    listFromUnknown<TrackCard>(data, ["tracks", "items", "data"])
+  );
 }
 
 export async function createCreatorUploadIntent(body: {
@@ -26,6 +32,8 @@ export async function createCreatorUploadIntent(body: {
   coverContentType?: string;
   coverFileName?: string;
   coverFileSizeBytes?: number;
+  releaseId?: string;
+  trackNumber?: number;
 }): Promise<TrackUploadIntent> {
   return unwrapData(
     await apiRequest<{ data?: TrackUploadIntent }>(
@@ -39,11 +47,13 @@ export async function finalizeCreatorTrack(
   trackId: string,
   body: { publish?: boolean } = { publish: true }
 ) {
-  return unwrapData(
-    await apiRequest(`/creators/tracks/${trackId}/finalize`, {
-      method: "POST",
-      body,
-    })
+  return normalizeTrackCard(
+    unwrapData(
+      await apiRequest(`/creators/tracks/${trackId}/finalize`, {
+        method: "POST",
+        body,
+      })
+    )
   );
 }
 

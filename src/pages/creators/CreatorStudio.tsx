@@ -2,6 +2,7 @@ import { FormEvent, useCallback, useEffect, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import {
   deleteCreatorTrack,
+  fetchCreatorAnalytics,
   fetchCreatorMe,
   listMyCreatorTracks,
   patchCreatorTrack,
@@ -10,6 +11,7 @@ import {
   trackPlaybackUrl,
   trackProcessing,
   updateCreatorProfile,
+  type CreatorAnalytics,
   type CreatorMe,
   type TrackCard,
 } from "../../services/creatorsApi";
@@ -19,6 +21,8 @@ import { useFeedback } from "../../components/admin/Feedback";
 import { ErrorToaster } from "../../components/ErrorToaster";
 import { inputClass } from "../../components/ui/forms";
 import CreatorHubByStep from "./components/CreatorHubByStep";
+import CreatorAnalyticsDashboard from "./components/CreatorAnalyticsDashboard";
+import StudioReleases from "./components/StudioReleases";
 import MarketingEmailPrefsCard from "../../components/MarketingEmailPrefsCard";
 import ThemeToggle from "../../components/ThemeToggle";
 import AdminModal from "../../components/admin/AdminModal";
@@ -42,6 +46,8 @@ export default function CreatorStudio() {
 
   const [me, setMe] = useState<CreatorMe | null>(null);
   const [tracks, setTracks] = useState<TrackCard[]>([]);
+  const [analytics, setAnalytics] = useState<CreatorAnalytics | null>(null);
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -58,9 +64,10 @@ export default function CreatorStudio() {
     try {
       const data = await fetchCreatorMe();
       let next = data;
+      let list: TrackCard[] = [];
       if (data.capabilities.showCreatorHub || data.status === "active") {
         try {
-          const list = await listMyCreatorTracks({ limit: 50 });
+          list = await listMyCreatorTracks({ limit: 50 });
           setTracks(list);
           if (
             data.capabilities.nextStep === "manage_catalog" &&
@@ -78,7 +85,20 @@ export default function CreatorStudio() {
           }
         } catch {
           setTracks([]);
+          list = [];
         }
+
+        setAnalyticsLoading(true);
+        try {
+          setAnalytics(await fetchCreatorAnalytics(list));
+        } catch {
+          setAnalytics(null);
+        } finally {
+          setAnalyticsLoading(false);
+        }
+      } else {
+        setTracks([]);
+        setAnalytics(null);
       }
       setMe(next);
       setProfileName(next.artist?.displayName || next.artist?.name || "");
@@ -104,6 +124,7 @@ export default function CreatorStudio() {
               "Share your music on Jevah — apply to become a creator.",
           },
         });
+        setAnalytics(null);
       } else {
         setError(
           err instanceof ApiError ? err.message : "Failed to load creator hub."
@@ -327,6 +348,17 @@ export default function CreatorStudio() {
           tracks={tracks}
           onUpload={() => navigate("/creators/studio/upload")}
         />
+
+        {(me.capabilities.showCreatorHub || me.status === "active") && (
+          <CreatorAnalyticsDashboard
+            analytics={analytics}
+            loading={analyticsLoading}
+          />
+        )}
+
+        {(me.capabilities.canUploadTracks || me.status === "active") && (
+          <StudioReleases />
+        )}
 
         <MarketingEmailPrefsCard />
 

@@ -5,9 +5,17 @@ export function trackId(t: Pick<TrackCard, "id" | "_id"> | null | undefined) {
   return entityId(t);
 }
 
-/** Player URL — prefer playback, then file, then audio aliases. */
+/** Player URL — prefer flat fields, then nested audio.* aliases. */
 export function trackPlaybackUrl(t: TrackCard) {
-  return t.playbackUrl || t.fileUrl || t.audioUrl || null;
+  return (
+    t.playbackUrl ||
+    t.fileUrl ||
+    t.audioUrl ||
+    t.audio?.playbackUrl ||
+    t.audio?.fileUrl ||
+    t.audio?.url ||
+    null
+  );
 }
 
 export function trackArtist(t: TrackCard) {
@@ -15,10 +23,21 @@ export function trackArtist(t: TrackCard) {
 }
 
 export function trackDuration(t: TrackCard) {
-  const d = t.durationSec ?? t.duration;
+  const d = t.durationSec ?? t.audio?.durationSec ?? t.duration;
   if (d == null || d === "") return null;
   const n = typeof d === "string" ? Number(d) : d;
   return Number.isFinite(n) ? n : null;
+}
+
+export function trackThumb(t: TrackCard) {
+  return (
+    t.thumbnailUrl ||
+    t.artwork?.url ||
+    t.artwork?.coverUrl ||
+    t.artwork?.thumbnailUrl ||
+    t.release?.coverUrl ||
+    null
+  );
 }
 
 export function trackProcessing(t: TrackCard) {

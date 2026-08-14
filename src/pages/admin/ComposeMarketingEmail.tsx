@@ -22,6 +22,7 @@ import {
   PaperAirplaneIcon,
 } from "@heroicons/react/24/outline";
 import EmailComposeTabs from "./components/EmailComposeTabs";
+import EmailRichEditor from "../../components/admin/EmailRichEditor";
 
 const ROLE_OPTIONS = [
   "learner",
@@ -41,6 +42,7 @@ export default function ComposeMarketingEmailPage() {
   const [emailsRaw, setEmailsRaw] = useState("");
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
+  const [html, setHtml] = useState("");
   const [dryRun, setDryRun] = useState(true);
   const [preview, setPreview] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
@@ -127,7 +129,8 @@ export default function ComposeMarketingEmailPage() {
       }
       await sendMarketingEmail({
         subject: subject.trim(),
-        message: message.trim(),
+        message: message.trim() || undefined,
+        html: html || undefined,
         segment,
         roles:
           segment === "role" || roles.length
@@ -147,6 +150,7 @@ export default function ComposeMarketingEmailPage() {
       if (!dryRun) {
         setSubject("");
         setMessage("");
+        setHtml("");
       }
     } catch (err) {
       const msg =
@@ -187,8 +191,8 @@ export default function ComposeMarketingEmailPage() {
             {error && <Alert tone="error">{error}</Alert>}
 
             <Alert tone="warning">
-              Do not use this for password resets, security alerts, or artist
-              onboard invites — use Ops or Artist onboard instead.
+              Don’t use this for password resets or artist welcome invites —
+              use Direct email or Welcome artists instead.
             </Alert>
 
             <Field label="Segment">
@@ -274,14 +278,18 @@ export default function ComposeMarketingEmailPage() {
               />
             </Field>
 
-            <Field label="Message (plain text)">
-              <textarea
-                required
-                rows={8}
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                className={`${inputClass} font-mono text-sm`}
-                placeholder="Write the marketing body…"
+            <Field
+              label="Message"
+              helperText="Use the toolbar for bold, lists, links, and headings. Unsubscribe footer is added by the backend."
+            >
+              <EmailRichEditor
+                value={html}
+                disabled={busy}
+                placeholder="Write your promo email here…"
+                onChange={(nextHtml, plain) => {
+                  setHtml(nextHtml);
+                  setMessage(plain);
+                }}
               />
             </Field>
 

@@ -343,7 +343,7 @@ export function KpiLink({
     <Link
       to={to}
       className={cn(
-        "group relative overflow-hidden rounded-3xl border bg-gradient-to-br p-5 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 active:scale-[0.98]",
+        "group relative min-h-[148px] overflow-hidden rounded-3xl border bg-gradient-to-br p-6 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 active:scale-[0.98]",
         t.card,
         t.hover
       )}
@@ -381,11 +381,11 @@ export function KpiLink({
         <p className={cn("text-3xl font-black tracking-tight sm:text-4xl", t.value)}>
           {typeof value === "number" ? value.toLocaleString() : value}
         </p>
-        <p className="mt-1 text-xs font-bold uppercase tracking-wider text-jevah-text-muted">
+        <p className="mt-1.5 text-[13px] font-bold leading-snug tracking-wide text-jevah-text">
           {label}
         </p>
         {desc && (
-          <p className="mt-0.5 text-[11px] font-medium text-jevah-text-muted/80">{desc}</p>
+          <p className="mt-1 text-xs font-medium leading-relaxed text-jevah-text-muted">{desc}</p>
         )}
       </div>
 

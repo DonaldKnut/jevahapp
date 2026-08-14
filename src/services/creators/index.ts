@@ -5,6 +5,9 @@ export * from "./presenter";
 export * from "./session";
 export * from "./tracks";
 export * from "./catalog";
+export * from "./analytics";
+export * from "./releases";
+
 
 export {
   trackId,

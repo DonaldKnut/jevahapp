@@ -37,7 +37,7 @@ function kindBadge(kind: string): { label: string; tone: "info" | "success" | "w
     case "marketing":
       return { label: "Marketing", tone: "info" };
     case "artist_onboard":
-      return { label: "Artist onboard", tone: "success" };
+      return { label: "Welcome artist", tone: "success" };
     default:
       return { label: "Ops", tone: "neutral" };
   }
@@ -70,7 +70,7 @@ export default function EmailLogPage() {
     <div className="space-y-5">
       <PageHeader
         title="Email log"
-        subtitle="Ops, marketing, and artist onboard sends (including dry runs)."
+        subtitle="Direct messages, news & promos, and artist welcome invites (including tests)."
         actions={
           <Link
             to="/admin/email"

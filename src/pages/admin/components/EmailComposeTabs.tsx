@@ -9,24 +9,21 @@ import {
 const tabs = [
   {
     to: "/admin/email",
-    label: "Ops / 1:1",
-    desc: "Users, churches — no marketing filter",
+    label: "Direct email",
+    desc: "Message users or churches one-by-one",
     icon: EnvelopeIcon,
-    end: true,
   },
   {
     to: "/admin/email/marketing",
-    label: "Marketing",
-    desc: "Opted-in users only + unsubscribe footer",
+    label: "News & promos",
+    desc: "Only people who opted in",
     icon: MegaphoneIcon,
-    end: false,
   },
   {
     to: "/admin/email/artist-onboard",
-    label: "Artist onboard",
-    desc: "Creator invite — not marketing opt-out",
+    label: "Welcome artists",
+    desc: "Invite approved creators to Studio",
     icon: MusicalNoteIcon,
-    end: false,
   },
 ] as const;
 
@@ -47,12 +44,10 @@ export default function EmailComposeTabs({ active }: { active: string }) {
             )}
           >
             <div className="flex items-center gap-2">
-              <Icon
-                className={cn("h-4 w-4", on && "text-jevah-accent")}
-              />
+              <Icon className={cn("h-4 w-4", on && "text-jevah-accent")} />
               <span className="text-sm font-bold text-jevah-text">{label}</span>
             </div>
-            <span className="text-[11px] opacity-70">{desc}</span>
+            <span className="text-[11px] leading-snug opacity-70">{desc}</span>
           </Link>
         );
       })}

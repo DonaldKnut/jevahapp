@@ -8,24 +8,27 @@ import {
 import { ApiError } from "../../lib/api";
 import { useFeedback } from "../../components/admin/Feedback";
 import { ErrorToaster } from "../../components/ErrorToaster";
+import ApplyPromoAside from "./components/ApplyPromoAside";
+import ApplyFormFields from "./components/ApplyFormFields";
+import {
+  creatorApplySchema,
+  fieldErrorsFromZod,
+  GENRE_OPTIONS,
+  type CreatorApplyFieldErrors,
+  type CreatorApplyInput,
+} from "./schemas/creatorApply";
 
-const CREATOR_TYPES = [
-  { id: "artist", label: "Artist" },
-  { id: "minister", label: "Minister" },
-  { id: "podcaster", label: "Podcaster" },
-] as const;
-
-const GENRE_OPTIONS = [
-  "gospel",
-  "afro_gospel",
-  "worship",
-  "hymn",
-  "contemporary",
-  "choir",
-];
-
-const inputClass =
-  "w-full rounded-xl border border-jevah-border bg-jevah-input px-4 py-3 text-sm text-jevah-text outline-none transition placeholder:text-jevah-text-muted focus:border-jevah-accent focus:ring-2 focus:ring-jevah-accent/15";
+const emptyForm = (): CreatorApplyInput => ({
+  creatorTypes: ["artist"],
+  displayName: "",
+  genres: [],
+  bio: "",
+  instagram: "",
+  youtube: "",
+  spotify: "",
+  avatarUrl: "",
+  applicationNote: "",
+});
 
 export default function CreatorApply() {
   const navigate = useNavigate();
@@ -34,16 +37,8 @@ export default function CreatorApply() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const [displayName, setDisplayName] = useState("");
-  const [bio, setBio] = useState("");
-  const [types, setTypes] = useState<string[]>(["artist"]);
-  const [genres, setGenres] = useState<string[]>([]);
-  const [instagram, setInstagram] = useState("");
-  const [youtube, setYoutube] = useState("");
-  const [spotify, setSpotify] = useState("");
-  const [note, setNote] = useState("");
-  const [avatarUrl, setAvatarUrl] = useState("");
+  const [values, setValues] = useState<CreatorApplyInput>(emptyForm);
+  const [fieldErrors, setFieldErrors] = useState<CreatorApplyFieldErrors>({});
 
   useEffect(() => {
     let alive = true;
@@ -53,7 +48,10 @@ export default function CreatorApply() {
         if (!alive) return;
         setMe(data);
         if (data.artist?.displayName || data.artist?.name) {
-          setDisplayName(data.artist.displayName || data.artist.name || "");
+          setValues((prev) => ({
+            ...prev,
+            displayName: data.artist?.displayName || data.artist?.name || "",
+          }));
         }
         if (!data.capabilities.canApply && data.capabilities.showCreatorHub) {
           navigate("/creators/studio", { replace: true });
@@ -69,40 +67,78 @@ export default function CreatorApply() {
     };
   }, [navigate]);
 
-  function toggleType(id: string) {
-    setTypes((prev) =>
-      prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id]
-    );
+  function onChange(
+    key: keyof CreatorApplyInput,
+    value: CreatorApplyInput[keyof CreatorApplyInput]
+  ) {
+    setValues((prev) => ({ ...prev, [key]: value }));
+    setFieldErrors((prev) => {
+      if (!prev[key]) return prev;
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
   }
 
-  function toggleGenre(g: string) {
-    setGenres((prev) =>
-      prev.includes(g) ? prev.filter((x) => x !== g) : [...prev, g]
-    );
+  function onToggleType(id: CreatorApplyInput["creatorTypes"][number]) {
+    setValues((prev) => {
+      const next = prev.creatorTypes.includes(id)
+        ? prev.creatorTypes.filter((t) => t !== id)
+        : [...prev.creatorTypes, id];
+      return { ...prev, creatorTypes: next };
+    });
+    setFieldErrors((prev) => {
+      if (!prev.creatorTypes) return prev;
+      const next = { ...prev };
+      delete next.creatorTypes;
+      return next;
+    });
+  }
+
+  function onToggleGenre(g: (typeof GENRE_OPTIONS)[number]) {
+    setValues((prev) => {
+      const next = prev.genres.includes(g)
+        ? prev.genres.filter((x) => x !== g)
+        : [...prev.genres, g];
+      return { ...prev, genres: next };
+    });
+    setFieldErrors((prev) => {
+      if (!prev.genres) return prev;
+      const next = { ...prev };
+      delete next.genres;
+      return next;
+    });
   }
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!types.length) {
-      setError("Pick at least one creator type.");
+    const parsed = creatorApplySchema.safeParse(values);
+    if (!parsed.success) {
+      const errs = fieldErrorsFromZod(parsed.error);
+      setFieldErrors(errs);
+      const first = Object.values(errs)[0];
+      setError(first || "Fix the highlighted fields.");
       return;
     }
+
     setBusy(true);
     setError(null);
+    setFieldErrors({});
     try {
+      const v = parsed.data;
       const socials: Record<string, string> = {};
-      if (instagram.trim()) socials.instagram = instagram.trim();
-      if (youtube.trim()) socials.youtube = youtube.trim();
-      if (spotify.trim()) socials.spotify = spotify.trim();
+      if (v.instagram) socials.instagram = v.instagram;
+      if (v.youtube) socials.youtube = v.youtube;
+      if (v.spotify) socials.spotify = v.spotify;
 
       const result = await applyAsCreator({
-        displayName: displayName.trim(),
-        bio: bio.trim() || undefined,
-        genres,
-        creatorTypes: types,
+        displayName: v.displayName,
+        bio: v.bio,
+        genres: v.genres,
+        creatorTypes: v.creatorTypes,
         socials: Object.keys(socials).length ? socials : undefined,
-        applicationNote: note.trim() || undefined,
-        avatarUrl: avatarUrl.trim() || undefined,
+        applicationNote: v.applicationNote,
+        avatarUrl: v.avatarUrl,
       });
       setMe(result);
       toast.success("Application submitted", result.capabilities.statusMessage);
@@ -119,177 +155,94 @@ export default function CreatorApply() {
 
   if (loading) {
     return (
-      <div className="flex min-h-[50vh] items-center justify-center pt-28">
+      <div className="flex min-h-dvh items-center justify-center">
         <div className="h-10 w-10 animate-spin rounded-full border-2 border-jevah-accent border-t-transparent" />
       </div>
     );
   }
 
   return (
-    <div className="jevah-dashboard-shell mx-auto max-w-xl px-4 pb-20 pt-28 font-sans antialiased sm:px-6">
-      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-jevah-accent">
-        Apply
-      </p>
-      <h1 className="mt-2 text-3xl font-bold tracking-tight text-jevah-text">
-        Become a creator
-      </h1>
-      <p className="mt-2 text-sm text-jevah-text-muted">
-        Same form as mobile. Admins review in the Artists queue.
-      </p>
-
-      {me?.capabilities.showPendingBanner && (
-        <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-          {me.capabilities.statusMessage}
-        </div>
-      )}
-
+    <>
       <ErrorToaster error={error} title="Application error" />
+      <div
+        className="auth-root flex h-dvh overflow-hidden font-sans antialiased transition-colors duration-300"
+        style={{ backgroundColor: "var(--jevah-auth-root)" }}
+      >
+        <ApplyPromoAside />
 
-      <form onSubmit={(e) => void onSubmit(e)} className="mt-8 space-y-5">
-        <div>
-          <p className="mb-2 text-sm font-medium text-jevah-text">I am a…</p>
-          <div className="flex flex-wrap gap-2">
-            {CREATOR_TYPES.map((t) => {
-              const on = types.includes(t.id);
-              return (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => toggleType(t.id)}
-                  className={`rounded-full px-4 py-2 text-sm font-medium transition ${
-                    on
-                      ? "bg-jevah-accent text-white"
-                      : "border border-jevah-border bg-jevah-surface text-jevah-text-muted hover:border-jevah-accent/40"
-                  }`}
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+            <div className="mx-auto w-full max-w-xl px-5 pb-28 pt-10 sm:px-8 sm:pt-12 lg:px-10 lg:pt-14">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-jevah-accent">
+                Apply
+              </p>
+              <h1 className="mt-2 text-3xl font-bold tracking-tight text-jevah-text">
+                Become a creator
+              </h1>
+              <p className="mt-2 text-sm leading-relaxed text-jevah-text-muted">
+                Tell us who you are. Required fields mirror Spotify for Artists
+                access — name, role, and genre. Everything else is optional.
+              </p>
+
+              {me?.capabilities.showPendingBanner && (
+                <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
+                  {me.capabilities.statusMessage}
+                </div>
+              )}
+
+              {/* Mobile-only promo strip (desktop uses left panel) */}
+              <div className="mt-6 rounded-2xl border border-amber-500/25 bg-gradient-to-br from-[#1A1208] to-[#0B1A1F] p-4 text-white lg:hidden">
+                <p className="text-sm font-bold">Jevah for Creators</p>
+                <p className="mt-1 text-xs leading-relaxed text-slate-300">
+                  Apply once → admin review → upload to the gospel shelf.
+                </p>
+              </div>
+
+              <form
+                id="creator-apply-form"
+                onSubmit={(e) => void onSubmit(e)}
+                className="mt-8"
+                noValidate
+              >
+                <ApplyFormFields
+                  values={values}
+                  errors={fieldErrors}
+                  busy={busy}
+                  onChange={onChange}
+                  onToggleType={onToggleType}
+                  onToggleGenre={onToggleGenre}
+                />
+              </form>
+
+              <p className="mt-8 text-center text-sm text-jevah-text-muted lg:text-left">
+                <Link
+                  to="/creators"
+                  className="text-jevah-accent hover:underline"
                 >
-                  {t.label}
-                </button>
-              );
-            })}
+                  Back to Creators
+                </Link>
+              </p>
+            </div>
+          </div>
+
+          <div className="shrink-0 border-t border-jevah-border/80 bg-jevah-surface/95 px-5 py-4 backdrop-blur-md sm:px-8 lg:px-10">
+            <div className="mx-auto flex max-w-xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-xs text-jevah-text-muted">
+                Admins review in the Artists queue. You&apos;ll land in Studio
+                after submit.
+              </p>
+              <button
+                type="submit"
+                form="creator-apply-form"
+                disabled={busy}
+                className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-jevah-accent px-8 text-sm font-semibold text-white transition hover:bg-jevah-accent-hover disabled:opacity-60 sm:w-auto"
+              >
+                {busy ? "Submitting…" : "Submit application"}
+              </button>
+            </div>
           </div>
         </div>
-
-        <label className="block">
-          <span className="mb-1.5 block text-sm font-medium text-jevah-text-muted">
-            Display name
-          </span>
-          <input
-            required
-            value={displayName}
-            onChange={(e) => setDisplayName(e.target.value)}
-            className={inputClass}
-            placeholder="Grace Collective"
-          />
-        </label>
-
-        <label className="block">
-          <span className="mb-1.5 block text-sm font-medium text-jevah-text-muted">
-            Bio
-          </span>
-          <textarea
-            rows={3}
-            value={bio}
-            onChange={(e) => setBio(e.target.value)}
-            className={inputClass}
-            placeholder="Gospel worship from Lagos"
-          />
-        </label>
-
-        <div>
-          <p className="mb-2 text-sm font-medium text-jevah-text">Genres</p>
-          <div className="flex flex-wrap gap-2">
-            {GENRE_OPTIONS.map((g) => {
-              const on = genres.includes(g);
-              return (
-                <button
-                  key={g}
-                  type="button"
-                  onClick={() => toggleGenre(g)}
-                  className={`rounded-full px-3 py-1.5 text-xs font-medium capitalize transition ${
-                    on
-                      ? "bg-jevah-brand text-white"
-                      : "border border-jevah-border text-jevah-text-muted"
-                  }`}
-                >
-                  {g.replace(/_/g, " ")}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="grid gap-3 sm:grid-cols-3">
-          <label className="block sm:col-span-1">
-            <span className="mb-1.5 block text-sm font-medium text-jevah-text-muted">
-              Instagram
-            </span>
-            <input
-              value={instagram}
-              onChange={(e) => setInstagram(e.target.value)}
-              className={inputClass}
-            />
-          </label>
-          <label className="block">
-            <span className="mb-1.5 block text-sm font-medium text-jevah-text-muted">
-              YouTube
-            </span>
-            <input
-              value={youtube}
-              onChange={(e) => setYoutube(e.target.value)}
-              className={inputClass}
-            />
-          </label>
-          <label className="block">
-            <span className="mb-1.5 block text-sm font-medium text-jevah-text-muted">
-              Spotify
-            </span>
-            <input
-              value={spotify}
-              onChange={(e) => setSpotify(e.target.value)}
-              className={inputClass}
-            />
-          </label>
-        </div>
-
-        <label className="block">
-          <span className="mb-1.5 block text-sm font-medium text-jevah-text-muted">
-            Avatar URL (optional)
-          </span>
-          <input
-            value={avatarUrl}
-            onChange={(e) => setAvatarUrl(e.target.value)}
-            className={inputClass}
-            placeholder="https://…"
-          />
-        </label>
-
-        <label className="block">
-          <span className="mb-1.5 block text-sm font-medium text-jevah-text-muted">
-            Note to reviewers
-          </span>
-          <textarea
-            rows={2}
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            className={inputClass}
-            placeholder="We lead youth worship…"
-          />
-        </label>
-
-        <button
-          type="submit"
-          disabled={busy}
-          className="w-full rounded-xl bg-jevah-accent py-3.5 text-sm font-semibold text-white transition hover:bg-jevah-accent-hover disabled:opacity-60"
-        >
-          {busy ? "Submitting…" : "Submit application"}
-        </button>
-
-        <p className="text-center text-sm text-jevah-text-muted">
-          <Link to="/creators" className="text-jevah-accent hover:underline">
-            Back to Creators
-          </Link>
-        </p>
-      </form>
-    </div>
+      </div>
+    </>
   );
 }

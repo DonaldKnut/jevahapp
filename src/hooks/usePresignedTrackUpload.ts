@@ -18,6 +18,8 @@ type IntentFactory = (meta: {
   coverContentType?: string;
   coverFileName?: string;
   coverFileSizeBytes?: number;
+  releaseId?: string;
+  trackNumber?: number;
 }) => Promise<TrackUploadIntent>;
 
 /**
