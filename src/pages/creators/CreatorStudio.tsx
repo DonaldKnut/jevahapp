@@ -1,21 +1,19 @@
 import { FormEvent, useCallback, useEffect, useState } from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import {
   deleteCreatorTrack,
   fetchCreatorAnalytics,
   fetchCreatorMe,
   listMyCreatorTracks,
   patchCreatorTrack,
-  trackArtist,
   trackId,
-  trackPlaybackUrl,
-  trackProcessing,
   updateCreatorProfile,
   type CreatorAnalytics,
   type CreatorMe,
   type TrackCard,
 } from "../../services/creatorsApi";
 import { ApiError } from "../../lib/api";
+import { TRACK_GENRES, genreLabel } from "../../lib/media";
 import { useAuth } from "../../context/AuthContext";
 import { useFeedback } from "../../components/admin/Feedback";
 import { ErrorToaster } from "../../components/ErrorToaster";
@@ -23,40 +21,66 @@ import { inputClass } from "../../components/ui/forms";
 import CreatorHubByStep from "./components/CreatorHubByStep";
 import CreatorAnalyticsDashboard from "./components/CreatorAnalyticsDashboard";
 import StudioReleases from "./components/StudioReleases";
+import StudioHero from "./components/StudioHero";
+import StudioCatalog from "./components/StudioCatalog";
+import StudioProfileForm from "./components/StudioProfileForm";
+import StudioSidebar, {
+  StudioMobileNav,
+  type StudioView,
+} from "./components/StudioSidebar";
 import MarketingEmailPrefsCard from "../../components/MarketingEmailPrefsCard";
 import ThemeToggle from "../../components/ThemeToggle";
 import AdminModal from "../../components/admin/AdminModal";
+import NowPlayingBar from "../../components/music/NowPlayingBar";
 import JevahLogo from "../../components/JevahLogo";
 import {
-  MusicalNoteIcon,
   PencilSquareIcon,
-  TrashIcon,
   ArrowUpTrayIcon,
-  UserIcon,
-  SparklesIcon,
-  CheckCircleIcon,
-  GlobeAltIcon,
   ArrowRightOnRectangleIcon,
 } from "@heroicons/react/24/outline";
+
+const VIEWS: StudioView[] = [
+  "home",
+  "catalog",
+  "releases",
+  "insights",
+  "profile",
+];
+
+function parseView(raw: string | null): StudioView {
+  if (raw && VIEWS.includes(raw as StudioView)) return raw as StudioView;
+  return "home";
+}
 
 export default function CreatorStudio() {
   const { logout, user } = useAuth();
   const navigate = useNavigate();
   const { confirm, toast } = useFeedback();
+  const [params, setParams] = useSearchParams();
+  const view = parseView(params.get("view"));
 
   const [me, setMe] = useState<CreatorMe | null>(null);
   const [tracks, setTracks] = useState<TrackCard[]>([]);
   const [analytics, setAnalytics] = useState<CreatorAnalytics | null>(null);
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
+  const [rangeDays, setRangeDays] = useState(28);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [editTrack, setEditTrack] = useState<TrackCard | null>(null);
   const [editTitle, setEditTitle] = useState("");
+  const [editArtist, setEditArtist] = useState("");
+  const [editGenre, setEditGenre] = useState("");
   const [editVisibility, setEditVisibility] = useState("published");
-  const [profileOpen, setProfileOpen] = useState(false);
-  const [profileName, setProfileName] = useState("");
-  const [profileBio, setProfileBio] = useState("");
+  const [playing, setPlaying] = useState<TrackCard | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  const setView = (v: StudioView) => {
+    const next = new URLSearchParams(params);
+    if (v === "home") next.delete("view");
+    else next.set("view", v);
+    setParams(next, { replace: true });
+  };
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -67,7 +91,7 @@ export default function CreatorStudio() {
       let list: TrackCard[] = [];
       if (data.capabilities.showCreatorHub || data.status === "active") {
         try {
-          list = await listMyCreatorTracks({ limit: 50 });
+          list = await listMyCreatorTracks({ limit: 100 });
           setTracks(list);
           if (
             data.capabilities.nextStep === "manage_catalog" &&
@@ -87,22 +111,11 @@ export default function CreatorStudio() {
           setTracks([]);
           list = [];
         }
-
-        setAnalyticsLoading(true);
-        try {
-          setAnalytics(await fetchCreatorAnalytics(list));
-        } catch {
-          setAnalytics(null);
-        } finally {
-          setAnalyticsLoading(false);
-        }
       } else {
         setTracks([]);
         setAnalytics(null);
       }
       setMe(next);
-      setProfileName(next.artist?.displayName || next.artist?.name || "");
-      setProfileBio(next.artist?.bio || "");
     } catch (err) {
       if (err instanceof ApiError && err.status === 404) {
         setMe({
@@ -139,6 +152,27 @@ export default function CreatorStudio() {
     void load();
   }, [load]);
 
+  useEffect(() => {
+    if (!me || !(me.capabilities.showCreatorHub || me.status === "active")) {
+      return;
+    }
+    let cancelled = false;
+    setAnalyticsLoading(true);
+    void fetchCreatorAnalytics(tracks, rangeDays)
+      .then((a) => {
+        if (!cancelled) setAnalytics(a);
+      })
+      .catch(() => {
+        if (!cancelled) setAnalytics(null);
+      })
+      .finally(() => {
+        if (!cancelled) setAnalyticsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [me, tracks, rangeDays]);
+
   async function onDelete(t: TrackCard) {
     const id = trackId(t);
     const ok = await confirm({
@@ -151,6 +185,7 @@ export default function CreatorStudio() {
     try {
       await deleteCreatorTrack(id);
       toast.success("Track deleted");
+      if (playing && trackId(playing) === id) setPlaying(null);
       await load();
     } catch (err) {
       toast.error(
@@ -167,6 +202,8 @@ export default function CreatorStudio() {
     try {
       await patchCreatorTrack(trackId(editTrack), {
         title: editTitle.trim(),
+        artistName: editArtist.trim() || undefined,
+        genre: editGenre || undefined,
         visibility: editVisibility,
       });
       toast.success("Track updated");
@@ -182,16 +219,16 @@ export default function CreatorStudio() {
     }
   }
 
-  async function onSaveProfile(e: FormEvent) {
-    e.preventDefault();
+  async function onSaveProfile(body: {
+    displayName: string;
+    bio?: string;
+    genres?: string[];
+    socials?: Record<string, string>;
+  }) {
     setBusy(true);
     try {
-      await updateCreatorProfile({
-        displayName: profileName.trim(),
-        bio: profileBio.trim() || undefined,
-      });
+      await updateCreatorProfile(body);
       toast.success("Profile updated");
-      setProfileOpen(false);
       await load();
     } catch (err) {
       toast.error(
@@ -203,12 +240,22 @@ export default function CreatorStudio() {
     }
   }
 
+  function openEdit(t: TrackCard) {
+    setEditTrack(t);
+    setEditTitle(t.title || "");
+    setEditArtist(t.artistName || t.singer || "");
+    setEditGenre(t.genre || "");
+    setEditVisibility(t.visibility || "published");
+  }
+
   if (loading) {
     return (
       <div className="jevah-dashboard-shell flex min-h-dvh items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <div className="h-10 w-10 animate-spin rounded-full border-3 border-jevah-accent border-t-transparent shadow-lg" />
-          <p className="text-xs font-bold text-jevah-text-muted animate-pulse">Loading Studio...</p>
+          <p className="text-xs font-bold text-jevah-text-muted animate-pulse">
+            Opening studio…
+          </p>
         </div>
       </div>
     );
@@ -218,244 +265,221 @@ export default function CreatorStudio() {
 
   const name =
     me.artist?.displayName || me.artist?.name || user?.email || "Creator";
-
   const initials = name
     .split(" ")
     .slice(0, 2)
     .map((w) => w[0]?.toUpperCase() ?? "")
     .join("");
+  const totalPlays = tracks.reduce((acc, t) => acc + (t.playCount || 0), 0);
+  const hubReady = me.capabilities.showCreatorHub || me.status === "active";
+  const recent = [...tracks]
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt || 0).getTime() -
+        new Date(a.createdAt || 0).getTime()
+    )
+    .slice(0, 8);
 
   return (
-    <div className="creator-shell jevah-dashboard-shell min-h-dvh font-sans antialiased transition-colors duration-300">
-      {/* ── Studio Header ── */}
-      <header className="sticky top-0 z-30 border-b border-jevah-border/70 bg-jevah-surface/90 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3.5 sm:px-6">
-          <div className="flex items-center gap-3">
-            <div className="inline-flex rounded-xl bg-white px-2 py-1 shadow-sm">
-              <JevahLogo width={68} height={28} />
-            </div>
-            <div className="h-4 w-px bg-jevah-border" />
-            <div>
-              <span className="inline-flex items-center gap-1 rounded-full bg-jevah-accent/15 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-jevah-accent">
-                <SparklesIcon className="h-3 w-3" />
-                Artist Studio
-              </span>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <ThemeToggle variant="icon" />
-            {me.capabilities.publicProfilePath && (
-              <Link
-                to={me.capabilities.publicProfilePath}
-                className="hidden items-center gap-1.5 rounded-xl border border-jevah-border bg-jevah-surface px-3 py-2 text-xs font-bold text-jevah-text shadow-sm hover:bg-jevah-card sm:inline-flex"
-              >
-                <GlobeAltIcon className="h-3.5 w-3.5 text-jevah-accent" />
-                Public profile
-              </Link>
-            )}
-            <button
-              type="button"
-              onClick={() => void logout().then(() => navigate("/creators"))}
-              className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold text-jevah-text-muted hover:bg-rose-500/10 hover:text-rose-600 transition"
-            >
-              <ArrowRightOnRectangleIcon className="h-3.5 w-3.5" />
-              Log out
-            </button>
-          </div>
-        </div>
-      </header>
+    <div className="creator-shell jevah-dashboard-shell flex min-h-dvh font-sans antialiased">
+      <StudioSidebar
+        view={view}
+        onView={setView}
+        initials={initials}
+        name={name}
+      />
 
-      <main className="mx-auto max-w-6xl space-y-6 px-4 py-8 sm:px-6">
-        <ErrorToaster error={error} title="Studio error" />
-
-        {/* ── World-Class Creator Hero Card ── */}
-        <div className="relative overflow-hidden rounded-3xl border border-jevah-border/80 bg-gradient-to-br from-jevah-accent/15 via-jevah-surface to-jevah-surface p-6 sm:p-8 shadow-[0_10px_35px_var(--jevah-shadow)] backdrop-blur-xl">
-          <div className="relative z-10 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
-            <div className="flex items-center gap-4">
-              <div className="relative flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-jevah-accent to-[#4ECDC4] text-xl font-black text-white shadow-lg shadow-jevah-accent/30 ring-2 ring-white/20">
-                {initials || "C"}
-                <span className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-2 border-white bg-emerald-400 admin-online-dot shadow-sm" />
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <h1 className="truncate text-2xl font-black tracking-tight text-jevah-text sm:text-3xl">
-                    {name}
-                  </h1>
-                  {me.status === "active" && (
-                    <CheckCircleIcon className="h-6 w-6 text-emerald-500 shrink-0" title="Verified Creator" />
-                  )}
-                </div>
-                <p className="mt-1 text-xs font-medium text-jevah-text-muted">
-                  {me.artist?.bio || "Welcome to your creator hub. Manage your audio catalog and studio release profile."}
-                </p>
+      <div className="flex min-h-dvh min-w-0 flex-1 flex-col">
+        <header className="sticky top-0 z-30 border-b border-jevah-border/70 bg-jevah-surface/90 backdrop-blur-xl">
+          <div className="flex items-center justify-between gap-3 px-3 py-2.5 sm:px-5">
+            <div className="flex items-center gap-2 lg:hidden">
+              <div className="inline-flex rounded-lg bg-white px-1.5 py-0.5 shadow-sm">
+                <JevahLogo width={44} height={18} />
               </div>
             </div>
-
-            {/* Actions & Quick Stats */}
-            <div className="flex flex-wrap items-center gap-2.5">
+            <p className="hidden truncate text-sm font-bold text-jevah-text-muted lg:block">
+              {view === "home"
+                ? "Your desk"
+                : view === "catalog"
+                  ? "Every track you own"
+                  : view === "releases"
+                    ? "How the catalog is packaged"
+                    : view === "insights"
+                      ? "Who’s listening"
+                      : "How the public sees you"}
+            </p>
+            <div className="flex items-center gap-1.5">
               {me.capabilities.canUploadTracks && (
                 <Link
                   to="/creators/studio/upload"
-                  className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-jevah-accent to-emerald-600 px-5 py-3 text-xs font-extrabold text-white shadow-md shadow-jevah-accent/30 hover:shadow-lg transition-all duration-200 active:scale-95"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-jevah-accent px-3.5 py-2 text-xs font-extrabold text-white shadow-sm hover:bg-jevah-accent-hover"
                 >
-                  <ArrowUpTrayIcon className="h-4 w-4" />
-                  Upload track
+                  <ArrowUpTrayIcon className="h-3.5 w-3.5" />
+                  Upload
                 </Link>
               )}
-              {me.capabilities.canEditProfile && (
-                <button
-                  type="button"
-                  onClick={() => setProfileOpen(true)}
-                  className="inline-flex items-center gap-2 rounded-2xl border border-jevah-border bg-jevah-surface/90 px-4 py-3 text-xs font-extrabold text-jevah-text shadow-sm hover:bg-jevah-card transition active:scale-95"
-                >
-                  <PencilSquareIcon className="h-4 w-4 text-jevah-accent" />
-                  Edit profile
-                </button>
+              <ThemeToggle variant="icon" />
+              <button
+                type="button"
+                onClick={() => void logout().then(() => navigate("/creators"))}
+                className="inline-flex items-center gap-1.5 rounded-xl px-2.5 py-2 text-xs font-bold text-jevah-text-muted hover:bg-rose-500/10 hover:text-rose-600"
+              >
+                <ArrowRightOnRectangleIcon className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Log out</span>
+              </button>
+            </div>
+          </div>
+          <StudioMobileNav view={view} onView={setView} />
+        </header>
+
+        <main
+          className={`min-w-0 flex-1 overflow-y-auto ${playing ? "pb-32" : "pb-10"}`}
+        >
+          <ErrorToaster error={error} title="Studio error" />
+
+          {view === "home" && (
+            <>
+              <StudioHero
+                name={name}
+                initials={initials}
+                artist={me.artist}
+                status={me.status}
+                bio={
+                  me.artist?.bio ||
+                  "Your catalog, audience, and public artist page — in one desk."
+                }
+                trackCount={tracks.length}
+                totalPlays={totalPlays}
+                monthlyListeners={analytics?.uniqueListeners || totalPlays}
+                canUpload={me.capabilities.canUploadTracks}
+                canEdit={me.capabilities.canEditProfile}
+                publicPath={me.capabilities.publicProfilePath}
+                onEdit={() => setView("profile")}
+              />
+              <div className="mx-auto max-w-6xl space-y-6 px-4 py-6 sm:px-6">
+                <CreatorHubByStep
+                  me={me}
+                  tracks={tracks}
+                  onUpload={() => navigate("/creators/studio/upload")}
+                />
+                {hubReady && recent.length > 0 && (
+                  <StudioCatalog
+                    tracks={recent}
+                    heading="Recently added"
+                    subheading="Latest uploads — open Catalog for the full library"
+                    compact
+                    activeId={playing ? trackId(playing) : null}
+                    playing={isPlaying}
+                    onPlay={setPlaying}
+                    onEdit={openEdit}
+                    onDelete={(t) => void onDelete(t)}
+                  />
+                )}
+                {hubReady && (
+                  <CreatorAnalyticsDashboard
+                    analytics={analytics}
+                    loading={analyticsLoading}
+                    rangeDays={rangeDays}
+                    onRangeDays={setRangeDays}
+                  />
+                )}
+              </div>
+            </>
+          )}
+
+          {view === "catalog" && (
+            <div className="mx-auto max-w-6xl space-y-6 px-4 py-6 sm:px-6">
+              {tracks.length === 0 ? (
+                <CreatorHubByStep
+                  me={me}
+                  tracks={tracks}
+                  onUpload={() => navigate("/creators/studio/upload")}
+                />
+              ) : (
+                <StudioCatalog
+                  tracks={tracks}
+                  activeId={playing ? trackId(playing) : null}
+                  playing={isPlaying}
+                  onPlay={setPlaying}
+                  onEdit={openEdit}
+                  onDelete={(t) => void onDelete(t)}
+                />
               )}
             </div>
-          </div>
+          )}
 
-          {/* Quick Metrics Bar */}
-          <div className="mt-6 grid grid-cols-2 gap-3 pt-6 border-t border-jevah-border/60 sm:grid-cols-4">
-            <div className="rounded-2xl border border-jevah-border/60 bg-jevah-surface/60 p-3 backdrop-blur-md">
-              <p className="text-[10px] font-extrabold uppercase tracking-wider text-jevah-text-muted">Total Tracks</p>
-              <p className="mt-0.5 text-xl font-black text-jevah-text">{tracks.length}</p>
+          {view === "releases" && (
+            <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
+              {me.capabilities.canUploadTracks || me.status === "active" ? (
+                <StudioReleases />
+              ) : (
+                <CreatorHubByStep
+                  me={me}
+                  tracks={tracks}
+                  onUpload={() => navigate("/creators/studio/upload")}
+                />
+              )}
             </div>
-            <div className="rounded-2xl border border-jevah-border/60 bg-jevah-surface/60 p-3 backdrop-blur-md">
-              <p className="text-[10px] font-extrabold uppercase tracking-wider text-jevah-text-muted">Total Plays</p>
-              <p className="mt-0.5 text-xl font-black text-jevah-accent">
-                {tracks.reduce((acc, t) => acc + (t.playCount || 0), 0).toLocaleString()}
-              </p>
+          )}
+
+          {view === "insights" && (
+            <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
+              {hubReady ? (
+                <CreatorAnalyticsDashboard
+                  analytics={analytics}
+                  loading={analyticsLoading}
+                  rangeDays={rangeDays}
+                  onRangeDays={setRangeDays}
+                />
+              ) : (
+                <CreatorHubByStep
+                  me={me}
+                  tracks={tracks}
+                  onUpload={() => navigate("/creators/studio/upload")}
+                />
+              )}
             </div>
-            <div className="rounded-2xl border border-jevah-border/60 bg-jevah-surface/60 p-3 backdrop-blur-md">
-              <p className="text-[10px] font-extrabold uppercase tracking-wider text-jevah-text-muted">Account Status</p>
-              <p className="mt-0.5 text-xs font-extrabold text-emerald-600 dark:text-emerald-400 capitalize">
-                {me.status || me.capabilities.nextStep.replace(/_/g, " ")}
-              </p>
+          )}
+
+          {view === "profile" && (
+            <div className="mx-auto max-w-3xl space-y-6 px-4 py-6 sm:px-6">
+              {me.capabilities.canEditProfile ? (
+                <StudioProfileForm
+                  artist={me.artist}
+                  busy={busy}
+                  onSave={onSaveProfile}
+                />
+              ) : (
+                <CreatorHubByStep
+                  me={me}
+                  tracks={tracks}
+                  onUpload={() => navigate("/creators/studio/upload")}
+                />
+              )}
+              <MarketingEmailPrefsCard />
             </div>
-            <div className="rounded-2xl border border-jevah-border/60 bg-jevah-surface/60 p-3 backdrop-blur-md">
-              <p className="text-[10px] font-extrabold uppercase tracking-wider text-jevah-text-muted">Capabilities</p>
-              <p className="mt-0.5 text-xs font-extrabold text-jevah-text">
-                {me.capabilities.canPublishTracks ? "Publish Enabled" : "Under Review"}
-              </p>
-            </div>
-          </div>
-        </div>
+          )}
+        </main>
+      </div>
 
-        {/* Step status hub callout */}
-        <CreatorHubByStep
-          me={me}
-          tracks={tracks}
-          onUpload={() => navigate("/creators/studio/upload")}
-        />
+      <NowPlayingBar
+        track={playing}
+        queue={tracks}
+        onTrackChange={setPlaying}
+        onPlayingChange={setIsPlaying}
+        onClose={() => setPlaying(null)}
+        shelfLabel="Studio preview"
+      />
 
-        {(me.capabilities.showCreatorHub || me.status === "active") && (
-          <CreatorAnalyticsDashboard
-            analytics={analytics}
-            loading={analyticsLoading}
-          />
-        )}
-
-        {(me.capabilities.canUploadTracks || me.status === "active") && (
-          <StudioReleases />
-        )}
-
-        <MarketingEmailPrefsCard />
-
-        {/* ── Track Catalog List ── */}
-        {tracks.length > 0 && (
-          <div className="overflow-hidden rounded-3xl border border-jevah-border/80 bg-jevah-surface/90 shadow-[0_8px_30px_var(--jevah-shadow)] backdrop-blur-xl">
-            <div className="flex items-center justify-between border-b border-jevah-border/60 px-6 py-4">
-              <div className="flex items-center gap-2.5">
-                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-jevah-accent/10 text-jevah-accent">
-                  <MusicalNoteIcon className="h-5 w-5" />
-                </div>
-                <div>
-                  <h2 className="text-base font-bold tracking-tight text-jevah-text">Release Catalog</h2>
-                  <p className="text-xs text-jevah-text-muted">{tracks.length} tracks published & uploaded</p>
-                </div>
-              </div>
-            </div>
-
-            <ul className="divide-y divide-jevah-border/50">
-              {tracks.map((t) => {
-                const url = trackPlaybackUrl(t);
-                const status = trackProcessing(t);
-                return (
-                  <li
-                    key={trackId(t)}
-                    className="group flex flex-col gap-4 p-5 transition hover:bg-jevah-card/40 sm:flex-row sm:items-center sm:justify-between"
-                  >
-                    <div className="min-w-0 flex-1 space-y-2">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-extrabold text-base text-jevah-text group-hover:text-jevah-accent transition">
-                          {t.title}
-                        </span>
-                        <span className="rounded-full bg-jevah-accent/10 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider text-jevah-accent ring-1 ring-jevah-accent/20">
-                          {t.visibility || "published"}
-                        </span>
-                        <span className="rounded-full bg-jevah-card px-2.5 py-0.5 text-[10px] font-bold text-jevah-text-muted capitalize">
-                          {status}
-                        </span>
-                      </div>
-                      <p className="text-xs font-semibold text-jevah-text-muted">
-                        {trackArtist(t)}
-                        {t.playCount != null ? ` · ${t.playCount.toLocaleString()} plays` : ""}
-                      </p>
-
-                      {url && (
-                        <div className="pt-1">
-                          <audio
-                            controls
-                            preload="none"
-                            className="h-9 w-full max-w-lg rounded-xl border border-jevah-border bg-jevah-surface text-xs"
-                            src={url}
-                          >
-                            <track kind="captions" />
-                          </audio>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="flex items-center gap-2 shrink-0">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setEditTrack(t);
-                          setEditTitle(t.title || "");
-                          setEditVisibility(t.visibility || "published");
-                        }}
-                        className="inline-flex items-center gap-1.5 rounded-xl border border-jevah-border bg-jevah-surface px-3.5 py-2 text-xs font-bold text-jevah-text shadow-sm hover:bg-jevah-card active:scale-95 transition"
-                      >
-                        <PencilSquareIcon className="h-3.5 w-3.5 text-jevah-accent" />
-                        Edit
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => void onDelete(t)}
-                        className="inline-flex items-center gap-1.5 rounded-xl border border-rose-500/30 bg-rose-500/10 px-3.5 py-2 text-xs font-bold text-rose-600 hover:bg-rose-500/20 active:scale-95 transition dark:text-rose-400"
-                      >
-                        <TrashIcon className="h-3.5 w-3.5" />
-                        Delete
-                      </button>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        )}
-      </main>
-
-      {/* ── High-End Edit Track Modal ── */}
       {editTrack && (
         <AdminModal
           open={!!editTrack}
           onClose={() => setEditTrack(null)}
-          title="Edit Track Release"
-          subtitle={`Update release parameters for "${editTrack.title}"`}
+          title="Edit track"
+          subtitle={editTrack.title}
           icon={<PencilSquareIcon className="h-5 w-5" />}
           busy={busy}
+          size="lg"
           footer={
             <div className="flex gap-2.5">
               <button
@@ -469,7 +493,7 @@ export default function CreatorStudio() {
                 type="button"
                 disabled={busy}
                 onClick={(e) => void onSaveTrack(e)}
-                className="flex-1 rounded-2xl bg-gradient-to-r from-jevah-accent to-emerald-600 py-3 text-xs font-extrabold text-white shadow-md shadow-jevah-accent/20 hover:shadow-lg disabled:opacity-50"
+                className="flex-1 rounded-2xl bg-gradient-to-r from-jevah-accent to-emerald-600 py-3 text-xs font-extrabold text-white disabled:opacity-50"
               >
                 {busy ? "Saving..." : "Save changes"}
               </button>
@@ -479,7 +503,7 @@ export default function CreatorStudio() {
           <form onSubmit={(e) => void onSaveTrack(e)} className="space-y-4">
             <label className="block">
               <span className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-jevah-text-muted">
-                Track Title
+                Title
               </span>
               <input
                 required
@@ -488,10 +512,36 @@ export default function CreatorStudio() {
                 className={inputClass}
               />
             </label>
-
             <label className="block">
               <span className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-jevah-text-muted">
-                Visibility Status
+                Credited artist
+              </span>
+              <input
+                value={editArtist}
+                onChange={(e) => setEditArtist(e.target.value)}
+                className={inputClass}
+              />
+            </label>
+            <label className="block">
+              <span className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-jevah-text-muted">
+                Genre
+              </span>
+              <select
+                value={editGenre}
+                onChange={(e) => setEditGenre(e.target.value)}
+                className={inputClass}
+              >
+                <option value="">Unset</option>
+                {TRACK_GENRES.map((g) => (
+                  <option key={g} value={g}>
+                    {genreLabel(g)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="block">
+              <span className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-jevah-text-muted">
+                Visibility
               </span>
               <select
                 value={editVisibility}
@@ -507,63 +557,6 @@ export default function CreatorStudio() {
         </AdminModal>
       )}
 
-      {/* ── High-End Edit Profile Modal ── */}
-      {profileOpen && (
-        <AdminModal
-          open={profileOpen}
-          onClose={() => setProfileOpen(false)}
-          title="Edit Creator Profile"
-          subtitle="Update your artist brand display name and bio"
-          icon={<UserIcon className="h-5 w-5" />}
-          busy={busy}
-          footer={
-            <div className="flex gap-2.5">
-              <button
-                type="button"
-                onClick={() => setProfileOpen(false)}
-                className="flex-1 rounded-2xl border border-jevah-border py-3 text-xs font-bold text-jevah-text-muted hover:bg-jevah-card"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                disabled={busy}
-                onClick={(e) => void onSaveProfile(e)}
-                className="flex-1 rounded-2xl bg-gradient-to-r from-jevah-accent to-emerald-600 py-3 text-xs font-extrabold text-white shadow-md shadow-jevah-accent/20 hover:shadow-lg disabled:opacity-50"
-              >
-                {busy ? "Updating..." : "Save profile"}
-              </button>
-            </div>
-          }
-        >
-          <form onSubmit={(e) => void onSaveProfile(e)} className="space-y-4">
-            <label className="block">
-              <span className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-jevah-text-muted">
-                Display Name
-              </span>
-              <input
-                required
-                value={profileName}
-                onChange={(e) => setProfileName(e.target.value)}
-                className={inputClass}
-              />
-            </label>
-
-            <label className="block">
-              <span className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-jevah-text-muted">
-                Bio / Artist Statement
-              </span>
-              <textarea
-                rows={3}
-                value={profileBio}
-                onChange={(e) => setProfileBio(e.target.value)}
-                className={inputClass}
-              />
-            </label>
-          </form>
-        </AdminModal>
-      )}
     </div>
   );
 }
-

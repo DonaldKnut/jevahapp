@@ -83,9 +83,7 @@ export default function StudioReleases() {
       toast.success("Published", next.title);
       await load();
     } catch (err) {
-      const msg =
-        err instanceof ApiError ? err.message : "Publish failed.";
-      // Retry with skipTypeHints when backend asks
+      const msg = err instanceof ApiError ? err.message : "Publish failed.";
       if (
         err instanceof ApiError &&
         /TYPE_HINT_MISMATCH/i.test(JSON.stringify(err.body || msg))
@@ -140,27 +138,23 @@ export default function StudioReleases() {
   }
 
   return (
-    <section className="overflow-hidden rounded-3xl border border-jevah-border bg-jevah-surface/90 shadow-[0_8px_30px_var(--jevah-shadow)]">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-jevah-border px-5 py-4 sm:px-6">
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-jevah-accent/10 text-jevah-accent">
-            <MusicalNoteIcon className="h-5 w-5" />
-          </div>
-          <div>
-            <h2 className="text-base font-bold tracking-tight text-jevah-text">
-              Releases
-            </h2>
-            <p className="text-xs text-jevah-text-muted">
-              Singles, EPs, albums — Artists shelf only, never Copyright-free
-            </p>
-          </div>
+    <section>
+      <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h2 className="text-2xl font-black tracking-tight text-jevah-text">
+            Discography
+          </h2>
+          <p className="mt-1 text-sm text-jevah-text-muted">
+            Singles, EPs, and albums on the Artists shelf — never mixed into
+            Copyright-free.
+          </p>
         </div>
         <button
           type="button"
           onClick={() => setCreating((v) => !v)}
-          className="inline-flex items-center gap-1.5 rounded-xl bg-jevah-accent px-3.5 py-2 text-xs font-bold text-white hover:bg-jevah-accent-hover"
+          className="inline-flex items-center gap-1.5 rounded-full bg-jevah-accent px-4 py-2.5 text-xs font-extrabold text-white shadow-md shadow-jevah-accent/20 hover:bg-jevah-accent-hover"
         >
-          <PlusIcon className="h-3.5 w-3.5" />
+          <PlusIcon className="h-4 w-4" />
           New release
         </button>
       </div>
@@ -168,10 +162,11 @@ export default function StudioReleases() {
       {creating && (
         <form
           onSubmit={(e) => void onCreate(e)}
-          className="space-y-3 border-b border-jevah-border bg-jevah-card/40 px-5 py-4 sm:px-6"
+          className="mb-6 space-y-3 rounded-3xl border border-jevah-accent/25 bg-gradient-to-br from-jevah-accent/10 via-jevah-surface to-jevah-surface p-5"
         >
           <input
             required
+            autoFocus
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             className={inputClass}
@@ -214,74 +209,87 @@ export default function StudioReleases() {
       )}
 
       {loading ? (
-        <div className="space-y-2 p-5">
-          {Array.from({ length: 3 }).map((_, i) => (
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
             <div
               key={i}
-              className="h-14 animate-pulse rounded-2xl bg-jevah-card"
+              className="aspect-square animate-pulse rounded-3xl bg-jevah-card"
             />
           ))}
         </div>
       ) : releases.length === 0 ? (
-        <p className="px-5 py-10 text-center text-sm text-jevah-text-muted sm:px-6">
-          No releases yet. Create a single or EP, then upload tracks into it.
-        </p>
+        <div className="rounded-3xl border border-dashed border-jevah-border bg-jevah-surface/70 px-6 py-16 text-center">
+          <MusicalNoteIcon className="mx-auto h-10 w-10 text-jevah-accent/50" />
+          <p className="mt-3 text-sm font-semibold text-jevah-text-muted">
+            No releases yet. Start a single or EP, then drop tracks into it.
+          </p>
+        </div>
       ) : (
-        <ul className="divide-y divide-jevah-border/60">
-          {releases.map((r) => (
-            <li
-              key={r.id}
-              className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6"
-            >
-              <div className="flex min-w-0 items-center gap-3">
-                {r.coverUrl ? (
-                  <img
-                    src={r.coverUrl}
-                    alt=""
-                    className="h-12 w-12 rounded-xl object-cover"
-                  />
-                ) : (
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-jevah-card text-jevah-accent">
-                    <MusicalNoteIcon className="h-5 w-5" />
+        <ul className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
+          {releases.map((r) => {
+            const count = r.trackCount ?? r.tracks?.length ?? 0;
+            return (
+              <li
+                key={r.id}
+                className="group overflow-hidden rounded-3xl border border-jevah-border/70 bg-jevah-surface/90 shadow-sm transition hover:-translate-y-0.5 hover:shadow-[0_12px_32px_var(--jevah-shadow)]"
+              >
+                <div className="relative aspect-square bg-jevah-card">
+                  {r.coverUrl ? (
+                    <img
+                      src={r.coverUrl}
+                      alt=""
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center text-jevah-accent">
+                      <MusicalNoteIcon className="h-12 w-12 opacity-40" />
+                    </div>
+                  )}
+                  <div className="absolute inset-x-0 bottom-0 flex gap-1.5 bg-gradient-to-t from-black/70 to-transparent p-3 opacity-0 transition group-hover:opacity-100">
+                    <Link
+                      to={`/creators/studio/upload?releaseId=${encodeURIComponent(r.id)}`}
+                      className="flex-1 rounded-full bg-white px-2 py-1.5 text-center text-[10px] font-extrabold text-[#0b1a1f]"
+                    >
+                      Add track
+                    </Link>
+                    {r.status !== "published" && (
+                      <button
+                        type="button"
+                        disabled={busy}
+                        onClick={() => void onPublish(r)}
+                        className="inline-flex items-center gap-1 rounded-full bg-jevah-accent px-2.5 py-1.5 text-[10px] font-extrabold text-white"
+                      >
+                        <RocketLaunchIcon className="h-3 w-3" />
+                        Publish
+                      </button>
+                    )}
                   </div>
-                )}
-                <div className="min-w-0">
-                  <p className="truncate font-bold text-jevah-text">{r.title}</p>
-                  <p className="text-xs text-jevah-text-muted capitalize">
-                    {r.type || "single"} · {r.status || "draft"} ·{" "}
-                    {r.trackCount ?? r.tracks?.length ?? 0} tracks
-                  </p>
                 </div>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <Link
-                  to={`/creators/studio/upload?releaseId=${encodeURIComponent(r.id)}`}
-                  className="rounded-xl border border-jevah-border px-3 py-2 text-xs font-bold text-jevah-text hover:bg-jevah-card"
-                >
-                  Add track
-                </Link>
-                {r.status !== "published" && (
+                <div className="p-3.5">
+                  <p className="truncate font-bold text-jevah-text">{r.title}</p>
+                  <p className="mt-0.5 text-[11px] font-semibold capitalize text-jevah-text-muted">
+                    {r.type || "single"} · {r.status || "draft"} · {count}{" "}
+                    {count === 1 ? "track" : "tracks"}
+                  </p>
+                  {r.publishedAt || r.releaseDate ? (
+                    <p className="mt-0.5 text-[10px] text-jevah-text-muted">
+                      {new Date(
+                        r.publishedAt || r.releaseDate || ""
+                      ).toLocaleDateString()}
+                    </p>
+                  ) : null}
                   <button
                     type="button"
-                    disabled={busy}
-                    onClick={() => void onPublish(r)}
-                    className="inline-flex items-center gap-1 rounded-xl bg-jevah-accent/15 px-3 py-2 text-xs font-bold text-jevah-accent hover:bg-jevah-accent/25"
+                    onClick={() => void onDelete(r)}
+                    className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold text-rose-600/80 hover:text-rose-600 dark:text-rose-400"
                   >
-                    <RocketLaunchIcon className="h-3.5 w-3.5" />
-                    Publish
+                    <TrashIcon className="h-3 w-3" />
+                    Remove
                   </button>
-                )}
-                <button
-                  type="button"
-                  onClick={() => void onDelete(r)}
-                  className="inline-flex items-center gap-1 rounded-xl border border-rose-500/30 px-3 py-2 text-xs font-bold text-rose-600 dark:text-rose-400"
-                >
-                  <TrashIcon className="h-3.5 w-3.5" />
-                  Remove
-                </button>
-              </div>
-            </li>
-          ))}
+                </div>
+              </li>
+            );
+          })}
         </ul>
       )}
     </section>

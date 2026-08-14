@@ -5,6 +5,7 @@ import {
   MusicalNoteIcon,
   SparklesIcon,
   UsersIcon,
+  BookmarkIcon,
 } from "@heroicons/react/24/outline";
 import type { CreatorAnalytics } from "../../../services/creators/analytics";
 
@@ -17,18 +18,22 @@ function fmt(n: number) {
 type Props = {
   analytics: CreatorAnalytics | null;
   loading?: boolean;
+  rangeDays?: number;
+  onRangeDays?: (n: number) => void;
 };
 
 export default function CreatorAnalyticsDashboard({
   analytics,
   loading,
+  rangeDays = 30,
+  onRangeDays,
 }: Props) {
   if (loading) {
     return (
       <div className="overflow-hidden rounded-3xl border border-jevah-border bg-jevah-surface/90 p-6 shadow-[0_8px_30px_var(--jevah-shadow)]">
         <div className="h-5 w-40 animate-pulse rounded bg-jevah-card" />
-        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, i) => (
+        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+          {Array.from({ length: 6 }).map((_, i) => (
             <div
               key={i}
               className="h-20 animate-pulse rounded-2xl bg-jevah-card"
@@ -41,11 +46,9 @@ export default function CreatorAnalyticsDashboard({
 
   if (!analytics) return null;
 
-  const maxRegion = Math.max(
-    1,
-    ...analytics.topRegions.map((r) => r.listens)
-  );
+  const maxRegion = Math.max(1, ...analytics.topRegions.map((r) => r.listens));
   const maxTrack = Math.max(1, ...analytics.topTracks.map((t) => t.listens));
+  const series = analytics.timeseries || [];
 
   return (
     <section className="overflow-hidden rounded-3xl border border-jevah-border bg-jevah-surface/90 shadow-[0_8px_30px_var(--jevah-shadow)] backdrop-blur-xl">
@@ -56,38 +59,50 @@ export default function CreatorAnalyticsDashboard({
           </div>
           <div>
             <h2 className="text-base font-bold tracking-tight text-jevah-text">
-              Audience analytics
+              Audience
             </h2>
             <p className="text-xs text-jevah-text-muted">
               Last {analytics.rangeDays} days
               {analytics.source === "catalog_fallback"
-                ? " · provisional from catalog plays"
+                ? " · catalog plays until live analytics ships"
                 : ""}
             </p>
           </div>
         </div>
-        {analytics.source === "api" && (
-          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">
-            <SparklesIcon className="h-3 w-3" />
-            Live
-          </span>
-        )}
+        <div className="flex items-center gap-2">
+          {onRangeDays && (
+            <div className="flex rounded-full bg-jevah-card p-0.5 ring-1 ring-jevah-border">
+              {[7, 28, 90].map((n) => (
+                <button
+                  key={n}
+                  type="button"
+                  onClick={() => onRangeDays(n)}
+                  className={`rounded-full px-2.5 py-1 text-[10px] font-extrabold ${
+                    rangeDays === n
+                      ? "bg-jevah-accent text-white"
+                      : "text-jevah-text-muted"
+                  }`}
+                >
+                  {n}d
+                </button>
+              ))}
+            </div>
+          )}
+          {analytics.source === "api" && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">
+              <SparklesIcon className="h-3 w-3" />
+              Live
+            </span>
+          )}
+        </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 p-5 sm:grid-cols-4 sm:px-6">
-        <Stat
-          icon={MusicalNoteIcon}
-          label="Listens"
-          value={fmt(analytics.totalListens)}
-        />
+      <div className="grid grid-cols-2 gap-3 p-5 sm:grid-cols-3 lg:grid-cols-6 sm:px-6">
+        <Stat icon={MusicalNoteIcon} label="Listens" value={fmt(analytics.totalListens)} />
         <Stat
           icon={UsersIcon}
           label="Listeners"
-          value={
-            analytics.uniqueListeners
-              ? fmt(analytics.uniqueListeners)
-              : "—"
-          }
+          value={analytics.uniqueListeners ? fmt(analytics.uniqueListeners) : "—"}
         />
         <Stat
           icon={HeartIcon}
@@ -95,8 +110,18 @@ export default function CreatorAnalyticsDashboard({
           value={analytics.likes ? fmt(analytics.likes) : "—"}
         />
         <Stat
+          icon={BookmarkIcon}
+          label="Saves"
+          value={analytics.saves ? fmt(analytics.saves) : "—"}
+        />
+        <Stat
           icon={ChartBarIcon}
-          label="Avg watch"
+          label="Completes"
+          value={analytics.completes ? fmt(analytics.completes) : "—"}
+        />
+        <Stat
+          icon={ChartBarIcon}
+          label="Avg finish"
           value={
             analytics.avgWatchPct != null
               ? `${Math.round(analytics.avgWatchPct)}%`
@@ -105,22 +130,29 @@ export default function CreatorAnalyticsDashboard({
         />
       </div>
 
+      {series.length > 1 && (
+        <div className="border-t border-jevah-border px-5 py-4 sm:px-6">
+          <p className="mb-2 text-[10px] font-black uppercase tracking-wider text-jevah-text-muted">
+            Daily listens
+          </p>
+          <Sparkline points={series.map((s) => s.listens)} />
+        </div>
+      )}
+
       <div className="grid gap-5 border-t border-jevah-border p-5 sm:grid-cols-2 sm:px-6 sm:pb-6">
         <div>
           <div className="mb-3 flex items-center gap-2">
             <GlobeAltIcon className="h-4 w-4 text-jevah-accent" />
-            <h3 className="text-sm font-bold text-jevah-text">
-              Where to focus
-            </h3>
+            <h3 className="text-sm font-bold text-jevah-text">Where they listen</h3>
           </div>
           {analytics.topRegions.length === 0 ? (
             <p className="rounded-2xl border border-dashed border-jevah-border bg-jevah-card/50 px-4 py-6 text-xs leading-relaxed text-jevah-text-muted">
               {analytics.focusHint ||
-                "Region heatmaps unlock when the analytics API ships geo from play events."}
+                "Region heatmaps unlock when play events include geo."}
             </p>
           ) : (
             <ul className="space-y-2.5">
-              {analytics.topRegions.slice(0, 6).map((r) => (
+              {analytics.topRegions.slice(0, 8).map((r) => (
                 <li key={r.region}>
                   <div className="mb-1 flex items-baseline justify-between gap-2 text-xs">
                     <span className="font-semibold text-jevah-text">
@@ -135,12 +167,9 @@ export default function CreatorAnalyticsDashboard({
                   </div>
                   <div className="h-1.5 overflow-hidden rounded-full bg-jevah-card">
                     <div
-                      className="h-full rounded-full bg-gradient-to-r from-jevah-accent to-emerald-400 transition-all duration-500"
+                      className="h-full rounded-full bg-gradient-to-r from-jevah-accent to-emerald-400"
                       style={{
-                        width: `${Math.max(
-                          6,
-                          (r.listens / maxRegion) * 100
-                        )}%`,
+                        width: `${Math.max(6, (r.listens / maxRegion) * 100)}%`,
                       }}
                     />
                   </div>
@@ -166,7 +195,7 @@ export default function CreatorAnalyticsDashboard({
             </p>
           ) : (
             <ul className="space-y-2.5">
-              {analytics.topTracks.slice(0, 6).map((t, i) => (
+              {analytics.topTracks.slice(0, 8).map((t, i) => (
                 <li key={t.trackId || t.title + i}>
                   <div className="mb-1 flex items-baseline justify-between gap-2 text-xs">
                     <span className="truncate font-semibold text-jevah-text">
@@ -177,16 +206,14 @@ export default function CreatorAnalyticsDashboard({
                     </span>
                     <span className="shrink-0 tabular-nums text-jevah-text-muted">
                       {fmt(t.listens)}
+                      {t.likes != null ? ` · ${fmt(t.likes)}♥` : ""}
                     </span>
                   </div>
                   <div className="h-1.5 overflow-hidden rounded-full bg-jevah-card">
                     <div
-                      className="h-full rounded-full bg-jevah-accent/80 transition-all duration-500"
+                      className="h-full rounded-full bg-jevah-accent/80"
                       style={{
-                        width: `${Math.max(
-                          6,
-                          (t.listens / maxTrack) * 100
-                        )}%`,
+                        width: `${Math.max(6, (t.listens / maxTrack) * 100)}%`,
                       }}
                     />
                   </div>
@@ -197,6 +224,25 @@ export default function CreatorAnalyticsDashboard({
         </div>
       </div>
     </section>
+  );
+}
+
+function Sparkline({ points }: { points: number[] }) {
+  const max = Math.max(1, ...points);
+  const w = 320;
+  const h = 56;
+  const step = points.length > 1 ? w / (points.length - 1) : w;
+  const d = points
+    .map((p, i) => {
+      const x = i * step;
+      const y = h - (p / max) * (h - 4) - 2;
+      return `${i === 0 ? "M" : "L"}${x.toFixed(1)},${y.toFixed(1)}`;
+    })
+    .join(" ");
+  return (
+    <svg viewBox={`0 0 ${w} ${h}`} className="h-14 w-full text-jevah-accent">
+      <path d={d} fill="none" stroke="currentColor" strokeWidth="2" />
+    </svg>
   );
 }
 

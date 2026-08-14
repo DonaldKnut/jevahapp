@@ -727,4 +727,9 @@
   animation-delay: 0.3s;
 }
 
+.studio-hero {
+  min-height: 280px;
+}
+
+
 
