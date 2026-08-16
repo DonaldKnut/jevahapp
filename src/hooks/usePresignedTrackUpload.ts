@@ -32,6 +32,7 @@ export function usePresignedTrackUpload(options: {
 }) {
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState<string | null>(null);
+  const [progressPct, setProgressPct] = useState<number>(0);
 
   const validateFiles = useCallback((audio: File, cover?: File | null) => {
     if (audio.size > AUDIO_MAX_BYTES) {
@@ -53,10 +54,14 @@ export function usePresignedTrackUpload(options: {
       coverFile?: File | null;
       publish?: boolean;
       extraIntent?: Record<string, unknown>;
+      onProgressPct?: (pct: number, label: string) => void;
     }) => {
       validateFiles(args.audioFile, args.coverFile);
       setBusy(true);
       setProgress("Requesting upload slots…");
+      setProgressPct(5);
+      args.onProgressPct?.(5, "Requesting upload slots…");
+
       try {
         const intent = await options.createIntent({
           title: args.title.trim(),
@@ -78,16 +83,23 @@ export function usePresignedTrackUpload(options: {
           audioFile: args.audioFile,
           coverFile: args.coverFile,
           onProgress: setProgress,
+          onProgressPct: (pct, label) => {
+            setProgressPct(pct);
+            setProgress(label);
+            args.onProgressPct?.(pct, label);
+          },
           finalize: (trackId: string) =>
             options.finalize(trackId, args.publish !== false),
         });
       } finally {
         setBusy(false);
         setProgress(null);
+        setProgressPct(0);
       }
     },
     [options, validateFiles]
   );
 
-  return { upload, busy, progress, validateFiles };
+  return { upload, busy, progress, progressPct, validateFiles };
 }
+

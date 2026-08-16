@@ -16,6 +16,7 @@ import {
   ArrowRightIcon,
   InformationCircleIcon,
   EnvelopeIcon,
+  BookOpenIcon,
 } from "@heroicons/react/24/outline";
 
 // ── Mega Menu 1: Music & Artists ──────────────────────────────────────────
@@ -27,6 +28,14 @@ const musicAndArtistsMenu = [
     icon: MusicalNoteIcon,
     badge: "Popular",
     color: "bg-amber-50 text-amber-600 border-amber-200/60",
+  },
+  {
+    title: "Jevah Bible",
+    description: "Read and search Scripture in a classic, shareable reader",
+    href: "/bible",
+    icon: BookOpenIcon,
+    badge: "Read",
+    color: "bg-amber-50 text-amber-700 border-amber-200/60",
   },
   {
     title: "Gospel Artists & Ministries",
@@ -56,6 +65,14 @@ const musicAndArtistsMenu = [
 
 // ── Mega Menu 2: About & Community ──────────────────────────────────────────
 const aboutAndCommunityMenu = [
+  {
+    title: "Jevah Bible",
+    description: "Read, search, and share Scripture — a classic online reader",
+    href: "/bible",
+    icon: BookOpenIcon,
+    badge: "New",
+    color: "bg-amber-50 text-amber-700 border-amber-200/60",
+  },
   {
     title: "About Jevah",
     description: "Our vision, mission, and commitment to spiritual growth",
@@ -311,6 +328,18 @@ export default function Nav() {
             </div>
 
             <NavLink
+              to="/bible"
+              className={({ isActive }) =>
+                `rounded-full px-4 py-2 text-sm font-semibold transition-all ${
+                  isActive
+                    ? "bg-[#256E63]/10 text-[#256E63] dark:bg-jevah-accent/15 dark:text-jevah-accent"
+                    : "text-gray-700 hover:bg-black/5 hover:text-gray-900 dark:text-jevah-text-muted dark:hover:bg-white/5 dark:hover:text-jevah-text"
+                }`
+              }
+            >
+              Jevah Bible
+            </NavLink>
+            <NavLink
               to="/creators"
               className={({ isActive }) =>
                 `rounded-full px-4 py-2 text-sm font-semibold transition-all ${
@@ -425,6 +454,17 @@ export default function Nav() {
           >
             Home
             <ArrowRightIcon className="h-4 w-4 text-gray-300" />
+          </Link>
+          <Link
+            to="/bible"
+            onClick={() => setMobileOpen(false)}
+            className="flex items-center justify-between rounded-2xl bg-gradient-to-r from-amber-500/15 to-jevah-accent/10 px-4 py-3 text-base font-bold text-jevah-text ring-1 ring-amber-500/25 transition hover:from-amber-500/25"
+          >
+            <span className="inline-flex items-center gap-2">
+              <BookOpenIcon className="h-5 w-5 text-amber-700" />
+              Jevah Bible
+            </span>
+            <ArrowRightIcon className="h-4 w-4 text-amber-700/70" />
           </Link>
 
           {/* Mobile Category Grid: Music & Artists */}

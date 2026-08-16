@@ -10,6 +10,7 @@ import {
 } from "@heroicons/react/24/outline";
 import StoreLinks from "../common/StoreLinks";
 import { BtnTypes } from "../common/StoreLinks.types";
+import { useDocumentMeta } from "../hooks/useDocumentMeta";
 
 const highlights = [
   {
@@ -44,6 +45,12 @@ const topics = [
  * belongs in the mobile app (and needs backend sermon/media endpoints).
  */
 export default function Sermons() {
+  useDocumentMeta({
+    title: "Christian sermons & teaching — Jevah",
+    description:
+      "Scripture-rooted sermons and messages on faith, prayer, and hope. Listen on the Jevah Christian app.",
+    canonicalPath: "/sermons",
+  });
   return (
     <div className="jevah-dashboard-shell min-h-dvh font-sans antialiased transition-colors duration-300">
       {/* Hero — one composition, full-bleed visual */}

@@ -1,186 +1,123 @@
-import { useIntersectionObserver } from "../hooks/useIntersectionObserver";
+import LegalDoc, { type LegalSection } from "./legal/LegalDoc";
 
-function Terms() {
-  const { ref, isIntersecting } = useIntersectionObserver({ threshold: 0.1 });
+const UPDATED = "16 August 2026";
 
-  const sections = [
-    {
-      title: "Acceptance of Terms",
-      content: [
-        "By accessing and using the Jevah app, you accept and agree to be bound by these Terms and Conditions.",
-        "If you do not agree to these terms, please do not use our services.",
-        "We reserve the right to modify these terms at any time, and your continued use constitutes acceptance of any changes.",
-      ],
-    },
-    {
-      title: "Use of Service",
-      content: [
-        "Jevah is provided for personal, non-commercial use to strengthen your faith and connect with the Christian community.",
-        "You agree to use the service in accordance with all applicable laws and regulations.",
-        "You are responsible for maintaining the confidentiality of your account credentials.",
-        "You agree not to use the service for any unlawful purpose or to transmit any harmful content.",
-      ],
-    },
-    {
-      title: "User Content",
-      content: [
-        "You retain ownership of any content you post, share, or upload to Jevah.",
-        "By posting content, you grant us a license to use, display, and distribute that content within the app.",
-        "You are solely responsible for the content you post and must ensure it does not violate any rights of others.",
-        "We reserve the right to remove any content that violates these terms or is deemed inappropriate.",
-      ],
-    },
-    {
-      title: "Intellectual Property",
-      content: [
-        "All content, features, and functionality of Jevah are owned by us and are protected by copyright, trademark, and other intellectual property laws.",
-        "You may not reproduce, distribute, or create derivative works from our content without express written permission.",
-        "The Jevah name, logo, and branding are trademarks of Jevah App.",
-      ],
-    },
-    {
-      title: "Prohibited Activities",
-      content: [
-        "You may not attempt to gain unauthorized access to any part of the service.",
-        "You may not use automated systems to access the service without permission.",
-        "You may not interfere with or disrupt the service or servers connected to the service.",
-        "You may not use the service to harass, abuse, or harm other users.",
-        "You may not post content that is defamatory, obscene, or violates the rights of others.",
-      ],
-    },
-    {
-      title: "Disclaimer of Warranties",
-      content: [
-        "Jevah is provided 'as is' without warranties of any kind, either express or implied.",
-        "We do not guarantee that the service will be uninterrupted, secure, or error-free.",
-        "We are not responsible for the accuracy, completeness, or usefulness of any content provided by users.",
-      ],
-    },
-    {
-      title: "Limitation of Liability",
-      content: [
-        "To the fullest extent permitted by law, Jevah shall not be liable for any indirect, incidental, or consequential damages.",
-        "Our total liability for any claims arising from your use of the service shall not exceed the amount you paid us in the past 12 months.",
-      ],
-    },
-    {
-      title: "Termination",
-      content: [
-        "We reserve the right to terminate or suspend your account at any time for violation of these terms.",
-        "You may terminate your account at any time by contacting us or using the account deletion feature in the app.",
-        "Upon termination, your right to use the service will immediately cease.",
-      ],
-    },
-    {
-      title: "Governing Law",
-      content: [
-        "These Terms and Conditions shall be governed by and construed in accordance with applicable laws.",
-        "Any disputes arising from these terms shall be resolved through appropriate legal channels.",
-      ],
-    },
-    {
-      title: "Contact Information",
-      content: [
-        "If you have any questions about these Terms and Conditions, please contact us at:",
-        "Email: support@jevahapp.com",
-        "Address: 24a Bashorun Okunsanya Street, Off Admiralty Way, Lekki Phase 1, Lagos.",
-      ],
-    },
-  ];
+const sections: LegalSection[] = [
+  {
+    id: "acceptance",
+    title: "Agreement",
+    paragraphs: [
+      "These Terms govern your use of Jevah websites, apps, and APIs (the “Service”). By creating an account or using Jevah you agree to them. If you do not agree, do not use the Service.",
+      "Jevah is a gospel-oriented platform: Bible reading, Christian music, sermons, community, and tools for artists who minister through music. It is not legal, medical, or pastoral advice.",
+    ],
+  },
+  {
+    id: "eligibility",
+    title: "Eligibility and accounts",
+    paragraphs: [
+      "You must be at least 13 to use a personal account (or the minimum age in your country). Creator Studio and artist uploads are for users 18 and over.",
+      "You are responsible for your password and for activity under your account. Notify us if you suspect misuse. We may suspend accounts that violate these Terms or harm the community.",
+    ],
+  },
+  {
+    id: "license",
+    title: "License to use Jevah",
+    paragraphs: [
+      "We grant you a limited, non-exclusive, non-transferable license to use the Service for personal faith, worship, and (if approved) creator publishing. You may not scrape, reverse engineer, or overload our systems, or use bots except as we expressly allow (for example search engines indexing public pages).",
+    ],
+  },
+  {
+    id: "bible",
+    title: "Bible text",
+    paragraphs: [
+      "Scripture shown in Jevah Bible is served from our API. The default World English Bible (WEB) is public domain. Licensed translations, if listed later, may appear only where we have rights; those texts remain the property of their publishers. Do not copy licensed text into commercial products without the publisher’s permission.",
+    ],
+  },
+  {
+    id: "music",
+    title: "Music, album art, and creators",
+    paragraphs: [
+      "Curated / copyright-free tracks are licensed for listening on Jevah as presented. Artist tracks remain the artist’s (or their label’s) property.",
+      "If you upload audio or images you must own the rights or have a license that allows streaming on Jevah worldwide. You grant Jevah a license to host, transcode, display album art and profile photos, and stream that content to listeners for the Service.",
+      "You must not upload infringing, hateful, sexually explicit, or unlawful material. We may remove content and terminate repeat infringers. Copyright complaints: support@jevahapp.com with the work, URL, and your contact details (a good-faith DMCA-style notice).",
+    ],
+  },
+  {
+    id: "community",
+    title: "Community standards",
+    paragraphs: [
+      "Do not harass, impersonate, spam, or post scams. Prayer and forum spaces are for building up the body of Christ — not for scraping contacts or selling leads. We may moderate or remove posts that violate this spirit or the law.",
+    ],
+  },
+  {
+    id: "payments",
+    title: "Paid features",
+    paragraphs: [
+      "Core listening and Bible reading are free today. If we introduce paid plans or tips, prices, taxes, and refunds will be shown at checkout. App Store / Play billing is also governed by Apple or Google terms.",
+    ],
+  },
+  {
+    id: "ip",
+    title: "Jevah intellectual property",
+    paragraphs: [
+      "The Jevah name, logo, site design, and software are ours. You may not use our marks in a way that suggests partnership without written permission.",
+    ],
+  },
+  {
+    id: "disclaimer",
+    title: "Disclaimers",
+    paragraphs: [
+      "THE SERVICE IS PROVIDED “AS IS”. We do not warrant uninterrupted, error-free, or virus-free operation. Scripture and sermons are for spiritual encouragement, not professional counsel.",
+    ],
+  },
+  {
+    id: "liability",
+    title: "Limitation of liability",
+    paragraphs: [
+      "To the fullest extent permitted by law, Jevah and its team are not liable for indirect, incidental, special, or consequential damages, or loss of data, profits, or goodwill. Our total liability for claims relating to the Service is limited to the greater of (a) fees you paid us in the 12 months before the claim or (b) USD 50.",
+      "Nothing in these Terms limits liability that cannot be limited under Nigerian law (including fraud or personal injury caused by negligence where such limits are forbidden).",
+    ],
+  },
+  {
+    id: "indemnity",
+    title: "Indemnity",
+    paragraphs: [
+      "You will defend and indemnify Jevah against claims arising from your content, your violation of these Terms, or your infringement of someone else’s rights.",
+    ],
+  },
+  {
+    id: "termination",
+    title: "Termination",
+    paragraphs: [
+      "You may stop using Jevah and request account deletion. We may suspend or end access for breach, risk, or if we shut down the Service. Provisions that should survive (IP, liability, indemnity) survive termination.",
+    ],
+  },
+  {
+    id: "law",
+    title: "Governing law",
+    paragraphs: [
+      "These Terms are governed by the laws of the Federal Republic of Nigeria, without regard to conflict-of-law rules. Courts in Lagos, Nigeria have exclusive jurisdiction, except that we may seek injunctive relief anywhere to protect the Service or users.",
+    ],
+  },
+  {
+    id: "changes",
+    title: "Changes",
+    paragraphs: [
+      "We may update these Terms. Continued use after the new “Last updated” date means you accept the revised Terms. If a change is material we will try to notify you by email or in-app notice.",
+    ],
+  },
+];
 
+export default function Terms() {
   return (
-    <div className="min-h-screen bg-white">
-      {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-blue-100 via-teal-50 to-green-100 py-20 px-8 pt-[20vh] lg:px-12">
-        <div className="mx-auto max-w-7xl">
-          <div
-            className={`text-center ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
-          >
-            <h1
-              className={`mb-6 text-5xl font-bold text-gray-900 md:text-6xl lg:text-7xl ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
-              style={{ animationDelay: "0.2s" }}
-            >
-              Terms & Conditions
-            </h1>
-            <p
-              className={`mx-auto mb-8 max-w-3xl text-lg text-gray-700 md:text-xl ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
-              style={{ animationDelay: "0.4s" }}
-            >
-              Please read these terms carefully before using the Jevah app. By
-              using our service, you agree to be bound by these terms.
-            </p>
-            <p
-              className={`text-sm text-gray-600 ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
-              style={{ animationDelay: "0.6s" }}
-            >
-              Last updated: {new Date().toLocaleDateString()}
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Content Sections */}
-      <section ref={ref} className="bg-white py-20 px-8 lg:px-12">
-        <div className="mx-auto max-w-4xl">
-          <div className="space-y-12">
-            {sections.map((section, index) => (
-              <div
-                key={index}
-                className={`${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
-                style={{ animationDelay: `${0.1 * index}s` }}
-              >
-                <h2 className="mb-4 text-3xl font-bold text-gray-900">
-                  {section.title}
-                </h2>
-                <div className="space-y-4">
-                  {section.content.map((paragraph, pIndex) => (
-                    <p
-                      key={pIndex}
-                      className="text-lg leading-relaxed"
-                      style={{ color: "#090E24" }}
-                    >
-                      {paragraph}
-                    </p>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="bg-gray-50 py-20 px-8 lg:px-12">
-        <div className="mx-auto max-w-4xl text-center">
-          <h2
-            className={`mb-6 text-4xl font-bold text-gray-900 ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
-          >
-            Questions About Our Terms?
-          </h2>
-          <p
-            className={`mb-8 text-lg text-gray-700 ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
-            style={{ animationDelay: "0.2s" }}
-          >
-            If you have any questions about these Terms and Conditions, please
-            contact our legal team.
-          </p>
-          <div
-            className={`${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
-            style={{ animationDelay: "0.4s" }}
-          >
-            <a
-              href="/contact"
-              className="inline-block rounded-full px-8 py-4 text-white transition-all duration-300 hover:opacity-90 hover:shadow-lg"
-              style={{ backgroundColor: "#090E24" }}
-            >
-              Contact Us
-            </a>
-          </div>
-        </div>
-      </section>
-    </div>
+    <LegalDoc
+      title="Terms and Conditions — Jevah"
+      description="Terms of use for Jevah: gospel streaming, Bible, creator uploads, accounts, and acceptable use of the Christian community platform."
+      canonicalPath="/terms"
+      updated={UPDATED}
+      intro="Please read these terms before using Jevah. They cover accounts, gospel music and album art, the Bible reader, creator studio, and how we handle disputes."
+      sections={sections}
+      jsonLdType="TermsOfService"
+    />
   );
 }
-
-export default Terms;
-

@@ -52,7 +52,8 @@ export default function StudioHero({
   publicPath: string | null;
   onEdit: () => void;
 }) {
-  const cover = artist?.avatarUrl || null;
+  const avatar = artist?.avatarUrl || null;
+  const banner = artist?.bannerUrl || artist?.avatarUrl || null;
   const genres = artist?.genres || [];
   const verified = status === "active" || Boolean(artist?.isVerified);
   const stats = [
@@ -66,8 +67,8 @@ export default function StudioHero({
       <div
         className="absolute inset-0 scale-105 bg-cover bg-center transition-all duration-700"
         style={{
-          backgroundImage: cover
-            ? `url(${cover})`
+          backgroundImage: banner
+            ? `url(${banner})`
             : "linear-gradient(135deg, #143f39 0%, #071518 55%, #040a0c 100%)",
         }}
       />
@@ -93,9 +94,9 @@ export default function StudioHero({
           <div className="relative mx-auto shrink-0 sm:mx-0">
             <div className="absolute -inset-1 rounded-[1.75rem] bg-gradient-to-br from-amber-200/50 via-emerald-300/20 to-transparent opacity-80 blur-[2px]" />
             <div className="relative h-28 w-28 overflow-hidden rounded-[1.6rem] bg-gradient-to-br from-[#1a5c54] via-[#0d2e2b] to-[#071518] shadow-[0_24px_60px_rgba(0,0,0,0.55)] ring-1 ring-white/25 sm:h-40 sm:w-40 lg:h-48 lg:w-48">
-              {cover ? (
+              {avatar ? (
                 <img
-                  src={cover}
+                  src={avatar}
                   alt={name}
                   className="h-full w-full object-cover"
                 />

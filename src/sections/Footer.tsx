@@ -109,6 +109,14 @@ function Footer() {
               </li>
               <li>
                 <Link
+                  to="/bible"
+                  className="text-gray-300 hover:text-white transition-colors"
+                >
+                  Jevah Bible
+                </Link>
+              </li>
+              <li>
+                <Link
                   to="/sermons"
                   className="text-gray-300 hover:text-white transition-colors"
                 >

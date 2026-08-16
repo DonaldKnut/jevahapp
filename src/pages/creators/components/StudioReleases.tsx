@@ -5,6 +5,7 @@ import {
   deleteRelease,
   listMyReleases,
   publishRelease,
+  uploadReleaseCover,
   type ReleaseCard,
   type ReleaseType,
 } from "../../../services/creatorsApi";
@@ -17,6 +18,7 @@ import {
   TrashIcon,
   RocketLaunchIcon,
   SparklesIcon,
+  CameraIcon,
   FolderPlusIcon,
 } from "@heroicons/react/24/outline";
 
@@ -35,6 +37,22 @@ export default function StudioReleases() {
   const [title, setTitle] = useState("");
   const [type, setType] = useState<ReleaseType>("single");
   const [creating, setCreating] = useState(false);
+
+  async function onCover(r: ReleaseCard, file: File) {
+    setBusy(true);
+    try {
+      const next = await uploadReleaseCover(r.id, file);
+      setReleases((prev) => prev.map((x) => (x.id === next.id ? next : x)));
+      toast.success("Cover updated");
+    } catch (err) {
+      toast.error(
+        "Cover upload failed",
+        err instanceof ApiError ? err.message : undefined
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -289,6 +307,20 @@ export default function StudioReleases() {
                       <MusicalNoteIcon className="h-14 w-14 opacity-30" />
                     </div>
                   )}
+                  <label className="absolute right-3 top-3 z-10 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-black/55 text-white opacity-0 backdrop-blur-md transition group-hover:opacity-100">
+                    <CameraIcon className="h-4 w-4" />
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/gif"
+                      className="sr-only"
+                      disabled={busy}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        e.target.value = "";
+                        if (file) void onCover(r, file);
+                      }}
+                    />
+                  </label>
 
                   {/* Status Badge Overlay */}
                   <span className={`absolute top-3 left-3 rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-wider backdrop-blur-md shadow-md ${

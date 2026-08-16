@@ -1,5 +1,11 @@
 import { apiRequest } from "../../lib/api";
 import { listFromUnknown, unwrapData } from "../../lib/api/unwrap";
+import {
+  assertImageFile,
+  extractPutSlot,
+  putPresignedFile,
+  COVER_MAX_BYTES,
+} from "../../lib/media";
 import { normalizeTrackCard, normalizeTrackList } from "../../lib/mediaParts/normalizeTrack";
 import type { TrackCard } from "../../types/media";
 
@@ -155,6 +161,21 @@ export async function finalizeReleaseCover(id: string) {
       })
     )
   );
+}
+
+export async function uploadReleaseCover(id: string, file: File) {
+  assertImageFile(file, COVER_MAX_BYTES);
+  const intent = await createReleaseCoverIntent(id, {
+    contentType: file.type,
+    fileName: file.name,
+    fileSizeBytes: file.size,
+  });
+  const slot = extractPutSlot(intent);
+  if (!slot) {
+    throw new Error("Cover upload was not prepared. Try again in a moment.");
+  }
+  await putPresignedFile(slot.putUrl, file, slot.headers);
+  return finalizeReleaseCover(id);
 }
 
 export async function unlinkReleaseTrack(

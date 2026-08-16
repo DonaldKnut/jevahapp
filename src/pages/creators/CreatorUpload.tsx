@@ -9,18 +9,18 @@ import {
 import { ApiError } from "../../lib/api";
 import { useAuth } from "../../context/AuthContext";
 import { useFeedback } from "../../components/admin/Feedback";
-import { inputClass } from "../../components/ui/forms";
 import { usePresignedTrackUpload } from "../../hooks/usePresignedTrackUpload";
-import { TRACK_GENRES, genreLabel } from "../../lib/media";
 import JevahLogo from "../../components/JevahLogo";
 import {
   ArrowLeftIcon,
   CloudArrowUpIcon,
+  MusicalNoteIcon,
   SparklesIcon,
 } from "@heroicons/react/24/outline";
 import UploadPromoAside from "./components/UploadPromoAside";
 import UploadDropZone from "./components/UploadDropZone";
 import UploadSubmitPanel from "./components/UploadSubmitPanel";
+import TrackQueueCard, { type TrackQueueItem } from "./components/TrackQueueCard";
 
 export default function CreatorUpload() {
   const { user } = useAuth();
@@ -32,15 +32,13 @@ export default function CreatorUpload() {
   const coverRef = useRef<HTMLInputElement>(null);
 
   const [me, setMe] = useState<CreatorMe | null>(null);
-  const [title, setTitle] = useState("");
-  const [genre, setGenre] = useState<string>("gospel");
-  const [category, setCategory] = useState("worship");
-  const [language, setLanguage] = useState("en");
   const [publish, setPublish] = useState(true);
-  const [audioFile, setAudioFile] = useState<File | null>(null);
-  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [queue, setQueue] = useState<TrackQueueItem[]>([]);
   const [dragOver, setDragOver] = useState(false);
-  const [coverPreview, setCoverPreview] = useState<string | null>(null);
+  const [masterCover, setMasterCover] = useState<File | null>(null);
+  const [masterCoverPreview, setMasterCoverPreview] = useState<string | null>(null);
+  const [isUploadingBatch, setIsUploadingBatch] = useState(false);
+  const [, setActiveTrackIndex] = useState<number>(-1);
 
   const uploadApi = useMemo(
     () => ({
@@ -50,8 +48,7 @@ export default function CreatorUpload() {
     }),
     []
   );
-  const { upload, busy, progress, validateFiles } =
-    usePresignedTrackUpload(uploadApi);
+  const { upload, validateFiles } = usePresignedTrackUpload(uploadApi);
 
   useEffect(() => {
     void fetchCreatorMe()
@@ -67,78 +64,206 @@ export default function CreatorUpload() {
 
   function onDrop(files: FileList | null) {
     if (!files?.length) return;
-    const audio = Array.from(files).find(
+    const fileList = Array.from(files);
+
+    const audioFiles = fileList.filter(
       (f) =>
         f.type.startsWith("audio/") ||
         /\.(mp3|m4a|wav|aac|ogg)$/i.test(f.name)
     );
-    const image = Array.from(files).find((f) => f.type.startsWith("image/"));
-    try {
-      if (audio) {
-        validateFiles(audio, image || null);
-        setAudioFile(audio);
-      }
-      if (image) {
-        if (audio) validateFiles(audio, image);
-        else if (image.size > 5 * 1024 * 1024) {
-          throw new Error("Cover max is 5MB.");
-        }
-        setCoverFile(image);
+
+    const imageFile = fileList.find((f) => f.type.startsWith("image/"));
+
+    let nextCover = masterCover;
+    let nextPreview = masterCoverPreview;
+
+    if (imageFile) {
+      if (imageFile.size > 5 * 1024 * 1024) {
+        toast.error("Cover image size limit is 5MB");
+      } else {
+        nextCover = imageFile;
+        setMasterCover(imageFile);
         const reader = new FileReader();
-        reader.onload = (e) => setCoverPreview(e.target?.result as string);
-        reader.readAsDataURL(image);
+        reader.onload = (e) => {
+          const prev = e.target?.result as string;
+          setMasterCoverPreview(prev);
+          setQueue((prevQueue) =>
+            prevQueue.map((item) =>
+              item.status === "idle" && !item.coverFile
+                ? { ...item, coverFile: imageFile, coverPreview: prev }
+                : item
+            )
+          );
+        };
+        reader.readAsDataURL(imageFile);
       }
-    } catch (err) {
-      toast.error(
-        "Invalid file",
-        err instanceof Error ? err.message : undefined
-      );
     }
+
+    if (audioFiles.length > 0) {
+      const newItems: TrackQueueItem[] = [];
+      for (const file of audioFiles) {
+        try {
+          validateFiles(file, nextCover);
+          const rawName = file.name
+            .replace(/\.[^/.]+$/, "")
+            .replace(/[_-]/g, " ")
+            .replace(/\s+/g, " ")
+            .trim();
+
+          newItems.push({
+            id: Math.random().toString(36).substring(2, 9),
+            audioFile: file,
+            coverFile: nextCover,
+            coverPreview: nextPreview,
+            title: rawName || "Untitled Song",
+            genre: "gospel",
+            category: "worship",
+            language: "en",
+            status: "idle",
+            progressPct: 0,
+            statusMessage: "Queued",
+          });
+        } catch (err) {
+          toast.error(
+            `Invalid file (${file.name})`,
+            err instanceof Error ? err.message : undefined
+          );
+        }
+      }
+
+      if (newItems.length > 0) {
+        setQueue((prevQueue) => [...prevQueue, ...newItems]);
+        toast.success(
+          `Added ${newItems.length} ${newItems.length === 1 ? "song" : "songs"} to queue`
+        );
+      }
+    }
+  }
+
+  function updateItem(id: string, patch: Partial<TrackQueueItem>) {
+    setQueue((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, ...patch } : item))
+    );
+  }
+
+  function removeItem(id: string) {
+    setQueue((prev) => prev.filter((item) => item.id !== id));
+  }
+
+  function setItemCover(id: string, file: File) {
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Cover max size is 5MB");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      updateItem(id, {
+        coverFile: file,
+        coverPreview: e.target?.result as string,
+      });
+    };
+    reader.readAsDataURL(file);
   }
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!audioFile || !title.trim()) return;
-    try {
-      const artistName =
-        me?.artist?.displayName ||
-        me?.artist?.name ||
-        [user?.firstName, user?.lastName].filter(Boolean).join(" ") ||
-        "Creator";
+    if (!queue.length || isUploadingBatch) return;
 
-      await upload({
-        title,
-        artistName,
-        genre,
-        category,
-        language,
-        audioFile,
-        coverFile,
-        publish,
-        extraIntent: releaseId ? { releaseId } : undefined,
+    const pendingTracks = queue.filter((t) => t.status !== "completed");
+    if (!pendingTracks.length) {
+      toast.info("All songs in queue have already been uploaded");
+      return;
+    }
+
+    setIsUploadingBatch(true);
+
+    const artistName =
+      me?.artist?.displayName ||
+      me?.artist?.name ||
+      [user?.firstName, user?.lastName].filter(Boolean).join(" ") ||
+      "Artist";
+
+    let successCount = 0;
+
+    for (let i = 0; i < queue.length; i++) {
+      const item = queue[i];
+      if (item.status === "completed") {
+        successCount++;
+        continue;
+      }
+
+      setActiveTrackIndex(i);
+
+      updateItem(item.id, {
+        status: "uploading",
+        progressPct: 5,
+        statusMessage: "Requesting upload slots…",
+        error: undefined,
       });
-      toast.success(publish ? "Published" : "Saved as draft");
-      navigate("/creators/studio", { replace: true });
-    } catch (err) {
-      toast.error(
-        "Upload failed",
-        err instanceof ApiError
-          ? err.message
-          : err instanceof Error
+
+      try {
+        await upload({
+          title: item.title,
+          artistName,
+          genre: item.genre,
+          category: item.category,
+          language: item.language,
+          audioFile: item.audioFile,
+          coverFile: item.coverFile,
+          publish,
+          extraIntent: releaseId ? { releaseId } : undefined,
+          onProgressPct: (pct, label) => {
+            updateItem(item.id, {
+              progressPct: pct,
+              statusMessage: label,
+            });
+          },
+        });
+
+        updateItem(item.id, {
+          status: "completed",
+          progressPct: 100,
+          statusMessage: publish ? "Uploaded & Published ✓" : "Saved as Draft ✓",
+        });
+        successCount++;
+      } catch (err) {
+        const msg =
+          err instanceof ApiError
             ? err.message
-            : undefined
+            : err instanceof Error
+              ? err.message
+              : "Upload failed";
+
+        updateItem(item.id, {
+          status: "failed",
+          statusMessage: "Upload Failed",
+          error: msg,
+        });
+      }
+    }
+
+    setIsUploadingBatch(false);
+    setActiveTrackIndex(-1);
+
+    if (successCount === queue.length) {
+      toast.success(
+        publish ? "All songs published to catalog!" : "All songs saved as drafts!"
+      );
+      setTimeout(() => navigate("/creators/studio", { replace: true }), 1200);
+    } else {
+      toast.warning(
+        "Partial Batch Completion",
+        `${successCount} of ${queue.length} songs were uploaded successfully.`
       );
     }
   }
 
-  const progressPct = busy
-    ? progress?.includes("100")
-      ? 100
-      : progress?.includes("Upload")
-        ? 40
-        : progress?.includes("Finali")
-          ? 80
-          : 20
+  const completedCount = queue.filter((x) => x.status === "completed").length;
+  const totalCount = queue.length;
+  const overallPct = totalCount > 0
+    ? Math.round(
+        queue.reduce((acc, item) => acc + item.progressPct, 0) / totalCount
+      )
     : 0;
 
   return (
@@ -152,7 +277,7 @@ export default function CreatorUpload() {
             <div className="h-4 w-px bg-jevah-border" />
             <span className="inline-flex items-center gap-1 rounded-full bg-jevah-accent/15 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-jevah-accent">
               <CloudArrowUpIcon className="h-3 w-3" />
-              Upload Studio
+              Artist Upload Studio
             </span>
           </div>
           <Link
@@ -174,107 +299,90 @@ export default function CreatorUpload() {
               <div className="pointer-events-none absolute -right-12 -top-12 h-36 w-36 rounded-full bg-jevah-accent/15 blur-3xl" />
               <div className="relative z-10 flex items-center gap-4">
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-jevah-accent/20 to-teal-500/10 text-jevah-accent shadow-md ring-1 ring-jevah-accent/25">
-                  <CloudArrowUpIcon className="h-6 w-6" />
+                  <MusicalNoteIcon className="h-6 w-6" />
                 </div>
                 <div>
                   <h1 className="text-xl font-black tracking-tight text-jevah-text">
-                    Upload a Track
+                    Upload Music Songs
                   </h1>
                   <p className="mt-0.5 text-xs font-medium text-jevah-text-muted">
                     {releaseId
-                      ? "This track will be attached to your selected release (Artists shelf only)."
-                      : "Fill in track details, drag & drop audio/cover files, then publish to your catalog."}
+                      ? "Add songs to your selected release. Each song displays its own real-time progress bar."
+                      : "Drag & drop single or multiple audio files. Customize metadata & watch live upload progress for each song."}
                   </p>
                 </div>
               </div>
             </div>
 
             <form onSubmit={(e) => void onSubmit(e)} className="space-y-6">
-              <div className="overflow-hidden rounded-3xl border border-jevah-border/80 bg-jevah-surface/90 shadow-[0_4px_20px_var(--jevah-shadow)] backdrop-blur-xl">
-                <div className="flex items-center gap-2.5 border-b border-jevah-border/60 px-6 py-4">
-                  <SparklesIcon className="h-4 w-4 text-jevah-accent" />
-                  <h2 className="text-sm font-extrabold uppercase tracking-wider text-jevah-text">
-                    Track Details
-                  </h2>
-                </div>
-                <div className="space-y-4 p-6">
-                  <label className="block">
-                    <span className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-jevah-text-muted">
-                      Track Title *
-                    </span>
-                    <input
-                      required
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
-                      placeholder="e.g. Amazing Grace (Live)"
-                      className={inputClass}
-                    />
-                  </label>
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                    <label className="block">
-                      <span className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-jevah-text-muted">
-                        Genre
-                      </span>
-                      <select
-                        value={genre}
-                        onChange={(e) => setGenre(e.target.value)}
-                        className={inputClass}
-                      >
-                        {TRACK_GENRES.map((g) => (
-                          <option key={g} value={g}>
-                            {genreLabel(g)}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    <label className="block">
-                      <span className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-jevah-text-muted">
-                        Category
-                      </span>
-                      <input
-                        value={category}
-                        onChange={(e) => setCategory(e.target.value)}
-                        placeholder="worship"
-                        className={inputClass}
-                      />
-                    </label>
-                    <label className="block">
-                      <span className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-jevah-text-muted">
-                        Language
-                      </span>
-                      <input
-                        value={language}
-                        onChange={(e) => setLanguage(e.target.value)}
-                        placeholder="en"
-                        className={inputClass}
-                      />
-                    </label>
-                  </div>
-                </div>
-              </div>
-
               <UploadDropZone
                 dragOver={dragOver}
                 setDragOver={setDragOver}
                 onDrop={onDrop}
                 fileRef={fileRef}
                 coverRef={coverRef}
-                audioFile={audioFile}
-                coverFile={coverFile}
-                coverPreview={coverPreview}
-                onClearCover={() => {
-                  setCoverFile(null);
-                  setCoverPreview(null);
-                }}
+                itemCount={queue.length}
               />
+
+              {queue.length > 0 && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between px-2">
+                    <div className="flex items-center gap-2">
+                      <SparklesIcon className="h-4 w-4 text-jevah-accent" />
+                      <h2 className="text-sm font-extrabold uppercase tracking-wider text-jevah-text">
+                        Songs Upload Queue ({queue.length})
+                      </h2>
+                    </div>
+                    {completedCount > 0 && (
+                      <span className="text-xs font-bold text-emerald-500">
+                        {completedCount} of {totalCount} Completed
+                      </span>
+                    )}
+                  </div>
+
+                  {queue.map((item, index) => (
+                    <TrackQueueCard
+                      key={item.id}
+                      item={item}
+                      index={index}
+                      busy={isUploadingBatch}
+                      onUpdateTitle={(title) => updateItem(item.id, { title })}
+                      onUpdateGenre={(genre) => updateItem(item.id, { genre })}
+                      onUpdateCategory={(category) =>
+                        updateItem(item.id, { category })
+                      }
+                      onPickCover={() => {
+                        const input = document.createElement("input");
+                        input.type = "file";
+                        input.accept = "image/*";
+                        input.onchange = (e) => {
+                          const target = e.target as HTMLInputElement;
+                          if (target.files?.[0]) {
+                            setItemCover(item.id, target.files[0]);
+                          }
+                        };
+                        input.click();
+                      }}
+                      onRemoveCover={() =>
+                        updateItem(item.id, {
+                          coverFile: null,
+                          coverPreview: null,
+                        })
+                      }
+                      onRemoveTrack={() => removeItem(item.id)}
+                    />
+                  ))}
+                </div>
+              )}
 
               <UploadSubmitPanel
                 publish={publish}
                 setPublish={setPublish}
-                busy={busy}
-                progress={progress}
-                progressPct={progressPct}
-                canSubmit={Boolean(audioFile)}
+                busy={isUploadingBatch}
+                overallPct={overallPct}
+                completedCount={completedCount}
+                totalCount={totalCount}
+                canSubmit={queue.length > 0}
               />
             </form>
           </div>

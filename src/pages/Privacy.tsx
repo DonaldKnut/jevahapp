@@ -1,172 +1,124 @@
-import { useIntersectionObserver } from "../hooks/useIntersectionObserver";
+import LegalDoc, { type LegalSection } from "./legal/LegalDoc";
 
-function Privacy() {
-  const { ref, isIntersecting } = useIntersectionObserver({ threshold: 0.1 });
+const UPDATED = "16 August 2026";
 
-  const sections = [
-    {
-      title: "Information We Collect",
-      content: [
-        "We collect information that you provide directly to us, including when you create an account, use our services, or contact us for support.",
-        "This may include your name, email address, phone number, and any other information you choose to provide.",
-        "We also automatically collect certain information about your device and how you interact with our app, such as your IP address, device type, and usage patterns.",
-      ],
-    },
-    {
-      title: "How We Use Your Information",
-      content: [
-        "We use the information we collect to provide, maintain, and improve our services.",
-        "We may use your information to send you updates, newsletters, and other communications related to Jevah.",
-        "We use your information to personalize your experience and to show you content that may be of interest to you.",
-        "We may use aggregated and anonymized data for analytics and to improve our services.",
-      ],
-    },
-    {
-      title: "Information Sharing",
-      content: [
-        "We do not sell, trade, or rent your personal information to third parties.",
-        "We may share your information with service providers who assist us in operating our app and conducting our business.",
-        "We may disclose your information if required by law or to protect our rights and the safety of our users.",
-        "In the event of a merger, acquisition, or sale of assets, your information may be transferred to the acquiring entity.",
-      ],
-    },
-    {
-      title: "Data Security",
-      content: [
-        "We implement appropriate technical and organizational measures to protect your personal information.",
-        "However, no method of transmission over the internet or electronic storage is 100% secure.",
-        "While we strive to protect your information, we cannot guarantee absolute security.",
-      ],
-    },
-    {
-      title: "Your Rights",
-      content: [
-        "You have the right to access, update, or delete your personal information at any time.",
-        "You can opt-out of receiving marketing communications from us.",
-        "You may request a copy of your personal data in a portable format.",
-        "You have the right to object to certain processing of your personal information.",
-      ],
-    },
-    {
-      title: "Children's Privacy",
-      content: [
-        "Our Children's Zone is designed with privacy in mind for young users.",
-        "We do not knowingly collect personal information from children under 13 without parental consent.",
-        "If you believe we have collected information from a child without consent, please contact us immediately.",
-      ],
-    },
-    {
-      title: "Changes to This Policy",
-      content: [
-        "We may update this Privacy Policy from time to time.",
-        "We will notify you of any material changes by posting the new policy on this page.",
-        "Your continued use of Jevah after changes become effective constitutes acceptance of those changes.",
-      ],
-    },
-    {
-      title: "Contact Us",
-      content: [
-        "If you have any questions about this Privacy Policy, please contact us at:",
-        "Email: support@jevahapp.com",
-        "Address: 24a Bashorun Okunsanya Street, Off Admiralty Way, Lekki Phase 1, Lagos.",
-      ],
-    },
-  ];
+const sections: LegalSection[] = [
+  {
+    id: "who",
+    title: "Who we are",
+    paragraphs: [
+      "Jevah (“we”, “us”) operates the Jevah mobile apps and website at jevahapp.com — a gospel community platform for Christian music, the Holy Bible, sermons, children’s faith learning, and creator tools.",
+      "Controller: Jevah, 24a Bashorun Okunsanya Street, Off Admiralty Way, Lekki Phase 1, Lagos, Nigeria. Email: support@jevahapp.com.",
+    ],
+  },
+  {
+    id: "collect",
+    title: "Information we collect",
+    paragraphs: [
+      "We collect what you give us and what the product needs to run.",
+    ],
+    bullets: [
+      "Account: name, email, password or social login, phone if you add it.",
+      "Profile: stage name, bio, location, avatar, banner, social links for artists.",
+      "Creator content: audio files, album art, release metadata, lyrics if you paste them.",
+      "Usage: device type, app version, IP address, pages and tracks you open, approximate region for analytics.",
+      "Communications: support messages and optional newsletter email.",
+      "Payments: if a paid feature launches, card data is handled by a processor — we do not store full card numbers.",
+    ],
+  },
+  {
+    id: "use",
+    title: "How we use information",
+    paragraphs: [
+      "We use data to provide Jevah, keep it safe, and improve it — not to sell your identity to advertisers.",
+    ],
+    bullets: [
+      "Sign-in, profiles, Bible reading, music playback, and creator studio.",
+      "Personalize gospel and Bible recommendations (including “For You” ranking).",
+      "Process uploads (presigned storage), transcode audio, and show album art.",
+      "Send service email (password reset, creator review). Marketing email only with consent; you can unsubscribe.",
+      "Detect abuse, spam, copyright claims, and security incidents.",
+      "Comply with law and enforce our Terms.",
+    ],
+  },
+  {
+    id: "legal-bases",
+    title: "Legal bases (including Nigeria NDPR / NDPA)",
+    paragraphs: [
+      "Where Nigerian data-protection law applies, we process personal data on contract (to provide the app), consent (newsletters, optional cookies), legitimate interests (security, product improvement, public artist pages you publish), and legal obligation (lawful requests).",
+      "If you are in the EEA/UK, similar GDPR bases apply. You may withdraw consent at any time without affecting prior lawful processing.",
+    ],
+  },
+  {
+    id: "sharing",
+    title: "Sharing",
+    paragraphs: [
+      "We do not sell personal information. We share only as needed to run Jevah.",
+    ],
+    bullets: [
+      "Infrastructure: cloud hosting, object storage for audio and images, email delivery, analytics that we configure.",
+      "Public by design: artist profiles, published tracks, display names, and album art you choose to publish.",
+      "Legal: if required by law, court order, or to protect users and the service.",
+      "Business transfer: if Jevah is acquired, data may move with the product under this policy’s spirit.",
+    ],
+  },
+  {
+    id: "children",
+    title: "Children",
+    paragraphs: [
+      "The Children’s Zone is meant for families. We do not knowingly collect personal data from children under 13 (or the digital-consent age in your country) without a parent or guardian.",
+      "Parents may contact support@jevahapp.com to review or delete a child’s information. Artist and studio tools are for adults (18+).",
+    ],
+  },
+  {
+    id: "retention",
+    title: "Retention and security",
+    paragraphs: [
+      "We keep account and catalog data while your account is open and as needed for backups, disputes, and law. You may request deletion; some records (invoices, abuse logs) may be kept longer where required.",
+      "We use HTTPS, access controls, and least-privilege for staff. No method is perfectly secure. Tell us immediately at support@jevahapp.com if you suspect unauthorized access.",
+    ],
+  },
+  {
+    id: "rights",
+    title: "Your rights",
+    paragraphs: [
+      "Subject to applicable law, you may request access, correction, deletion, portability, or restriction of processing, and object to certain uses. You may lodge a complaint with the Nigeria Data Protection Commission (NDPC) or your local authority.",
+      "In the app or by email: update your profile, close your account, or opt out of marketing. Unsubscribing from email does not delete your account.",
+    ],
+  },
+  {
+    id: "cookies",
+    title: "Cookies and local storage",
+    paragraphs: [
+      "The website uses essential cookies/local storage for login session, theme (light/dark), Bible translation preference, and reading-plan progress on this device. We do not run third-party ad networks on the marketing site today. If that changes, we will update this policy.",
+    ],
+  },
+  {
+    id: "international",
+    title: "International transfers",
+    paragraphs: [
+      "Servers and backups may sit outside Nigeria. We use providers that offer appropriate safeguards for the regions they serve. By using Jevah you understand your data may be processed in those locations.",
+    ],
+  },
+  {
+    id: "changes",
+    title: "Changes",
+    paragraphs: [
+      "We will post updates here and change the “Last updated” date. Material changes may also be emailed to the address on your account.",
+    ],
+  },
+];
 
+export default function Privacy() {
   return (
-    <div className="min-h-screen bg-white">
-      {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-blue-100 via-teal-50 to-green-100 py-20 px-8 pt-[20vh] lg:px-12">
-        <div className="mx-auto max-w-7xl">
-          <div
-            className={`text-center ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
-          >
-            <h1
-              className={`mb-6 text-5xl font-bold text-gray-900 md:text-6xl lg:text-7xl ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
-              style={{ animationDelay: "0.2s" }}
-            >
-              Privacy Policy
-            </h1>
-            <p
-              className={`mx-auto mb-8 max-w-3xl text-lg text-gray-700 md:text-xl ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
-              style={{ animationDelay: "0.4s" }}
-            >
-              Your privacy is important to us. This policy explains how we
-              collect, use, and protect your personal information when you use
-              the Jevah app.
-            </p>
-            <p
-              className={`text-sm text-gray-600 ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
-              style={{ animationDelay: "0.6s" }}
-            >
-              Last updated: {new Date().toLocaleDateString()}
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Content Sections */}
-      <section ref={ref} className="bg-white py-20 px-8 lg:px-12">
-        <div className="mx-auto max-w-4xl">
-          <div className="space-y-12">
-            {sections.map((section, index) => (
-              <div
-                key={index}
-                className={`${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
-                style={{ animationDelay: `${0.1 * index}s` }}
-              >
-                <h2 className="mb-4 text-3xl font-bold text-gray-900">
-                  {section.title}
-                </h2>
-                <div className="space-y-4">
-                  {section.content.map((paragraph, pIndex) => (
-                    <p
-                      key={pIndex}
-                      className="text-lg leading-relaxed"
-                      style={{ color: "#090E24" }}
-                    >
-                      {paragraph}
-                    </p>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="bg-gray-50 py-20 px-8 lg:px-12">
-        <div className="mx-auto max-w-4xl text-center">
-          <h2
-            className={`mb-6 text-4xl font-bold text-gray-900 ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
-          >
-            Questions About Privacy?
-          </h2>
-          <p
-            className={`mb-8 text-lg text-gray-700 ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
-            style={{ animationDelay: "0.2s" }}
-          >
-            If you have any questions or concerns about our privacy practices,
-            please don't hesitate to contact us.
-          </p>
-          <div
-            className={`${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
-            style={{ animationDelay: "0.4s" }}
-          >
-            <a
-              href="/contact"
-              className="inline-block rounded-full px-8 py-4 text-white transition-all duration-300 hover:opacity-90 hover:shadow-lg"
-              style={{ backgroundColor: "#090E24" }}
-            >
-              Contact Us
-            </a>
-          </div>
-        </div>
-      </section>
-    </div>
+    <LegalDoc
+      title="Privacy Policy — Jevah"
+      description="How Jevah collects, uses, and protects your data across the gospel music app, Bible reader, and creator studio. NDPR and children’s privacy included."
+      canonicalPath="/privacy"
+      updated={UPDATED}
+      intro="This policy explains how Jevah handles personal information when you use our gospel music app, online Bible, sermons, children’s zone, and creator studio."
+      sections={sections}
+      jsonLdType="PrivacyPolicy"
+    />
   );
 }
-
-export default Privacy;
-

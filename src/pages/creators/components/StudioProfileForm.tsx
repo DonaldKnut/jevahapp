@@ -8,10 +8,12 @@ import {
   CheckBadgeIcon,
   InformationCircleIcon,
 } from "@heroicons/react/24/outline";
+import ImagePicker from "./ImagePicker";
 
 const SOCIAL_KEYS = [
   { id: "instagram", label: "Instagram", placeholder: "https://instagram.com/yourhandle" },
   { id: "youtube", label: "YouTube Channel", placeholder: "https://youtube.com/@channel" },
+  { id: "tiktok", label: "TikTok", placeholder: "https://tiktok.com/@yourhandle" },
   { id: "website", label: "Official Website", placeholder: "https://yourwebsite.com" },
   { id: "spotify", label: "Spotify Artist Link", placeholder: "https://open.spotify.com/artist/…" },
 ] as const;
@@ -19,25 +21,34 @@ const SOCIAL_KEYS = [
 export default function StudioProfileForm({
   artist,
   busy,
+  imageBusy,
   onSave,
+  onUploadAvatar,
+  onUploadBanner,
 }: {
   artist: ArtistCard | null;
   busy: boolean;
+  imageBusy?: "avatar" | "banner" | null;
   onSave: (body: {
     displayName: string;
     bio?: string;
     genres?: string[];
     socials?: Record<string, string>;
+    location?: string;
   }) => Promise<void>;
+  onUploadAvatar: (file: File) => Promise<void>;
+  onUploadBanner: (file: File) => Promise<void>;
 }) {
   const [name, setName] = useState("");
   const [bio, setBio] = useState("");
+  const [location, setLocation] = useState("");
   const [genres, setGenres] = useState<string[]>([]);
   const [socials, setSocials] = useState<Record<string, string>>({});
 
   useEffect(() => {
     setName(artist?.displayName || artist?.name || "");
     setBio(artist?.bio || "");
+    setLocation(artist?.location || "");
     setGenres(artist?.genres || []);
     setSocials(artist?.socials || {});
   }, [artist]);
@@ -57,6 +68,7 @@ export default function StudioProfileForm({
     await onSave({
       displayName: name.trim(),
       bio: bio.trim() || undefined,
+      location: location.trim() || undefined,
       genres,
       socials: Object.keys(cleaned).length ? cleaned : undefined,
     });
@@ -86,6 +98,26 @@ export default function StudioProfileForm({
         </div>
 
         <div className="space-y-6 p-6">
+          <div className="grid gap-4 sm:grid-cols-[8rem_1fr]">
+            <ImagePicker
+              label="Profile photo"
+              hint="Square, under 5MB"
+              previewUrl={artist?.avatarUrl}
+              busy={imageBusy === "avatar"}
+              onPick={(file) => void onUploadAvatar(file)}
+              roundedClass="rounded-2xl"
+            />
+            <ImagePicker
+              label="Banner"
+              hint="Wide image for your public page and studio desk"
+              previewUrl={artist?.bannerUrl}
+              busy={imageBusy === "banner"}
+              onPick={(file) => void onUploadBanner(file)}
+              roundedClass="rounded-2xl"
+              aspectClass="aspect-[16/7] min-h-[8rem]"
+            />
+          </div>
+
           {/* Stage Name */}
           <label className="block">
             <span className="mb-2 block text-xs font-black uppercase tracking-wider text-jevah-text-muted">
@@ -97,6 +129,18 @@ export default function StudioProfileForm({
               onChange={(e) => setName(e.target.value)}
               className={inputClass}
               placeholder="e.g. Pastor David Cole, Grace Worship..."
+            />
+          </label>
+
+          <label className="block">
+            <span className="mb-2 block text-xs font-black uppercase tracking-wider text-jevah-text-muted">
+              Location
+            </span>
+            <input
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              className={inputClass}
+              placeholder="Lagos, Nigeria"
             />
           </label>
 

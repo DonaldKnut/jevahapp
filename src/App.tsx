@@ -48,8 +48,26 @@ import EmailLogPage from "./pages/admin/EmailLog";
 import ComposeMarketingEmailPage from "./pages/admin/ComposeMarketingEmail";
 import ComposeArtistOnboardPage from "./pages/admin/ComposeArtistOnboard";
 import EmailUnsubscribe from "./pages/EmailUnsubscribe";
+import BibleLayout from "./pages/bible/BibleLayout";
+import BibleHome from "./pages/bible/BibleHome";
+import BibleReader from "./pages/bible/BibleReader";
+import BibleSearch from "./pages/bible/BibleSearch";
+import BiblePlans from "./pages/bible/BiblePlans";
+import { useDocumentMeta } from "./hooks/useDocumentMeta";
+import {
+  APP_JSON_LD,
+  ORGANIZATION_JSON_LD,
+  WEBSITE_JSON_LD,
+} from "./lib/seo";
 
 function HomePage() {
+  useDocumentMeta({
+    title: "Jevah — Gospel music, Bible, and Christian community app",
+    description:
+      "Jevah is the gospel app for faith: stream worship and Afro-gospel, read the Holy Bible, hear sermons, and grow with a Christian community. Free on web and mobile.",
+    canonicalPath: "/",
+    jsonLd: [ORGANIZATION_JSON_LD, WEBSITE_JSON_LD, APP_JSON_LD],
+  });
   return (
     <>
       <Hero />
@@ -156,6 +174,14 @@ function App() {
               <Route path="/children" element={<Children />} />
               <Route path="/ebooks" element={<Ebooks />} />
               <Route path="/blog" element={<Blog />} />
+              <Route path="/bible" element={<BibleLayout />}>
+                <Route index element={<BibleHome />} />
+                <Route path="search" element={<BibleSearch />} />
+                <Route path="plans" element={<BiblePlans />} />
+                <Route path="plans/:planId" element={<BiblePlans />} />
+                <Route path=":book/:chapter" element={<BibleReader />} />
+                <Route path=":book/:chapter/:verse" element={<BibleReader />} />
+              </Route>
               <Route path="/creators" element={<CreatorsLanding />} />
               <Route path="/artists/:slug" element={<ArtistPublicProfile />} />
             </Route>

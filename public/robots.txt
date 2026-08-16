@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Allow: /bible
+Disallow: /admin
+Disallow: /creators/studio
+
+Sitemap: https://www.jevahapp.com/sitemap.xml

@@ -1,12 +1,19 @@
 import { useIntersectionObserver } from "../hooks/useIntersectionObserver";
 import ButtonLink from "../common/ButtonLink";
 import { Link } from "react-router-dom";
+import { useDocumentMeta } from "../hooks/useDocumentMeta";
 import LivePreview from "../assets/logos/live-preview.png";
 import LiveIIImg from "../assets/logos/live-ii-img.png";
 import KidsImg from "../assets/logos/kids-img.png";
 import ForumImg from "../assets/logos/forum.png";
 
 function About() {
+  useDocumentMeta({
+    title: "About Jevah — a gospel community platform",
+    description:
+      "Jevah brings gospel music, the Bible, sermons, children’s faith learning, and Christian community into one sacred space.",
+    canonicalPath: "/about",
+  });
   const { ref, isIntersecting } = useIntersectionObserver({ threshold: 0.1 });
 
   const mainFeatures = [

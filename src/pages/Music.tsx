@@ -18,8 +18,15 @@ import {
 import { normalizeTrackList, trackPlaybackUrl } from "../lib/media";
 import { ErrorToaster } from "../components/ErrorToaster";
 import { useAuth } from "../context/AuthContext";
+import { useDocumentMeta } from "../hooks/useDocumentMeta";
 
 export default function Music() {
+  useDocumentMeta({
+    title: "Gospel music & worship songs — Jevah",
+    description:
+      "Listen to gospel music, worship, choir, and Afro-gospel on Jevah. Discover Christian artists and copyright-free faith tracks.",
+    canonicalPath: "/music",
+  });
   const { isAuthenticated } = useAuth();
   const [lane, setLane] = useState<"curated" | "artist">("curated");
   const [tracks, setTracks] = useState<TrackCard[]>([]);

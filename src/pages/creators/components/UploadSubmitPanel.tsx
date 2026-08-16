@@ -4,8 +4,9 @@ type Props = {
   publish: boolean;
   setPublish: (v: boolean) => void;
   busy: boolean;
-  progress: string | null;
-  progressPct: number;
+  overallPct: number;
+  completedCount: number;
+  totalCount: number;
   canSubmit: boolean;
 };
 
@@ -13,8 +14,9 @@ export default function UploadSubmitPanel({
   publish,
   setPublish,
   busy,
-  progress,
-  progressPct,
+  overallPct,
+  completedCount,
+  totalCount,
   canSubmit,
 }: Props) {
   return (
@@ -22,10 +24,10 @@ export default function UploadSubmitPanel({
       <label className="flex cursor-pointer items-center gap-4 rounded-2xl border border-jevah-border/60 bg-jevah-card/40 p-4 transition hover:bg-jevah-card/70">
         <div className="flex-1">
           <p className="text-sm font-extrabold text-jevah-text">
-            Publish immediately
+            Publish songs immediately
           </p>
           <p className="mt-0.5 text-xs text-jevah-text-muted">
-            Make this track publicly visible in your catalog right away.
+            Make uploaded songs publicly visible on your Artist profile right away.
           </p>
         </div>
         <div
@@ -47,25 +49,31 @@ export default function UploadSubmitPanel({
         </div>
       </label>
 
+      {/* Master Batch Progress Header */}
       {busy && (
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-bold text-jevah-text">
-              {progress || "Uploading…"}
-            </p>
-            <span className="text-xs font-bold text-jevah-accent">
-              {progressPct}%
+        <div className="space-y-2 rounded-2xl border border-jevah-accent/30 bg-jevah-accent/5 p-4">
+          <div className="flex items-center justify-between text-xs font-bold text-jevah-text">
+            <span className="flex items-center gap-2">
+              <span className="h-2 w-2 animate-ping rounded-full bg-jevah-accent" />
+              <span>
+                Batch Uploading: {completedCount} of {totalCount} Songs Uploaded
+              </span>
+            </span>
+            <span className="font-mono font-black text-jevah-accent">
+              {overallPct}% Overall
             </span>
           </div>
-          <div className="h-2 w-full overflow-hidden rounded-full bg-jevah-card">
+
+          <div className="h-2.5 w-full overflow-hidden rounded-full bg-jevah-card ring-1 ring-jevah-border">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-jevah-accent to-emerald-500 transition-all duration-500"
-              style={{ width: `${progressPct}%` }}
+              className="h-full rounded-full bg-gradient-to-r from-jevah-accent via-emerald-500 to-teal-400 transition-all duration-500"
+              style={{ width: `${overallPct}%` }}
             />
           </div>
         </div>
       )}
 
+      {/* Master Upload Button */}
       <button
         type="submit"
         disabled={busy || !canSubmit}
@@ -75,12 +83,16 @@ export default function UploadSubmitPanel({
           {busy ? (
             <>
               <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-              {progress || "Working…"}
+              <span>Uploading Songs ({completedCount}/{totalCount})…</span>
             </>
           ) : (
             <>
               <CloudArrowUpIcon className="h-5 w-5" />
-              {publish ? "Upload & Publish" : "Upload as Draft"}
+              <span>
+                {publish
+                  ? `Upload & Publish ${totalCount > 1 ? `${totalCount} Songs` : "Song"}`
+                  : `Upload ${totalCount > 1 ? `${totalCount} Songs` : "Song"} as Draft`}
+              </span>
             </>
           )}
         </span>
@@ -88,3 +100,4 @@ export default function UploadSubmitPanel({
     </div>
   );
 }
+

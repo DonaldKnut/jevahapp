@@ -192,24 +192,33 @@ export default function AudioLibraryPage() {
       coverFileName: coverFile?.name,
     });
 
-    setProgress("Uploading audio…");
+    setProgress("Uploading audio (0%)…");
     await putPresignedFile(
       intent.audio.putUrl,
       audioFile,
-      intent.audio.headers
+      intent.audio.headers,
+      (loaded, total) => {
+        const pct = total > 0 ? Math.round((loaded / total) * 100) : 0;
+        setProgress(`Uploading audio (${pct}%)…`);
+      }
     );
 
     if (coverFile && intent.cover?.putUrl) {
-      setProgress("Uploading cover…");
+      setProgress("Uploading cover art…");
       await putPresignedFile(
         intent.cover.putUrl,
         coverFile,
-        intent.cover.headers
+        intent.cover.headers,
+        (loaded, total) => {
+          const pct = total > 0 ? Math.round((loaded / total) * 100) : 0;
+          setProgress(`Uploading cover (${pct}%)…`);
+        }
       );
     }
 
-    setProgress("Finalizing…");
+    setProgress("Finalizing track metadata…");
     await finalizeTrack(intent.trackId, { publish: true });
+
   }
 
   async function uploadViaUrl() {

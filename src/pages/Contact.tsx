@@ -1,8 +1,15 @@
 import { useState } from "react";
 import { useIntersectionObserver } from "../hooks/useIntersectionObserver";
 import { useFeedback } from "../components/admin/Feedback";
+import { useDocumentMeta } from "../hooks/useDocumentMeta";
 
 function Contact() {
+  useDocumentMeta({
+    title: "Contact Jevah",
+    description:
+      "Reach the Jevah team in Lagos for support, gospel artist partnerships, and faith-community questions.",
+    canonicalPath: "/contact",
+  });
   const { ref, isIntersecting } = useIntersectionObserver({ threshold: 0.1 });
   const { toast } = useFeedback();
   const [formData, setFormData] = useState({

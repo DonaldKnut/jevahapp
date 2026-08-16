@@ -27,6 +27,8 @@ export type ArtistCard = {
   name?: string;
   bio?: string;
   avatarUrl?: string | null;
+  bannerUrl?: string | null;
+  location?: string | null;
   genres?: string[];
   creatorTypes?: string[];
   socials?: Record<string, string>;

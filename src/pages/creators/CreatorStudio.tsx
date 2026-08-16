@@ -8,6 +8,8 @@ import {
   patchCreatorTrack,
   trackId,
   updateCreatorProfile,
+  uploadCreatorImage,
+  uploadTrackCover,
   type CreatorAnalytics,
   type CreatorMe,
   type TrackCard,
@@ -72,6 +74,9 @@ export default function CreatorStudio() {
   const [editArtist, setEditArtist] = useState("");
   const [editGenre, setEditGenre] = useState("");
   const [editVisibility, setEditVisibility] = useState("published");
+  const [editCoverFile, setEditCoverFile] = useState<File | null>(null);
+  const [editCoverPreview, setEditCoverPreview] = useState<string | null>(null);
+  const [imageBusy, setImageBusy] = useState<"avatar" | "banner" | null>(null);
   const [playing, setPlaying] = useState<TrackCard | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
 
@@ -200,6 +205,9 @@ export default function CreatorStudio() {
     if (!editTrack) return;
     setBusy(true);
     try {
+      if (editCoverFile) {
+        await uploadTrackCover(trackId(editTrack), editCoverFile);
+      }
       await patchCreatorTrack(trackId(editTrack), {
         title: editTitle.trim(),
         artistName: editArtist.trim() || undefined,
@@ -208,6 +216,7 @@ export default function CreatorStudio() {
       });
       toast.success("Track updated");
       setEditTrack(null);
+      setEditCoverFile(null);
       await load();
     } catch (err) {
       toast.error(
@@ -224,6 +233,7 @@ export default function CreatorStudio() {
     bio?: string;
     genres?: string[];
     socials?: Record<string, string>;
+    location?: string;
   }) {
     setBusy(true);
     try {
@@ -240,12 +250,30 @@ export default function CreatorStudio() {
     }
   }
 
+  async function onUploadArtistImage(kind: "avatar" | "banner", file: File) {
+    setImageBusy(kind);
+    try {
+      const next = await uploadCreatorImage(kind, file);
+      setMe(next);
+      toast.success(kind === "avatar" ? "Photo updated" : "Banner updated");
+    } catch (err) {
+      toast.error(
+        kind === "avatar" ? "Photo upload failed" : "Banner upload failed",
+        err instanceof ApiError ? err.message : undefined
+      );
+    } finally {
+      setImageBusy(null);
+    }
+  }
+
   function openEdit(t: TrackCard) {
     setEditTrack(t);
     setEditTitle(t.title || "");
     setEditArtist(t.artistName || t.singer || "");
     setEditGenre(t.genre || "");
     setEditVisibility(t.visibility || "published");
+    setEditCoverFile(null);
+    setEditCoverPreview(t.thumbnailUrl || null);
   }
 
   if (loading) {
@@ -453,7 +481,10 @@ export default function CreatorStudio() {
                 <StudioProfileForm
                   artist={me.artist}
                   busy={busy}
+                  imageBusy={imageBusy}
                   onSave={onSaveProfile}
+                  onUploadAvatar={(file) => onUploadArtistImage("avatar", file)}
+                  onUploadBanner={(file) => onUploadArtistImage("banner", file)}
                 />
               ) : (
                 <CreatorHubByStep
@@ -509,6 +540,46 @@ export default function CreatorStudio() {
           }
         >
           <form onSubmit={(e) => void onSaveTrack(e)} className="space-y-4">
+            <label className="block cursor-pointer">
+              <span className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-jevah-text-muted">
+                Album art
+              </span>
+              <span className="flex items-center gap-3 rounded-2xl border border-jevah-border/70 bg-jevah-card/40 p-3">
+                <span className="h-16 w-16 overflow-hidden rounded-xl bg-jevah-card">
+                  {editCoverPreview ? (
+                    <img
+                      src={editCoverPreview}
+                      alt=""
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <span className="flex h-full w-full items-center justify-center text-[10px] font-bold text-jevah-text-muted">
+                      No art
+                    </span>
+                  )}
+                </span>
+                <span className="text-xs font-semibold text-jevah-text-muted">
+                  {editCoverFile
+                    ? editCoverFile.name
+                    : "JPG, PNG, or WebP · under 5MB"}
+                </span>
+              </span>
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                className="sr-only"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  e.target.value = "";
+                  if (!file) return;
+                  setEditCoverFile(file);
+                  const reader = new FileReader();
+                  reader.onload = (ev) =>
+                    setEditCoverPreview(String(ev.target?.result || ""));
+                  reader.readAsDataURL(file);
+                }}
+              />
+            </label>
             <label className="block">
               <span className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-jevah-text-muted">
                 Title

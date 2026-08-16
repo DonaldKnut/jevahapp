@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { useDocumentMeta } from "../../hooks/useDocumentMeta";
 
 const TYPES = [
   {
@@ -17,6 +18,12 @@ const TYPES = [
 ];
 
 export default function CreatorsLanding() {
+  useDocumentMeta({
+    title: "Gospel artists on Jevah — share Christian music",
+    description:
+      "Upload gospel music, build a public artist profile, and reach listeners who love worship, Afro-gospel, and the Word.",
+    canonicalPath: "/creators",
+  });
   const { isAuthenticated } = useAuth();
 
   return (
