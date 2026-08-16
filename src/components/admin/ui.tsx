@@ -1,6 +1,12 @@
 import type { ButtonHTMLAttributes, ComponentType, ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { ArrowUpRightIcon, ArrowTrendingUpIcon, ArrowTrendingDownIcon, SparklesIcon } from "@heroicons/react/24/outline";
+import {
+  ArrowUpRightIcon,
+  ArrowTrendingUpIcon,
+  ArrowTrendingDownIcon,
+  SparklesIcon,
+  ChevronLeftIcon,
+} from "@heroicons/react/24/outline";
 
 export function cn(...parts: Array<string | false | null | undefined>) {
   return parts.filter(Boolean).join(" ");
@@ -11,16 +17,27 @@ export function PageHeader({
   subtitle,
   actions,
   badgeText,
+  back,
 }: {
   title: string;
   subtitle?: string;
   actions?: ReactNode;
   badgeText?: string;
+  back?: { to: string; label?: string };
 }) {
   return (
     <div className="relative pb-5">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
+          {back && (
+            <Link
+              to={back.to}
+              className="mb-2 inline-flex items-center gap-1 text-xs font-bold text-jevah-text-muted transition hover:text-jevah-accent"
+            >
+              <ChevronLeftIcon className="h-4 w-4" />
+              {back.label || "Overview"}
+            </Link>
+          )}
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-black tracking-tight text-jevah-text sm:text-3xl">
               {title}
@@ -323,6 +340,7 @@ export function KpiLink({
   label,
   value,
   to,
+  onClick,
   tone = "brand",
   icon: Icon,
   desc,
@@ -331,7 +349,8 @@ export function KpiLink({
 }: {
   label: string;
   value: number | string;
-  to: string;
+  to?: string;
+  onClick?: () => void;
   tone?: "brand" | "danger" | "warning" | "neutral" | "success";
   icon?: ComponentType<{ className?: string }>;
   desc?: string;
@@ -339,16 +358,13 @@ export function KpiLink({
   trendUp?: boolean;
 }) {
   const t = kpiToneConfig[tone];
-  return (
-    <Link
-      to={to}
-      className={cn(
-        "group relative min-h-[148px] overflow-hidden rounded-3xl border bg-gradient-to-br p-6 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 active:scale-[0.98]",
-        t.card,
-        t.hover
-      )}
-    >
-      {/* Glow orb */}
+  const className = cn(
+    "group relative min-h-[148px] overflow-hidden rounded-3xl border bg-gradient-to-br p-6 text-left backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 active:scale-[0.98]",
+    t.card,
+    t.hover
+  );
+  const inner = (
+    <>
       <div className={cn("pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full blur-2xl transition-opacity group-hover:opacity-80", t.glow)} />
       <div className="flex items-start justify-between gap-3">
         {Icon && (
@@ -388,14 +404,26 @@ export function KpiLink({
           <p className="mt-1 text-xs font-medium leading-relaxed text-jevah-text-muted">{desc}</p>
         )}
       </div>
-
-      {/* Background Sparkline Accent Graphic */}
       <svg className="absolute -bottom-1 right-0 h-10 w-28 opacity-20 transition-opacity group-hover:opacity-40" viewBox="0 0 100 30" fill="none">
         <path
           d={trendUp ? "M0 25 Q 25 20, 50 15 T 100 5 L 100 30 L 0 30 Z" : "M0 5 Q 25 15, 50 20 T 100 28 L 100 30 L 0 30 Z"}
           fill={t.sparkline}
         />
       </svg>
+    </>
+  );
+
+  if (onClick) {
+    return (
+      <button type="button" onClick={onClick} className={className}>
+        {inner}
+      </button>
+    );
+  }
+
+  return (
+    <Link to={to || "/admin"} className={className}>
+      {inner}
     </Link>
   );
 }

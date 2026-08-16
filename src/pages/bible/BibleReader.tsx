@@ -299,7 +299,7 @@ export default function BibleReader() {
                   <Link
                     key={b.name}
                     to={readerHref(b.name, 1, { translation: translationId })}
-                    className={`block rounded-lg px-2.5 py-1.5 font-serif text-sm transition-all ${
+                    className={`block rounded-lg px-2.5 py-1.5 font-sans text-sm transition-all ${
                       b.name === canonicalBook
                         ? "bg-[#256E63] font-bold text-white shadow-sm"
                         : "text-[#1f2a24] hover:bg-black/5 dark:text-[#f4ead6] dark:hover:bg-white/10"
@@ -320,7 +320,7 @@ export default function BibleReader() {
                   <Link
                     key={b.name}
                     to={readerHref(b.name, 1, { translation: translationId })}
-                    className={`block rounded-lg px-2.5 py-1.5 font-serif text-sm transition-all ${
+                    className={`block rounded-lg px-2.5 py-1.5 font-sans text-sm transition-all ${
                       b.name === canonicalBook
                         ? "bg-[#256E63] font-bold text-white shadow-sm"
                         : "text-[#1f2a24] hover:bg-black/5 dark:text-[#f4ead6] dark:hover:bg-white/10"
@@ -338,12 +338,12 @@ export default function BibleReader() {
           <header className="flex flex-wrap items-end justify-between gap-3 border-b border-[#c4a574]/30 pb-4">
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <span className="rounded-full bg-[#c4a574]/15 px-2.5 py-0.5 font-serif text-[10px] font-bold uppercase tracking-widest text-[#9a7b3c] dark:text-[#e2c286]">
+                <span className="rounded-full bg-[#c4a574]/15 px-2.5 py-0.5 font-sans text-[10px] font-bold uppercase tracking-widest text-[#9a7b3c] dark:text-[#e2c286]">
                   {meta?.testament === "new" ? "New Testament" : "Old Testament"}
                 </span>
                 <span className="text-xs font-semibold text-[#8a7d68]">{transAbbr}</span>
               </div>
-              <h1 className="mt-1 font-serif text-4xl font-bold tracking-tight text-[#1f2a24] dark:text-[#f4ead6] sm:text-5xl">
+              <h1 className="mt-1 font-sans text-4xl font-bold tracking-tight text-[#1f2a24] dark:text-[#f4ead6] sm:text-5xl">
                 {canonicalBook}{" "}
                 <span className="text-[#9a7b3c] dark:text-[#e2c286]">{chapter}</span>
               </h1>
@@ -459,7 +459,7 @@ export default function BibleReader() {
           {loading ? (
             <div className="mt-16 text-center">
               <ArrowPathIcon className="mx-auto h-8 w-8 animate-spin text-[#9a7b3c]" />
-              <p className="mt-3 font-serif text-lg text-[#8a7d68]">Unrolling chapter scroll…</p>
+              <p className="mt-3 font-sans text-lg text-[#8a7d68]">Unrolling chapter scroll…</p>
             </div>
           ) : error ? (
             <div className="mt-12 rounded-2xl border border-rose-500/30 bg-rose-500/5 p-6 text-center text-sm text-rose-800 dark:text-rose-200">
@@ -494,7 +494,7 @@ export default function BibleReader() {
             </div>
           )}
 
-          <p className="mt-12 text-center font-serif text-xs text-[#8a7d68]">
+          <p className="mt-12 text-center font-sans text-xs text-[#8a7d68]">
             {transName} Edition
             {highlight
               ? ` · ${rangeStart && rangeStop && rangeStop !== rangeStart
@@ -585,7 +585,7 @@ export default function BibleReader() {
         ) : (
           <button
             type="button"
-            className="min-w-0 flex-1 truncate text-center font-serif text-sm font-bold tracking-wide text-[#1f2a24] dark:text-[#f4ead6]"
+            className="min-w-0 flex-1 truncate text-center font-sans text-sm font-bold tracking-wide text-[#1f2a24] dark:text-[#f4ead6]"
             onClick={() => setPicker("book")}
           >
             {canonicalBook} <span className="text-[#9a7b3c]">{chapter}</span> ▾

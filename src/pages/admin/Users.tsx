@@ -370,6 +370,7 @@ export default function UsersPage() {
         title="User Management"
         subtitle={`Directory of registered platform members · ${onlineCount} active now · ${total} records`}
         badgeText="User Directory"
+        back={{ to: "/admin", label: "Overview" }}
         actions={
           <Button
             disabled={selected.size === 0}

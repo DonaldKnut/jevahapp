@@ -192,6 +192,7 @@ export default function ArtistsPage() {
         title="Creator Directory"
         subtitle="Review creator & artist applications — activation unlocks Studio upload capability."
         badgeText="Artist Roster"
+        back={{ to: "/admin", label: "Overview" }}
         actions={
           <Button
             onClick={() => {

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   fetchAnalytics,
@@ -14,7 +14,7 @@ import type {
   AdminMediaCard,
   AdminUser,
 } from "../../types/admin";
-import { ApiError } from "../../lib/api";
+import { ApiError, isApiRateLimited } from "../../lib/api";
 import { ErrorToaster } from "../../components/ErrorToaster";
 import {
   KpiLink,
@@ -41,6 +41,10 @@ import {
   ArrowPathIcon,
 } from "@heroicons/react/24/outline";
 import { BoltIcon } from "@heroicons/react/24/solid";
+import QuickReviewModal from "./components/QuickReviewModal";
+import OverviewKpiPeek, {
+  type OverviewPeek,
+} from "./components/OverviewKpiPeek";
 
 function formatWhen(iso?: string) {
   if (!iso) return "";
@@ -105,26 +109,76 @@ export default function Overview() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [reviewId, setReviewId] = useState<string | null>(null);
+  const [reviewSeed, setReviewSeed] = useState<AdminMediaCard | null>(null);
+  const [peek, setPeek] = useState<OverviewPeek | null>(null);
+  const hasDataRef = useRef(false);
 
   const load = useCallback(async (isManual = false) => {
+    if (!isManual && isApiRateLimited()) return;
     try {
       if (isManual) setRefreshing(true);
-      setError(null);
-      const [a, f, p, m, q, ts] = await Promise.all([
-        fetchAnalytics(),
-        fetchFeed(25),
-        fetchPresence({ status: "online", limit: 20 }),
-        fetchRecentMedia({ limit: 10 }),
-        fetchModerationQueue({ status: "under_review", limit: 5 }),
-        fetchTimeseries({ metric, range: "7d" }).catch(() => null),
+      const [a, f, p, m, q] = await Promise.all([
+        fetchAnalytics().catch(() => null),
+        fetchFeed(25).catch(() => null),
+        fetchPresence({ status: "online", limit: 20 }).catch(() => null),
+        fetchRecentMedia({ limit: 10 }).catch(() => null),
+        fetchModerationQueue({ status: "under_review", limit: 5 }).catch(
+          () => null
+        ),
       ]);
-      setAnalytics(a);
-      setFeed(f.items);
-      setOnlineUsers(p.users);
-      setOnlineCount(p.onlineCount ?? f.onlineCount ?? 0);
-      setRecent(m.media);
-      setQueuePreview(q.items);
-      if (ts) {
+      if (a) setAnalytics(a);
+      if (f) setFeed(f.items);
+      if (p) {
+        setOnlineUsers(p.users);
+        setOnlineCount(p.onlineCount ?? f?.onlineCount ?? 0);
+      } else if (f?.onlineCount != null) {
+        setOnlineCount(f.onlineCount);
+      }
+      if (m) setRecent(m.media);
+      if (q) setQueuePreview(q.items);
+      const gotAny = Boolean(a || f || p || m || q);
+      if (gotAny) {
+        hasDataRef.current = true;
+        setError(null);
+      } else if (isManual || !hasDataRef.current) {
+        setError(
+          isApiRateLimited()
+            ? "The API asked us to slow down. Wait a minute, then hit Refresh."
+            : "Failed to load dashboard data."
+        );
+      }
+    } catch (err) {
+      if (hasDataRef.current && !isManual) return;
+      setError(
+        err instanceof ApiError ? err.message : "Failed to load dashboard data."
+      );
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void load();
+    const tick = () => {
+      if (document.hidden || isApiRateLimited()) return;
+      void load();
+    };
+    const id = window.setInterval(tick, 120000);
+    document.addEventListener("visibilitychange", tick);
+    return () => {
+      window.clearInterval(id);
+      document.removeEventListener("visibilitychange", tick);
+    };
+  }, [load]);
+
+  useEffect(() => {
+    if (isApiRateLimited()) return;
+    let alive = true;
+    void fetchTimeseries({ metric, range: "7d" })
+      .then((ts) => {
+        if (!alive || !ts) return;
         const raw = ts as unknown;
         const points = Array.isArray(raw)
           ? raw
@@ -141,24 +195,14 @@ export default function Overview() {
             count?: number;
           }>
         );
-      } else {
-        setSeries([]);
-      }
-    } catch (err) {
-      setError(
-        err instanceof ApiError ? err.message : "Failed to load dashboard data."
-      );
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
+      })
+      .catch(() => {
+        /* chart is optional */
+      });
+    return () => {
+      alive = false;
+    };
   }, [metric]);
-
-  useEffect(() => {
-    void load();
-    const id = window.setInterval(() => void load(), 45000);
-    return () => window.clearInterval(id);
-  }, [load]);
 
   if (loading) {
     return (
@@ -177,60 +221,69 @@ export default function Overview() {
     );
   }
 
-  const kpiCards = [
+  const kpiCards: Array<{
+    peek: OverviewPeek;
+    label: string;
+    value: number;
+    tone: "danger" | "warning" | "brand" | "neutral" | "success";
+    icon: typeof FlagIcon;
+    desc: string;
+    trend?: string;
+    trendUp?: boolean;
+  }> = [
     {
+      peek: "reports",
       label: "Media Reports",
       value: analytics?.reports?.pending ?? 0,
-      to: "/admin/reports?status=pending",
-      tone: "danger" as const,
+      tone: "danger",
       icon: FlagIcon,
       desc: "Requires admin review",
       trend: "+12%",
       trendUp: false,
     },
     {
+      peek: "comments",
       label: "Reported Comments",
       value: analytics?.reports?.comments ?? 0,
-      to: "/admin/reports?type=comment",
-      tone: "warning" as const,
+      tone: "warning",
       icon: ChatBubbleLeftEllipsisIcon,
       desc: "Community flags",
       trend: "+4%",
       trendUp: false,
     },
     {
+      peek: "review",
       label: "Under Review",
       value: analytics?.moderation?.pending ?? 0,
-      to: "/admin/moderation",
-      tone: "brand" as const,
+      tone: "brand",
       icon: ShieldCheckIcon,
       desc: "In moderation queue",
       trend: "-8%",
       trendUp: true,
     },
     {
+      peek: "banned",
       label: "Banned Users",
       value: analytics?.users?.banned ?? 0,
-      to: "/admin/users?isBanned=true",
-      tone: "neutral" as const,
+      tone: "neutral",
       icon: UserMinusIcon,
       desc: "Restricted accounts",
     },
     {
+      peek: "artists",
       label: "Unverified Artists",
       value: analytics?.verification?.unverifiedArtists ?? 0,
-      to: "/admin/users?role=artist",
-      tone: "success" as const,
+      tone: "success",
       icon: UserGroupIcon,
       desc: "Verification requests",
       trend: "+18%",
       trendUp: true,
     },
     {
+      peek: "sessions",
       label: "Active Sessions",
       value: onlineCount,
-      to: "/admin/users?presence=online",
-      tone: "brand" as const,
+      tone: "brand",
       icon: WifiIcon,
       desc: "Online right now",
       trend: "Live",
@@ -308,7 +361,7 @@ export default function Overview() {
             key={card.label}
             label={card.label}
             value={card.value}
-            to={card.to}
+            onClick={() => setPeek(card.peek)}
             tone={card.tone}
             icon={card.icon}
             desc={card.desc}
@@ -516,26 +569,32 @@ export default function Overview() {
                 <li className="py-6 text-center text-xs text-jevah-text-muted">No recent uploads found.</li>
               )}
               {recent.slice(0, 4).map((item) => (
-                <li
-                  key={item.id}
-                  className="flex items-center gap-3 rounded-xl border border-jevah-border/60 bg-jevah-surface p-2.5 shadow-sm transition hover:border-jevah-accent/30"
-                >
-                  {item.preview?.thumbnailUrl ? (
-                    <img
-                      src={item.preview.thumbnailUrl}
-                      alt=""
-                      className="h-10 w-10 shrink-0 rounded-lg object-cover ring-1 ring-jevah-border"
-                    />
-                  ) : (
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-jevah-accent/10 text-jevah-accent">
-                      <MusicalNoteIcon className="h-5 w-5" />
+                <li key={item.id}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setReviewSeed(item);
+                      setReviewId(item.id);
+                    }}
+                    className="flex w-full items-center gap-3 rounded-xl border border-jevah-border/60 bg-jevah-surface p-2.5 text-left shadow-sm transition hover:border-jevah-accent/40 hover:shadow-md"
+                  >
+                    {item.preview?.thumbnailUrl ? (
+                      <img
+                        src={item.preview.thumbnailUrl}
+                        alt=""
+                        className="h-10 w-10 shrink-0 rounded-lg object-cover ring-1 ring-jevah-border"
+                      />
+                    ) : (
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-jevah-accent/10 text-jevah-accent">
+                        <MusicalNoteIcon className="h-5 w-5" />
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-xs font-bold text-jevah-text">{item.title}</p>
+                      <p className="truncate text-[10px] font-medium text-jevah-text-muted capitalize">{item.contentType}</p>
                     </div>
-                  )}
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-xs font-bold text-jevah-text">{item.title}</p>
-                    <p className="truncate text-[10px] font-medium text-jevah-text-muted capitalize">{item.contentType}</p>
-                  </div>
-                  <ModerationStatusBadge status={item.moderationStatus} />
+                    <ModerationStatusBadge status={item.moderationStatus} />
+                  </button>
                 </li>
               ))}
             </ul>
@@ -571,14 +630,20 @@ export default function Overview() {
             ) : (
               <ul className="space-y-2">
                 {queuePreview.slice(0, 4).map((item) => (
-                  <li
-                    key={item.id}
-                    className="flex items-center justify-between gap-2 rounded-xl bg-amber-500/10 p-2.5 ring-1 ring-amber-500/20"
-                  >
-                    <span className="min-w-0 truncate text-xs font-bold text-jevah-text">
-                      {item.title}
-                    </span>
-                    <ModerationStatusBadge status={item.moderationStatus} />
+                  <li key={item.id}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setReviewSeed(item);
+                        setReviewId(item.id);
+                      }}
+                      className="flex w-full items-center justify-between gap-2 rounded-xl bg-amber-500/10 p-2.5 text-left ring-1 ring-amber-500/20 transition hover:bg-amber-500/15"
+                    >
+                      <span className="min-w-0 truncate text-xs font-bold text-jevah-text">
+                        {item.title}
+                      </span>
+                      <ModerationStatusBadge status={item.moderationStatus} />
+                    </button>
                   </li>
                 ))}
               </ul>
@@ -586,6 +651,36 @@ export default function Overview() {
           </Panel>
         </div>
       </div>
+
+      <OverviewKpiPeek
+        peek={peek}
+        onlineUsers={onlineUsers}
+        queuePreview={queuePreview}
+        onClose={() => setPeek(null)}
+        onOpenReview={(item) => {
+          setPeek(null);
+          setReviewSeed(item);
+          setReviewId(item.id);
+        }}
+      />
+      <QuickReviewModal
+        mediaId={reviewId}
+        seed={reviewSeed}
+        onClose={() => {
+          setReviewId(null);
+          setReviewSeed(null);
+        }}
+        onResolved={(id, status) => {
+          setRecent((list) =>
+            list.map((m) => (m.id === id ? { ...m, moderationStatus: status } : m))
+          );
+          setQueuePreview((list) =>
+            status === "approved" || status === "rejected"
+              ? list.filter((m) => m.id !== id)
+              : list
+          );
+        }}
+      />
     </PageEnter>
   );
 }

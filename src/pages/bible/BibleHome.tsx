@@ -158,7 +158,7 @@ export default function BibleHome() {
           <span>The Word for Every Day</span>
         </div>
 
-        <h1 className="mt-4 font-serif text-4xl font-bold tracking-tight text-[#1f2a24] dark:text-[#f4ead6] sm:text-6xl">
+        <h1 className="mt-4 font-sans text-4xl font-bold tracking-tight text-[#1f2a24] dark:text-[#f4ead6] sm:text-6xl">
           Jevah Holy Bible
         </h1>
 
@@ -177,7 +177,7 @@ export default function BibleHome() {
       {/* Daily Verse Feature Card */}
       {daily && (
         <blockquote className="bible-quote bible-quote-in relative mx-auto mt-8 max-w-3xl overflow-hidden sm:mt-10">
-          <div className="absolute -right-6 -top-6 font-serif text-9xl font-bold text-[#c4a574]/10 dark:text-amber-300/5 select-none pointer-events-none">
+          <div className="absolute -right-6 -top-6 font-sans text-9xl font-bold text-[#c4a574]/10 dark:text-amber-300/5 select-none pointer-events-none">
             “
           </div>
 
@@ -186,12 +186,12 @@ export default function BibleHome() {
             <span>Verse of the Day</span>
           </div>
 
-          <p className="mt-3 font-serif text-2xl font-medium leading-relaxed text-[#1f2a24] dark:text-[#f4ead6] sm:text-3.5xl">
+          <p className="mt-3 font-sans text-2xl font-medium leading-relaxed text-[#1f2a24] dark:text-[#f4ead6] sm:text-3.5xl">
             “{daily.text}”
           </p>
 
           <footer className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-[#c4a574]/25 pt-4">
-            <cite className="not-italic font-serif text-base font-bold text-[#9a7b3c] dark:text-[#e2c286]">
+            <cite className="not-italic font-sans text-base font-bold text-[#9a7b3c] dark:text-[#e2c286]">
               {verseRef(daily.bookName, daily.chapterNumber, daily.verseNumber)}
             </cite>
 
@@ -292,7 +292,7 @@ export default function BibleHome() {
             <span>A Verse at Random · {verseRef(random.bookName, random.chapterNumber, random.verseNumber)}</span>
             <span className="text-xs">Read →</span>
           </div>
-          <p className="mt-2 font-serif text-xl leading-relaxed text-[#1f2a24] dark:text-[#f4ead6]">
+          <p className="mt-2 font-sans text-xl leading-relaxed text-[#1f2a24] dark:text-[#f4ead6]">
             “{random.text}”
           </p>
         </Link>
@@ -303,10 +303,10 @@ export default function BibleHome() {
         <section className="mt-14">
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-serif text-[11px] font-bold uppercase tracking-[0.25em] text-[#9a7b3c] dark:text-[#e2c286]">
+              <p className="font-sans text-[11px] font-bold uppercase tracking-[0.25em] text-[#9a7b3c] dark:text-[#e2c286]">
                 Curated Passages
               </p>
-              <h2 className="font-serif text-2xl font-bold text-[#1f2a24] dark:text-[#f4ead6]">
+              <h2 className="font-sans text-2xl font-bold text-[#1f2a24] dark:text-[#f4ead6]">
                 Beloved Verses
               </h2>
             </div>
@@ -337,7 +337,7 @@ export default function BibleHome() {
                       <span>{verseRef(v.bookName, v.chapterNumber, v.verseNumber)}</span>
                       <BookmarkIcon className="h-3.5 w-3.5 opacity-0 transition-opacity group-hover:opacity-100 text-[#256e63]" />
                     </div>
-                    <p className="mt-2 line-clamp-4 font-serif text-base leading-relaxed text-[#1f2a24] dark:text-[#f4ead6]">
+                    <p className="mt-2 line-clamp-4 font-sans text-base leading-relaxed text-[#1f2a24] dark:text-[#f4ead6]">
                       “{v.text}”
                     </p>
                   </div>
@@ -357,7 +357,7 @@ export default function BibleHome() {
           <div className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-[#c4a574]/20 text-[#9a7b3c] dark:text-[#e2c286] mb-2">
             <LightBulbIcon className="h-4 w-4" />
           </div>
-          <p className="font-serif text-base italic text-[#1f2a24] dark:text-[#f4ead6]">
+          <p className="font-sans text-base italic text-[#1f2a24] dark:text-[#f4ead6]">
             “Did you know? {fact}”
           </p>
           <button
@@ -375,10 +375,10 @@ export default function BibleHome() {
       <section className="mt-16">
         <div className="flex flex-col gap-4 border-b border-[#c4a574]/30 pb-5 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="font-serif text-[11px] font-bold uppercase tracking-[0.25em] text-[#9a7b3c] dark:text-[#e2c286]">
+            <p className="font-sans text-[11px] font-bold uppercase tracking-[0.25em] text-[#9a7b3c] dark:text-[#e2c286]">
               66 Books of Scripture
             </p>
-            <h2 className="font-serif text-3xl font-bold text-[#1f2a24] dark:text-[#f4ead6]">
+            <h2 className="font-sans text-3xl font-bold text-[#1f2a24] dark:text-[#f4ead6]">
               The Canon Library
             </h2>
           </div>
@@ -437,7 +437,7 @@ export default function BibleHome() {
         {booksLoading ? (
           <div className="py-16 text-center">
             <ArrowPathIcon className="mx-auto h-8 w-8 animate-spin text-[#9a7b3c]" />
-            <p className="mt-3 font-serif text-lg text-[#8a7d68]">Unrolling the canon scroll…</p>
+            <p className="mt-3 font-sans text-lg text-[#8a7d68]">Unrolling the canon scroll…</p>
           </div>
         ) : (
           <div className="mt-8 grid gap-8 lg:grid-cols-2">
@@ -466,7 +466,7 @@ function BookColumn({
   return (
     <div className="rounded-3xl border border-[#c4a574]/25 bg-white/40 p-6 backdrop-blur-md dark:bg-white/5">
       <div className="flex items-center justify-between border-b border-[#c4a574]/20 pb-3">
-        <h3 className="font-serif text-sm font-bold uppercase tracking-[0.25em] text-[#9a7b3c] dark:text-[#e2c286]">
+        <h3 className="font-sans text-sm font-bold uppercase tracking-[0.25em] text-[#9a7b3c] dark:text-[#e2c286]">
           {title}
         </h3>
         <span className="rounded-full bg-[#c4a574]/15 px-2.5 py-0.5 text-[10px] font-extrabold text-[#9a7b3c] dark:text-[#e2c286]">
@@ -483,7 +483,7 @@ function BookColumn({
                 to={readerHref(b.name, 1, { translation: translationId })}
                 className="group flex flex-col justify-between rounded-xl border border-transparent bg-white/50 p-2.5 transition-all hover:border-[#256E63]/40 hover:bg-white hover:shadow-sm dark:bg-white/5 dark:hover:bg-white/10"
               >
-                <span className="font-serif text-base font-semibold text-[#1f2a24] group-hover:text-[#256E63] dark:text-[#f4ead6] dark:group-hover:text-emerald-300">
+                <span className="font-sans text-base font-semibold text-[#1f2a24] group-hover:text-[#256E63] dark:text-[#f4ead6] dark:group-hover:text-emerald-300">
                   {b.name}
                 </span>
                 <div className="mt-1 flex items-center justify-between text-[10px] font-bold text-[#8a7d68] dark:text-[#a3947c]">

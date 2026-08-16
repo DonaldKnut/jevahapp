@@ -104,7 +104,10 @@ export default function SystemHealthPage() {
 
   useEffect(() => {
     void load();
-    const id = window.setInterval(() => void load(), 30000);
+    const id = window.setInterval(() => {
+      if (document.hidden) return;
+      void load();
+    }, 60000);
     return () => window.clearInterval(id);
   }, [load]);
 
@@ -114,7 +117,7 @@ export default function SystemHealthPage() {
     <PageEnter>
       <PageHeader
         title="System Health"
-        subtitle="Live operational status of all platform services. Auto-refreshes every 30 seconds."
+        subtitle="Live operational status of all platform services. Auto-refreshes every 60 seconds."
         badgeText="Ops"
         actions={
           <div className="flex items-center gap-3">

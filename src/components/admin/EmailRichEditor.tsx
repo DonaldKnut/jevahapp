@@ -100,7 +100,7 @@ function Toolbar({ editor }: { editor: Editor }) {
         active={editor.isActive("italic")}
         onClick={() => editor.chain().focus().toggleItalic().run()}
       >
-        <span className="text-[11px] font-serif italic font-bold leading-none">
+        <span className="text-[11px] font-sans italic font-bold leading-none">
           I
         </span>
       </ToolbarBtn>

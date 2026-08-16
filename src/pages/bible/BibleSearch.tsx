@@ -125,7 +125,7 @@ export default function BibleSearch() {
           <MagnifyingGlassIcon className="h-3.5 w-3.5 text-[#256e63]" />
           <span>Full Canon Concordance</span>
         </div>
-        <h1 className="mt-3 font-serif text-4xl font-bold tracking-tight text-[#1f2a24] dark:text-[#f4ead6] sm:text-5xl">
+        <h1 className="mt-3 font-sans text-4xl font-bold tracking-tight text-[#1f2a24] dark:text-[#f4ead6] sm:text-5xl">
           Search Holy Scripture
         </h1>
         <p className="mt-2 text-sm text-[#6b6256] dark:text-[#cbbfa8]">
@@ -141,7 +141,7 @@ export default function BibleSearch() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Search keywords, topics, or references (e.g. John 3:16, love, shepherd)…"
-            className="h-14 w-full rounded-2xl border border-[#c4a574]/40 bg-white/80 pl-12 pr-28 font-serif text-lg text-[#1f2a24] shadow-md backdrop-blur-md outline-none ring-[#256E63]/25 placeholder:text-[#8a7d68] focus:border-[#256E63] focus:ring-2 dark:bg-[#241e17] dark:text-[#f4ead6]"
+            className="h-14 w-full rounded-2xl border border-[#c4a574]/40 bg-white/80 pl-12 pr-28 font-sans text-lg text-[#1f2a24] shadow-md backdrop-blur-md outline-none ring-[#256E63]/25 placeholder:text-[#8a7d68] focus:border-[#256E63] focus:ring-2 dark:bg-[#241e17] dark:text-[#f4ead6]"
           />
           {input && (
             <button
@@ -243,7 +243,7 @@ export default function BibleSearch() {
       {/* Search Result Counter */}
       {!busy && q && !error && (
         <div className="mt-8 flex items-center justify-between border-b border-[#c4a574]/30 pb-3">
-          <p className="font-serif text-sm font-bold uppercase tracking-wider text-[#9a7b3c] dark:text-[#e2c286]">
+          <p className="font-sans text-sm font-bold uppercase tracking-wider text-[#9a7b3c] dark:text-[#e2c286]">
             {hits.length} Passage{hits.length === 1 ? "" : "s"} Found for “{q}”
           </p>
           <span className="text-xs text-[#8a7d68]">World English Bible</span>
@@ -264,7 +264,7 @@ export default function BibleSearch() {
             >
               <div className="group rounded-2xl border border-[#c4a574]/30 bg-white/60 p-5 backdrop-blur-md transition-all duration-300 hover:border-[#256E63] hover:shadow-md dark:bg-white/5">
                 <div className="flex items-center justify-between">
-                  <span className="font-serif text-sm font-bold uppercase tracking-widest text-[#9a7b3c] dark:text-[#e2c286]">
+                  <span className="font-sans text-sm font-bold uppercase tracking-widest text-[#9a7b3c] dark:text-[#e2c286]">
                     {refString}
                   </span>
                   <div className="flex items-center gap-2">
@@ -299,7 +299,7 @@ export default function BibleSearch() {
                   </div>
                 </div>
 
-                <p className="mt-3 font-serif text-lg leading-relaxed text-[#1f2a24] dark:text-[#f4ead6]">
+                <p className="mt-3 font-sans text-lg leading-relaxed text-[#1f2a24] dark:text-[#f4ead6]">
                   <HighlightQuery text={v.text} query={q} />
                 </p>
               </div>

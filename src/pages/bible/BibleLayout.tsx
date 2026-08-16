@@ -37,7 +37,7 @@ function BibleChrome() {
   }
 
   return (
-    <div className="bible-shell min-h-dvh pt-[4.5rem] sm:pt-[5.5rem]">
+    <div className="bible-shell font-sans min-h-dvh pt-[4.5rem] sm:pt-[5.5rem]">
       <div className="bible-gold-rule" />
       <div className="sticky top-16 z-30 border-b border-[#c4a574]/30 bg-[#fdfbf7]/90 backdrop-blur-2xl dark:border-amber-500/20 dark:bg-[#16130f]/90 sm:top-20">
         <div className="mx-auto flex max-w-6xl flex-col gap-2.5 px-3 py-2.5 sm:gap-3 sm:px-6 sm:py-3">
@@ -47,18 +47,18 @@ function BibleChrome() {
               className="group flex items-center gap-2.5 min-w-0"
             >
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#c4a574]/40 bg-gradient-to-br from-[#f8f1e2] to-[#e6d5b7] text-[#9a7b3c] shadow-sm transition-transform duration-300 group-hover:scale-105 dark:from-[#2e261d] dark:to-[#1a140d] dark:text-[#e2c286]">
-                <span className="font-serif text-lg font-bold">✦</span>
+                <span className="font-sans text-lg font-bold">✦</span>
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  <p className="font-serif text-[10px] font-bold uppercase tracking-[0.3em] text-[#9a7b3c] dark:text-[#e2c286] sm:text-[11px]">
+                  <p className="font-sans text-[10px] font-bold uppercase tracking-[0.3em] text-[#9a7b3c] dark:text-[#e2c286] sm:text-[11px]">
                     Jevah Holy Bible
                   </p>
                   <span className="hidden rounded-full border border-[#c4a574]/30 bg-[#256e63]/10 px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-widest text-[#256e63] dark:bg-[#256e63]/25 dark:text-emerald-300 md:inline-block">
                     {selected?.abbreviation || "WEB"}
                   </span>
                 </div>
-                <p className="truncate font-serif text-base font-semibold tracking-tight text-[#1f2a24] dark:text-[#f4ead6] sm:text-xl">
+                <p className="truncate font-sans text-base font-semibold tracking-tight text-[#1f2a24] dark:text-[#f4ead6] sm:text-xl">
                   Scripture, beautifully read
                 </p>
               </div>

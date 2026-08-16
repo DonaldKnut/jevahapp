@@ -189,7 +189,7 @@ export default function CreatorsLanding() {
               <SparklesIcon className="h-3.5 w-3.5" />
               Creator Desk Interactive Demo
             </span>
-            <h2 className="mt-3 font-serif text-3xl font-black text-jevah-text sm:text-4xl">
+            <h2 className="mt-3 font-sans text-3xl font-black text-jevah-text sm:text-4xl">
               Experience the Creator Desk Tools
             </h2>
             <p className="mt-2 text-xs sm:text-sm text-jevah-text-muted max-w-xl mx-auto">
@@ -245,7 +245,7 @@ export default function CreatorsLanding() {
                       <GlobeAltIcon className="h-3.5 w-3.5" />
                       Public Web Profile
                     </span>
-                    <h3 className="font-serif text-2xl font-black text-jevah-text">
+                    <h3 className="font-sans text-2xl font-black text-jevah-text">
                       Your Dedicated Webpage (`/artists/your-name`)
                     </h3>
                     <p className="text-xs leading-relaxed text-jevah-text-muted">
@@ -283,7 +283,7 @@ export default function CreatorsLanding() {
                         </div>
                         <div>
                           <div className="flex items-center gap-1.5">
-                            <span className="font-serif text-sm font-black text-jevah-text">Min. David K.</span>
+                            <span className="font-sans text-sm font-black text-jevah-text">Min. David K.</span>
                             <CheckBadgeSolid className="h-4 w-4 text-amber-500" />
                           </div>
                           <span className="text-[10px] font-bold text-jevah-text-muted">Verified Worship Artist · Lagos, Nigeria</span>
@@ -339,7 +339,7 @@ export default function CreatorsLanding() {
                       <CloudArrowUpIcon className="h-3.5 w-3.5" />
                       Live Upload Engine
                     </span>
-                    <h3 className="font-serif text-2xl font-black text-jevah-text">
+                    <h3 className="font-sans text-2xl font-black text-jevah-text">
                       Batch Song Upload with Real-time Progress Bars
                     </h3>
                     <p className="text-xs leading-relaxed text-jevah-text-muted">
@@ -386,7 +386,7 @@ export default function CreatorsLanding() {
                       <ChartBarIcon className="h-3.5 w-3.5" />
                       Studio Analytics
                     </span>
-                    <h3 className="font-serif text-2xl font-black text-jevah-text">
+                    <h3 className="font-sans text-2xl font-black text-jevah-text">
                       Track Streams, Growth &amp; Audience Reach
                     </h3>
                     <p className="text-xs leading-relaxed text-jevah-text-muted">
@@ -397,7 +397,7 @@ export default function CreatorsLanding() {
                   <div className="lg:col-span-6 grid grid-cols-2 gap-4">
                     <div className="rounded-2xl border border-jevah-accent/40 bg-jevah-surface p-5 shadow-lg">
                       <span className="text-[10px] font-black uppercase tracking-wider text-jevah-text-muted">Total Monthly Plays</span>
-                      <p className="font-serif text-3xl font-black text-jevah-accent mt-1">+142,800</p>
+                      <p className="font-sans text-3xl font-black text-jevah-accent mt-1">+142,800</p>
                       <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-500 mt-2">
                         <ArrowTrendingUpIcon className="h-3 w-3" />
                         +24.5% vs last month
@@ -406,7 +406,7 @@ export default function CreatorsLanding() {
 
                     <div className="rounded-2xl border border-emerald-500/40 bg-jevah-surface p-5 shadow-lg">
                       <span className="text-[10px] font-black uppercase tracking-wider text-jevah-text-muted">Audience Growth</span>
-                      <p className="font-serif text-3xl font-black text-emerald-500 mt-1">+34.2%</p>
+                      <p className="font-sans text-3xl font-black text-emerald-500 mt-1">+34.2%</p>
                       <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-500 mt-2">
                         <ArrowTrendingUpIcon className="h-3 w-3" />
                         Active Growth Rate

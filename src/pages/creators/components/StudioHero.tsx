@@ -101,7 +101,7 @@ export default function StudioHero({
                   className="h-full w-full object-cover"
                 />
               ) : (
-                <div className="flex h-full w-full items-center justify-center font-serif text-4xl font-semibold tracking-wide text-white sm:text-5xl lg:text-6xl">
+                <div className="flex h-full w-full items-center justify-center font-sans text-4xl font-semibold tracking-wide text-white sm:text-5xl lg:text-6xl">
                   {initials || "A"}
                 </div>
               )}
@@ -130,12 +130,12 @@ export default function StudioHero({
               )}
             </div>
 
-            <h1 className="mt-3 font-serif text-4xl font-semibold leading-[1.05] tracking-tight text-white sm:text-5xl lg:text-[3.5rem]">
+            <h1 className="mt-3 font-sans text-4xl font-semibold leading-[1.05] tracking-tight text-white sm:text-5xl lg:text-[3.5rem]">
               {name}
             </h1>
 
             {bio ? (
-              <p className="mx-auto mt-3 max-w-2xl font-serif text-base italic leading-relaxed text-white/75 sm:mx-0 sm:text-lg">
+              <p className="mx-auto mt-3 max-w-2xl font-sans text-base italic leading-relaxed text-white/75 sm:mx-0 sm:text-lg">
                 {bio}
               </p>
             ) : null}
@@ -165,7 +165,7 @@ export default function StudioHero({
                       <Icon className="h-4 w-4" />
                     </div>
                     <div className="text-center sm:text-left">
-                      <p className="font-serif text-xl font-semibold tabular-nums tracking-tight text-white sm:text-2xl">
+                      <p className="font-sans text-xl font-semibold tabular-nums tracking-tight text-white sm:text-2xl">
                         {stat.value}
                       </p>
                       <p className="mt-0.5 text-[9px] font-semibold uppercase tracking-[0.18em] text-white/50 sm:text-[10px]">

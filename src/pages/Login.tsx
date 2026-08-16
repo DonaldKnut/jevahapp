@@ -225,6 +225,21 @@ export default function Login() {
                   ? "Jevah Creator Studio · Artists & ministers"
                   : "Jevah Admin Portal · Authorized Personnel Only"}
               </p>
+              <p className="mt-2 text-[11px] text-white/50">
+                <Link
+                  to="/terms"
+                  className="font-semibold text-white/75 underline-offset-2 hover:text-white hover:underline"
+                >
+                  Terms & Conditions
+                </Link>
+                <span className="mx-1.5 text-white/30">·</span>
+                <Link
+                  to="/privacy"
+                  className="font-semibold text-white/75 underline-offset-2 hover:text-white hover:underline"
+                >
+                  Privacy Policy
+                </Link>
+              </p>
             </div>
           </div>
         </aside>
@@ -347,6 +362,32 @@ export default function Login() {
                       ? "Enter Creator Studio"
                       : "Sign In to Admin Console"}
                 </button>
+
+                <p className="text-center text-[11px] leading-relaxed text-jevah-text-muted">
+                  By signing in you agree to Jevah’s{" "}
+                  <Link
+                    to="/terms"
+                    className={`font-semibold underline-offset-2 hover:underline ${
+                      isCreator
+                        ? "text-[var(--jevah-auth-creator-accent)]"
+                        : "text-jevah-accent"
+                    }`}
+                  >
+                    Terms & Conditions
+                  </Link>{" "}
+                  and{" "}
+                  <Link
+                    to="/privacy"
+                    className={`font-semibold underline-offset-2 hover:underline ${
+                      isCreator
+                        ? "text-[var(--jevah-auth-creator-accent)]"
+                        : "text-jevah-accent"
+                    }`}
+                  >
+                    Privacy Policy
+                  </Link>
+                  .
+                </p>
               </form>
 
               <p className="mt-8 text-center text-xs text-jevah-text-muted">

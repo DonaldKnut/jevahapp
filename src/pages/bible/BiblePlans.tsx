@@ -107,7 +107,7 @@ export default function BiblePlans() {
           <CalendarIcon className="h-3.5 w-3.5 text-[#256e63]" />
           <span>Daily Scripture Rhythm</span>
         </div>
-        <h1 className="mt-3 font-serif text-4xl font-bold tracking-tight text-[#1f2a24] dark:text-[#f4ead6] sm:text-5xl">
+        <h1 className="mt-3 font-sans text-4xl font-bold tracking-tight text-[#1f2a24] dark:text-[#f4ead6] sm:text-5xl">
           Reading Plans
         </h1>
         <p className="mt-2 text-sm text-[#6b6256] dark:text-[#cbbfa8]">
@@ -119,7 +119,7 @@ export default function BiblePlans() {
       {loading ? (
         <div className="mt-16 text-center">
           <ArrowPathIcon className="mx-auto h-8 w-8 animate-spin text-[#9a7b3c]" />
-          <p className="mt-3 font-serif text-lg text-[#8a7d68]">Gathering plan library…</p>
+          <p className="mt-3 font-sans text-lg text-[#8a7d68]">Gathering plan library…</p>
         </div>
       ) : (
         <div className="mt-10 grid gap-5 sm:grid-cols-2">
@@ -142,7 +142,7 @@ export default function BiblePlans() {
                 >
                   <div>
                     <div className="flex items-center justify-between">
-                      <span className="rounded-full bg-[#c4a574]/15 px-3 py-1 font-serif text-[10px] font-extrabold uppercase tracking-widest text-[#9a7b3c] dark:text-[#e2c286]">
+                      <span className="rounded-full bg-[#c4a574]/15 px-3 py-1 font-sans text-[10px] font-extrabold uppercase tracking-widest text-[#9a7b3c] dark:text-[#e2c286]">
                         {days ? `${days} Days` : "Self-Paced"}
                       </span>
                       {pct > 0 && (
@@ -152,7 +152,7 @@ export default function BiblePlans() {
                       )}
                     </div>
 
-                    <h2 className="mt-3 font-serif text-2xl font-bold text-[#1f2a24] group-hover:text-[#256E63] dark:text-[#f4ead6] dark:group-hover:text-emerald-300">
+                    <h2 className="mt-3 font-sans text-2xl font-bold text-[#1f2a24] group-hover:text-[#256E63] dark:text-[#f4ead6] dark:group-hover:text-emerald-300">
                       {planTitle(p)}
                     </h2>
 
@@ -236,7 +236,7 @@ function PlanDetail({
         <span>All Reading Plans</span>
       </Link>
 
-      <h1 className="mt-3 font-serif text-3xl font-bold text-[#1f2a24] dark:text-[#f4ead6] sm:text-4xl">
+      <h1 className="mt-3 font-sans text-3xl font-bold text-[#1f2a24] dark:text-[#f4ead6] sm:text-4xl">
         {planTitle(plan)}
       </h1>
 
@@ -299,12 +299,12 @@ function PlanDetail({
                       verse,
                       translation: translationId,
                     })}
-                    className="min-w-0 flex-1 font-serif text-lg font-semibold text-[#1f2a24] hover:text-[#256E63] dark:text-[#f4ead6] dark:hover:text-emerald-300"
+                    className="min-w-0 flex-1 font-sans text-lg font-semibold text-[#1f2a24] hover:text-[#256E63] dark:text-[#f4ead6] dark:hover:text-emerald-300"
                   >
                     {d.title || d.reference || d.passage || `${book} ${chapter}`}
                   </Link>
                 ) : (
-                  <span className="min-w-0 flex-1 font-serif text-lg font-semibold text-[#1f2a24] dark:text-[#f4ead6]">
+                  <span className="min-w-0 flex-1 font-sans text-lg font-semibold text-[#1f2a24] dark:text-[#f4ead6]">
                     {d.title || d.reference || `Day ${n}`}
                   </span>
                 )}

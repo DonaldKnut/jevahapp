@@ -3,7 +3,7 @@ import { trackThumb, type TrackCard } from "../../lib/media";
 type Props = {
   track: TrackCard | null;
   playing: boolean;
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg" | "xl";
   className?: string;
 };
 
@@ -11,6 +11,7 @@ const sizes = {
   sm: "h-12 w-12",
   md: "h-16 w-16 sm:h-[4.5rem] sm:w-[4.5rem]",
   lg: "h-40 w-40 sm:h-52 sm:w-52",
+  xl: "h-56 w-56 sm:h-72 sm:w-72",
 };
 
 /**

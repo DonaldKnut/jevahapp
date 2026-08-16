@@ -78,11 +78,11 @@ export default function BookPickerSheet({
         <div className="flex items-center justify-between gap-3 border-b border-[#c4a574]/20 pb-3">
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-serif text-[10px] font-extrabold uppercase tracking-widest text-[#9a7b3c] dark:text-[#e2c286]">
+              <span className="font-sans text-[10px] font-extrabold uppercase tracking-widest text-[#9a7b3c] dark:text-[#e2c286]">
                 {step === "book" ? "Library Selector" : meta?.name || picked}
               </span>
             </div>
-            <h2 className="font-serif text-2xl font-bold text-[#1f2a24] dark:text-[#f4ead6]">
+            <h2 className="font-sans text-2xl font-bold text-[#1f2a24] dark:text-[#f4ead6]">
               {step === "book" ? "Choose a Book" : `Select Chapter (1–${chapterCount})`}
             </h2>
           </div>
@@ -214,7 +214,7 @@ function BookGroup({
             <button
               type="button"
               onClick={() => onPick(b.name)}
-              className={`w-full rounded-xl px-3 py-2.5 text-left font-serif text-[15px] transition-all ${
+              className={`w-full rounded-xl px-3 py-2.5 text-left font-sans text-[15px] transition-all ${
                 b.name === current
                   ? "border border-[#256E63]/40 bg-[#256E63]/15 font-bold text-[#256E63] dark:text-emerald-300"
                   : "border border-transparent bg-white/60 text-[#1f2a24] hover:bg-white dark:bg-white/5 dark:text-[#f4ead6] dark:hover:bg-white/10"

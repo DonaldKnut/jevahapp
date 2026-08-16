@@ -39,9 +39,10 @@ import {
   PencilSquareIcon,
   ArrowUpTrayIcon,
   ArrowRightOnRectangleIcon,
-  QuestionMarkCircleIcon,
+  HomeIcon,
 } from "@heroicons/react/24/outline";
 import ProductTour from "../../components/ProductTour";
+import TourFab from "../../components/TourFab";
 import { useProductTour } from "../../lib/onboarding";
 import { CREATOR_TOUR } from "../../lib/tours";
 
@@ -329,12 +330,19 @@ export default function CreatorStudio() {
         <header className="studio-topbar z-30 shrink-0">
           <div className="flex items-center justify-between gap-4 px-4 py-3 sm:px-6">
             <div className="flex items-center gap-3 lg:hidden">
-              <div className="inline-flex rounded-xl bg-white px-2 py-1 shadow-md">
-                <JevahLogo width={48} height={20} />
-              </div>
+              <Link to="/" title="Jevah homepage">
+                <JevahLogo plated width={48} height={20} />
+              </Link>
             </div>
 
             <div className="hidden lg:flex items-center gap-2.5">
+              <Link
+                to="/"
+                className="inline-flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs font-bold text-jevah-text-muted transition hover:bg-jevah-card hover:text-jevah-text"
+              >
+                <HomeIcon className="h-4 w-4" />
+                Homepage
+              </Link>
               <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
               <p className="truncate text-xs font-black uppercase tracking-wider text-jevah-text-muted">
                 {view === "home"
@@ -359,15 +367,6 @@ export default function CreatorStudio() {
                   <span className="hidden sm:inline">Upload Track</span>
                 </Link>
               )}
-              <button
-                type="button"
-                onClick={replayTour}
-                className="inline-flex items-center gap-1.5 rounded-2xl px-3 py-2 text-xs font-bold text-jevah-text-muted transition hover:bg-jevah-card hover:text-jevah-text"
-                aria-label="Take the studio tour"
-              >
-                <QuestionMarkCircleIcon className="h-4 w-4" />
-                <span className="hidden sm:inline">Help</span>
-              </button>
               <ThemeToggle variant="icon" />
               <button
                 type="button"
@@ -652,6 +651,12 @@ export default function CreatorStudio() {
         </AdminModal>
       )}
 
+      <TourFab
+        onClick={replayTour}
+        hidden={tourOpen}
+        lift={Boolean(playing)}
+        tone="creator"
+      />
       <ProductTour
         open={tourOpen}
         steps={CREATOR_TOUR}

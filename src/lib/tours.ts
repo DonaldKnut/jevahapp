@@ -3,152 +3,168 @@ import {
   ChartBarIcon,
   UsersIcon,
   MusicalNoteIcon,
-  EnvelopeIcon,
   SparklesIcon,
   ArrowUpTrayIcon,
   RectangleStackIcon,
   UserCircleIcon,
   CheckBadgeIcon,
   HomeIcon,
-  FlagIcon,
   Cog6ToothIcon,
+  ShieldCheckIcon,
+  MegaphoneIcon,
 } from "@heroicons/react/24/outline";
 
 export type TourStep = {
   title: string;
   body: string;
   points?: string[];
+  tip?: string;
   icon: ComponentType<SVGProps<SVGSVGElement>>;
 };
 
 export const ADMIN_TOUR: TourStep[] = [
   {
     icon: HomeIcon,
-    title: "Welcome to the Control Center",
-    body: "This is the admin home. The left rail is the map — every platform tool lives there. Collapse it when you want more canvas; hover an icon to see its name.",
+    title: "Welcome to Your Control Center 🎛️",
+    body: "Think of this as your platform command center. Everything you need to manage users, review content, and keep Jevah running smoothly lives in the left sidebar.",
     points: [
-      "Your profile card sits at the top of the sidebar",
-      "Dashboard in the public header jumps back here anytime",
+      "The left menu is your map — click any icon to jump straight to that feature",
+      "Collapse the sidebar anytime to give yourself more workspace",
     ],
+    tip: "Pro Tip: Tap the floating question mark at the bottom-right anytime to replay this guide.",
   },
   {
     icon: ChartBarIcon,
-    title: "Start on Overview",
-    body: "Overview is the pulse: pending reports, moderation queue, who is online, and creator applications waiting on you.",
+    title: "Your Daily Snapshot (Overview) ⚡",
+    body: "This is your starting point every day. Overview instantly highlights anything that needs your attention — such as new creator applications or reported posts.",
     points: [
-      "Yellow and red counts mean something needs a decision",
-      "Jump straight into a queue from the cards — don’t hunt the menu",
+      "Numbered badges show items waiting for your review",
+      "Click directly on any action card to jump straight into work without hunting",
     ],
+    tip: "Rule of thumb: Clean up yellow & red alert badges first to keep the platform running smoothly.",
   },
   {
     icon: UsersIcon,
-    title: "People & presence",
-    body: "Users is the directory. Search, filter by role, warn or restrict an account, and see who is active right now.",
+    title: "People & Community 👥",
+    body: "Manage all listeners, creators, and leaders in one place. Search for anyone, check active accounts, and grant creator access with a simple click.",
     points: [
-      "Artist role + verified creator is what unlocks Studio uploads",
-      "Use presence when you need to know who is on the platform",
+      "Search any user by name or email in seconds",
+      "See who is currently active on the platform in real time",
     ],
+    tip: "Creator access: Giving someone 'Verified Artist' status unlocks their Studio desk so they can publish songs.",
   },
   {
-    icon: FlagIcon,
-    title: "Keep the house safe",
-    body: "Reports is community flags. Moderation is uploaded media — listen, inspect AI scores, then approve or take down.",
+    icon: ShieldCheckIcon,
+    title: "Keeping the Platform Safe 🛡️",
+    body: "Review community reports and uploaded media. Listen to audio clips, check automated safety scores, and decide whether to approve or take down content.",
     points: [
-      "Clear reports first if the queue is hot",
-      "Moderation decisions land in Activity so the trail is auditable",
+      "Clear urgent community flags first to keep discussion spaces uplifting",
+      "All moderation choices are saved automatically to an audit trail for your peace of mind",
     ],
+    tip: "Peace of mind: Moderation logs ensure your team always knows who approved or flagged a track.",
   },
   {
     icon: CheckBadgeIcon,
-    title: "Approve gospel artists",
-    body: "Artists is where applications become real creators. Activate someone and they can upload. Then send the welcome email so they know Studio is open.",
+    title: "Approving New Gospel Artists 🎤",
+    body: "When artists apply for a creator account, their requests land here. Review their application, approve them, and send a welcoming invitation to their new Studio.",
     points: [
-      "Pending applications also surface on Overview",
-      "Compose → Welcome artists is the onboard email",
+      "Pending creator applications also surface right on your Overview screen",
+      "Use 'Compose → Welcome Artists' to send a friendly email when approving",
     ],
+    tip: "Quick turnaround: Fast approvals keep gospel creators excited to upload their newest releases!",
   },
   {
-    icon: EnvelopeIcon,
-    title: "Speak to the platform",
-    body: "Announcements broadcast in-app. Compose Email reaches users or churches. Notifications are the alerts this desk already generated for you.",
+    icon: MegaphoneIcon,
+    title: "Speak to Your Audience 📢",
+    body: "Share news easily! Send in-app announcements for instant pop-ups, compose emails to registered users, or check your automatic system notifications.",
     points: [
-      "Marketing mail only goes to people who opted in",
-      "Every marketing send includes Unsubscribe",
+      "Announcements appear right inside the app for active users",
+      "Marketing emails are only sent to people who opted in, with easy unsubscribe links",
     ],
+    tip: "Best practice: Use in-app banners for quick platform updates, and emails for major announcements.",
   },
   {
     icon: Cog6ToothIcon,
-    title: "Settings & health",
-    body: "Settings holds feature flags and maintenance. System Health watches services. If something feels off, start there before guessing.",
+    title: "Settings & System Health ⚙️",
+    body: "Adjust platform feature toggles, manage maintenance settings, and check service status. If anything ever seems slow, check System Health first.",
     points: [
-      "Replay this tour anytime with Help in the sidebar",
-      "Sign out from the bottom of the rail when you are done",
+      "Live monitors show service uptime and performance in real time",
+      "Safely turn experimental features on or off as needed",
     ],
+    tip: "Need a refresher? Tap the floating question mark at the bottom-right to replay this tour.",
   },
 ];
 
 export const CREATOR_TOUR: TourStep[] = [
   {
     icon: SparklesIcon,
-    title: "Welcome to Creator Studio",
-    body: "This desk is yours: music, cover art, albums, streams, and the public page listeners share. The rail on the left is Overview, Tracks, Discography, Analytics, and Brand.",
+    title: "Welcome to Creator Studio! 🎵",
+    body: "This is your personal music headquarters! Everything you need to share songs, manage your albums, track listeners, and grow your gospel ministry is right here.",
     points: [
-      "Upload Track in the top bar is the fastest path to publish",
-      "Your name and status live on the Overview hero",
+      "The left menu opens your Tracks, Discography, Analytics, and Profile settings",
+      "Click 'Upload Track' at the top anytime to publish new songs",
     ],
+    tip: "Quick start: Replay this guide anytime by tapping the floating question mark at the bottom-right.",
   },
   {
     icon: CheckBadgeIcon,
-    title: "Apply, then get verified",
-    body: "New artists apply once. While you wait, Studio shows a review card — you cannot publish yet. After approval, upload unlocks and your tracks can reach the Artists shelf.",
+    title: "Simple Account Verification 🛡️",
+    body: "When you join as a new artist, our team does a quick, one-time verification check. This ensures a high-quality, trusted environment for all listeners.",
     points: [
-      "Approval is reviewed by Jevah admins, usually within 1–2 days",
-      "You will get email when the desk is fully open",
+      "While waiting for approval, explore your desk and prepare your music",
+      "You'll receive an email notification as soon as your studio is fully unlocked",
     ],
+    tip: "Why we verify: It keeps Jevah authentic and ensures listeners know they are listening to real creators.",
   },
   {
     icon: ArrowUpTrayIcon,
-    title: "Upload like a release",
-    body: "Drop one song or a batch. Give each track a title, genre, and cover. Publish when it is ready, or save as draft until the artwork and credits are right.",
+    title: "Upload Songs in Seconds 🚀",
+    body: "Releasing music is easy. Drag and drop your audio file, type in the song title, choose a category (like Worship or Praise), and pick a cover picture.",
     points: [
-      "Cover art travels with the track in the player",
-      "You can replace the cover later from Catalog → Edit",
+      "Save as a draft if you are still working on artwork or lyrics",
+      "Publish immediately when your track is ready for the world to hear",
     ],
+    tip: "Layman tip: Standard MP3 or WAV files work perfectly. Eye-catching cover art helps songs get noticed!",
   },
   {
     icon: MusicalNoteIcon,
-    title: "Catalog is the source of truth",
-    body: "Tracks holds everything you have uploaded. Edit title, artist name, genre, and visibility. Archive what should leave the shelf without deleting the file.",
+    title: "Your Complete Song Library 🎶",
+    body: "This is your songbook. Every song you've uploaded lives here in one organized catalog. Easily update song titles, refresh artwork, or adjust visibility.",
     points: [
-      "Published tracks can stream on Music → Artists / Gospel",
-      "Keep titles clean — that is what search and shares show",
+      "Published tracks stream instantly on Music & Gospel pages",
+      "Keep titles clean and clear so listeners can find your songs easily in search",
     ],
+    tip: "Quick edit: Spot a typo in a song title? Just click 'Edit' in your catalog to fix it in seconds.",
   },
   {
     icon: RectangleStackIcon,
-    title: "Pack albums & EPs",
-    body: "Discography groups tracks into a release with its own cover. Use it when a project should travel together, not as loose singles.",
+    title: "Group Songs into Albums & EPs 💿",
+    body: "Releasing a multi-track project? Group your individual songs together under one main title and cover image so listeners can play the full album in order.",
     points: [
-      "Upload can attach songs to a release",
-      "A strong cover on the release is what people remember",
+      "Attach existing songs to an album with a few simple clicks",
+      "A strong album cover gives your release a professional touch",
     ],
+    tip: "Perfect for: Sunday live worship recordings, seasonal projects, or full studio albums.",
   },
   {
     icon: ChartBarIcon,
-    title: "Read your audience",
-    body: "Analytics shows listens, unique listeners, and how far people play. Use a 7 / 28 / 90 day range. Double down on what people finish.",
+    title: "See Who Is Listening 📊",
+    body: "Discover how your music is touching lives! Analytics shows your total song plays, unique listeners, and which tracks are getting the most love.",
     points: [
-      "Plays on Overview are a snapshot; Insights is the full picture",
-      "A spike after a Sunday service is normal — watch the week after",
+      "Switch between 7-day, 28-day, or 90-day timeframes to see your growth",
+      "See how long people listen before moving to the next song",
     ],
+    tip: "Listener insight: A spike in plays on Sunday evenings means people are listening after service!",
   },
   {
     icon: UserCircleIcon,
-    title: "Brand the public page",
-    body: "Brand Profile is the page people open when they tap your name: photo, banner, bio. Keep it ministry-true. Share that URL everywhere you already post music.",
+    title: "Customize Your Public Profile 🎨",
+    body: "Your profile is your digital storefront! Upload a profile picture, add a custom banner, and write a short bio so listeners learn about your ministry.",
     points: [
-      "Avatar and banner upload here, not in the apply form",
-      "Replay this tour anytime with Help in the top bar",
+      "Add a welcoming photo and bio to connect with your audience",
+      "Copy your unique profile link and share it on social media or WhatsApp",
     ],
+    tip: "Share everywhere: Your profile link works everywhere — share it with your church and followers!",
   },
 ];
+

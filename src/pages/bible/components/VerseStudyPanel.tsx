@@ -42,7 +42,7 @@ export default function VerseStudyPanel({
               <BookOpenIcon className="h-4 w-4 text-[#256e63]" />
               <span>Exposition & Cross-References</span>
             </div>
-            <h2 className="mt-1 font-serif text-3xl font-bold text-[#1f2a24] dark:text-[#f4ead6]">
+            <h2 className="mt-1 font-sans text-3xl font-bold text-[#1f2a24] dark:text-[#f4ead6]">
               {ref}
             </h2>
           </div>
@@ -61,7 +61,7 @@ export default function VerseStudyPanel({
           {/* Commentary Section */}
           <section className="rounded-2xl border border-[#c4a574]/30 bg-white/60 p-4 backdrop-blur-md dark:bg-white/5">
             <div className="flex items-center justify-between border-b border-[#c4a574]/20 pb-2">
-              <h3 className="font-serif text-xs font-extrabold uppercase tracking-wider text-[#9a7b3c] dark:text-[#e2c286]">
+              <h3 className="font-sans text-xs font-extrabold uppercase tracking-wider text-[#9a7b3c] dark:text-[#e2c286]">
                 Explanatory Commentary
               </h3>
               <SparklesIcon className="h-3.5 w-3.5 text-[#256e63]" />
@@ -74,7 +74,7 @@ export default function VerseStudyPanel({
               </div>
             ) : commentary?.text ? (
               <div className="mt-3">
-                <p className="font-serif text-base leading-relaxed text-[#1f2a24] dark:text-[#f4ead6]">
+                <p className="font-sans text-base leading-relaxed text-[#1f2a24] dark:text-[#f4ead6]">
                   {commentary.text}
                 </p>
                 {commentary.source && (
@@ -93,7 +93,7 @@ export default function VerseStudyPanel({
           {/* Cross References Section */}
           <section className="rounded-2xl border border-[#c4a574]/30 bg-white/60 p-4 backdrop-blur-md dark:bg-white/5">
             <div className="flex items-center justify-between border-b border-[#c4a574]/20 pb-2">
-              <h3 className="font-serif text-xs font-extrabold uppercase tracking-wider text-[#9a7b3c] dark:text-[#e2c286]">
+              <h3 className="font-sans text-xs font-extrabold uppercase tracking-wider text-[#9a7b3c] dark:text-[#e2c286]">
                 Scripture Cross-References ({refs.length})
               </h3>
             </div>
@@ -127,7 +127,7 @@ export default function VerseStudyPanel({
                         <span className="text-[10px]">Open →</span>
                       </div>
                       {r.text && (
-                        <p className="mt-1.5 line-clamp-3 font-serif text-sm leading-relaxed text-[#1f2a24] dark:text-[#f4ead6]">
+                        <p className="mt-1.5 line-clamp-3 font-sans text-sm leading-relaxed text-[#1f2a24] dark:text-[#f4ead6]">
                           “{r.text}”
                         </p>
                       )}

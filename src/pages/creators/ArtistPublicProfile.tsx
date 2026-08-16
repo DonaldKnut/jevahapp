@@ -245,7 +245,7 @@ export default function ArtistPublicProfile() {
                 {/* Info & Socials */}
                 <div className="min-w-0 flex-1 space-y-3">
                   <div className="flex flex-wrap items-center justify-center gap-3 sm:justify-start">
-                    <h1 className="font-serif text-3xl font-black tracking-tight text-jevah-text sm:text-4xl">
+                    <h1 className="font-sans text-3xl font-black tracking-tight text-jevah-text sm:text-4xl">
                       {name}
                     </h1>
 
@@ -328,7 +328,7 @@ export default function ArtistPublicProfile() {
                   <p className="text-[10px] font-black uppercase tracking-wider text-jevah-text-muted">
                     Published Songs
                   </p>
-                  <p className="mt-0.5 font-serif text-2xl font-black text-jevah-text">
+                  <p className="mt-0.5 font-sans text-2xl font-black text-jevah-text">
                     {tracks.length}
                   </p>
                 </div>
@@ -337,7 +337,7 @@ export default function ArtistPublicProfile() {
                   <p className="text-[10px] font-black uppercase tracking-wider text-jevah-text-muted">
                     Total Plays
                   </p>
-                  <p className="mt-0.5 font-serif text-2xl font-black text-jevah-accent">
+                  <p className="mt-0.5 font-sans text-2xl font-black text-jevah-accent">
                     {totalPlays.toLocaleString()}
                   </p>
                 </div>
@@ -360,7 +360,7 @@ export default function ArtistPublicProfile() {
                 <div>
                   <div className="flex items-center gap-2">
                     <MusicalNoteIcon className="h-5 w-5 text-jevah-accent" />
-                    <h2 className="font-serif text-2xl font-bold text-jevah-text">
+                    <h2 className="font-sans text-2xl font-bold text-jevah-text">
                       Songs &amp; Discography
                     </h2>
                   </div>

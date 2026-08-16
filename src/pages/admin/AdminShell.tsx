@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
+import { NavLink, Outlet, Link, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import {
   ChartBarIcon,
@@ -23,7 +23,7 @@ import {
   ChevronDoubleLeftIcon,
   ChevronDoubleRightIcon,
   ChevronDownIcon,
-  QuestionMarkCircleIcon,
+  HomeIcon,
 } from "@heroicons/react/24/outline";
 import {
   ShieldCheckIcon as ShieldSolid,
@@ -34,9 +34,11 @@ import {
   fetchPresence,
   markNotificationsRead,
 } from "../../services/adminApi";
+import { isApiRateLimited } from "../../lib/api";
 import JevahLogo from "../../components/JevahLogo";
 import ThemeToggle from "../../components/ThemeToggle";
 import ProductTour from "../../components/ProductTour";
+import TourFab from "../../components/TourFab";
 import SidebarTip from "../../components/SidebarTip";
 import { useProductTour } from "../../lib/onboarding";
 import { ADMIN_TOUR } from "../../lib/tours";
@@ -46,6 +48,7 @@ const SIDEBAR_COLLAPSED_KEY = "jevah-admin-sidebar-collapsed";
 const PROFILE_OPEN_KEY = "jevah-admin-profile-open";
 
 const navItems = [
+  { to: "/", end: true, label: "Jevah Home", icon: HomeIcon, badge: null },
   { to: "/admin", end: true, label: "Overview", icon: ChartBarIcon, badge: null },
   { to: "/admin/users", label: "Users", icon: UsersIcon, badge: null },
   { to: "/admin/reports", label: "Reports", icon: FlagIcon, badge: "reports" },
@@ -104,27 +107,30 @@ export default function AdminShell() {
   useEffect(() => {
     let alive = true;
     async function loadPresence() {
+      if (isApiRateLimited()) return;
       try {
         const res = await fetchPresence({ status: "online", limit: 1 });
         if (alive) setOnlineCount(res.onlineCount);
       } catch {
-        if (alive) setOnlineCount(null);
+        /* keep last count */
       }
     }
     async function loadNotifs() {
+      if (isApiRateLimited()) return;
       try {
         const items = await fetchAdminNotifications(true);
         if (alive) setUnread(items.length);
       } catch {
-        if (alive) setUnread(0);
+        /* keep last unread */
       }
     }
     void loadPresence();
     void loadNotifs();
-    const id = window.setInterval(() => {
-      void loadPresence();
+    const tick = () => {
+      if (document.hidden) return;
       void loadNotifs();
-    }, 45000);
+    };
+    const id = window.setInterval(tick, 120000);
     return () => {
       alive = false;
       window.clearInterval(id);
@@ -177,8 +183,8 @@ export default function AdminShell() {
     return (
       <nav
         className={cn(
-          "admin-nav min-h-0 flex-1 space-y-1 overflow-y-auto py-3",
-          compact ? "px-2" : "px-3"
+          "admin-nav min-h-0 flex-1 overflow-y-auto py-4",
+          compact ? "space-y-2.5 px-2.5" : "space-y-1.5 px-3"
         )}
       >
         {navItems.map(({ to, end, label, icon: Icon }) => (
@@ -192,7 +198,7 @@ export default function AdminShell() {
                 cn(
                   "group flex items-center rounded-2xl text-sm font-semibold transition-all duration-200",
                   compact
-                    ? "w-full justify-center px-2 py-3"
+                    ? "w-full justify-center px-1.5 py-3"
                     : "gap-3 px-3.5 py-3",
                   isActive
                     ? "admin-nav-active bg-jevah-accent text-white shadow-md shadow-jevah-accent/30"
@@ -204,13 +210,14 @@ export default function AdminShell() {
                 <>
                   <span
                     className={cn(
-                      "flex h-8 w-8 shrink-0 items-center justify-center rounded-xl transition-all duration-200",
+                      "flex shrink-0 items-center justify-center rounded-xl transition-all duration-200",
+                      compact ? "h-10 w-10" : "h-8 w-8",
                       isActive
                         ? "bg-white/20 text-white"
                         : "bg-white/5 text-white/70 group-hover:bg-white/10 group-hover:text-white"
                     )}
                   >
-                    <Icon className="h-4 w-4" />
+                    <Icon className={compact ? "h-5 w-5" : "h-4 w-4"} />
                   </span>
                   {!compact && (
                     <span className="flex-1 leading-snug tracking-tight">{label}</span>
@@ -230,28 +237,29 @@ export default function AdminShell() {
         {/* ── Desktop Sidebar (App Theme Colors) ── */}
         <aside
           className={cn(
-            "jevah-dashboard-sidebar sticky top-0 hidden h-dvh shrink-0 flex-col border-r border-white/10 text-white backdrop-blur-2xl transition-[width] duration-300 ease-out lg:flex",
-            collapsed ? "w-[76px]" : "w-[268px] xl:w-[292px]"
+            "jevah-dashboard-sidebar relative sticky top-0 hidden h-dvh shrink-0 flex-col overflow-visible border-r border-white/10 text-white backdrop-blur-2xl transition-[width] duration-300 ease-out lg:flex",
+            collapsed ? "w-[92px]" : "w-[268px] xl:w-[292px]"
           )}
         >
-          {/* Brand header with logo */}
+          {/* Brand header — logo goes to the public homepage */}
           <div
             className={cn(
-              "flex items-center pt-5 pb-3",
-              collapsed ? "flex-col gap-2 px-2" : "justify-between px-4"
+              "relative flex items-center pt-6 pb-4",
+              collapsed ? "flex-col gap-3 px-2.5" : "justify-between px-4"
             )}
           >
-            <div
-              className={cn(
-                "inline-flex rounded-xl bg-white/95 shadow-md shadow-black/20 ring-1 ring-white/20",
-                collapsed ? "px-1 py-0.5" : "px-2 py-1"
-              )}
+            <Link
+              to="/"
+              title="Jevah homepage"
+              className="inline-flex rounded-xl transition hover:opacity-90"
             >
               <JevahLogo
-                width={collapsed ? 36 : 56}
-                height={collapsed ? 16 : 24}
+                plated
+                onDark
+                width={collapsed ? 42 : 56}
+                height={collapsed ? 18 : 24}
               />
-            </div>
+            </Link>
             {!collapsed && (
               <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-emerald-300 ring-1 ring-emerald-400/30">
                 Admin
@@ -262,8 +270,8 @@ export default function AdminShell() {
           {/* Elevated User Profile Card — independently collapsible */}
           <div
             className={cn(
-              "my-2 rounded-2xl bg-gradient-to-b from-white/12 to-white/5 ring-1 ring-white/15 shadow-lg backdrop-blur-xl",
-              collapsed ? "mx-2 p-2" : "mx-3 p-2.5"
+              "rounded-2xl bg-gradient-to-b from-white/12 to-white/5 ring-1 ring-white/15 shadow-lg backdrop-blur-xl",
+              collapsed ? "mx-2.5 mb-4 mt-1 p-3" : "mx-3 my-2 p-2.5"
             )}
           >
             {collapsed ? (
@@ -271,8 +279,8 @@ export default function AdminShell() {
                 label={`${displayName} · ${isSuperAdmin ? "Super Admin" : "Administrator"}`}
                 show
               >
-                <div className="flex justify-center">
-                  <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-jevah-accent via-[#4ECDC4] to-emerald-400 text-xs font-black text-white shadow-md shadow-jevah-accent/30">
+                <div className="flex justify-center py-1">
+                  <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-jevah-accent via-[#4ECDC4] to-emerald-400 text-sm font-black text-white shadow-md shadow-jevah-accent/30">
                     {initials || "A"}
                     <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-[#0b1a1f] bg-emerald-400 admin-online-dot shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
                   </div>
@@ -362,9 +370,9 @@ export default function AdminShell() {
                 <button
                   type="button"
                   onClick={() => void clearNotifs()}
-                  className="relative mt-2 flex h-8 w-full items-center justify-center rounded-xl bg-rose-500/20 text-rose-200 transition hover:bg-rose-500/30"
+                  className="relative mt-3 flex h-10 w-full items-center justify-center rounded-xl bg-rose-500/20 text-rose-200 transition hover:bg-rose-500/30"
                 >
-                  <BellIcon className="h-4 w-4" />
+                  <BellIcon className="h-5 w-5" />
                   <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[9px] font-bold text-white">
                     {unread > 9 ? "9+" : unread}
                   </span>
@@ -381,86 +389,47 @@ export default function AdminShell() {
 
           <NavItems compact={collapsed} />
 
-          {/* Sidebar Footer — pinned to the bottom of the rail */}
-          <div
-            className={cn(
-              "mt-auto space-y-2 border-t border-white/10",
-              collapsed ? "p-2 pb-4" : "space-y-2.5 px-3.5 pt-5 pb-6"
-            )}
+          <button
+            type="button"
+            onClick={() => setCollapsed((v) => !v)}
+            className="absolute right-0 top-24 z-40 flex h-8 w-8 translate-x-1/2 items-center justify-center rounded-full border border-white/15 bg-[#0f3832] text-white/80 shadow-lg shadow-black/30 transition hover:scale-105 hover:bg-jevah-accent hover:text-white"
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            title={collapsed ? "Expand" : "Collapse"}
           >
-            <SidebarTip label="Take the tour" show={collapsed}>
-              <button
-                type="button"
-                onClick={replayTour}
-                className={cn(
-                  "flex w-full items-center rounded-2xl text-xs font-bold text-white/60 transition hover:bg-white/10 hover:text-white",
-                  collapsed ? "justify-center px-2 py-2.5" : "gap-3 px-3.5 py-2.5"
-                )}
-                aria-label="Take the tour"
-              >
-                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/10">
-                  <QuestionMarkCircleIcon className="h-4 w-4" />
-                </span>
-                {!collapsed && <span>Help</span>}
-              </button>
-            </SidebarTip>
-            <SidebarTip
-              label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-              show={collapsed}
-            >
-              <button
-                type="button"
-                onClick={() => setCollapsed((v) => !v)}
-                className={cn(
-                  "flex w-full items-center rounded-2xl text-xs font-bold text-white/60 transition hover:bg-white/10 hover:text-white",
-                  collapsed ? "justify-center px-2 py-2.5" : "gap-3 px-3.5 py-2.5"
-                )}
-                aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-              >
-                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/10">
-                  {collapsed ? (
-                    <ChevronDoubleRightIcon className="h-4 w-4" />
-                  ) : (
-                    <ChevronDoubleLeftIcon className="h-4 w-4" />
-                  )}
-                </span>
-                {!collapsed && <span>Collapse</span>}
-              </button>
-            </SidebarTip>
-            <SidebarTip label="Theme" show={collapsed}>
-              <div className={cn("flex justify-center", !collapsed && "px-1")}>
-                {collapsed ? (
-                  <ThemeToggle variant="icon" />
-                ) : (
-                  <ThemeToggle
-                    variant="pill"
-                    className="w-full [&>button]:w-full [&>button]:justify-center"
-                  />
-                )}
-              </div>
-            </SidebarTip>
-            <SidebarTip label="Sign Out" show={collapsed}>
-              <button
-                type="button"
-                onClick={() => void handleLogout()}
-                className={cn(
-                  "flex w-full items-center rounded-2xl text-xs font-bold text-white/70 transition-all duration-200 hover:bg-rose-500/20 hover:text-rose-200 active:scale-95",
-                  collapsed
-                    ? "justify-center px-2 py-2.5"
-                    : "gap-3 px-3.5 py-2.5"
-                )}
-              >
-                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/10">
-                  <ArrowRightOnRectangleIcon className="h-4 w-4" />
-                </span>
-                {!collapsed && "Sign Out"}
-              </button>
-            </SidebarTip>
-          </div>
+            {collapsed ? (
+              <ChevronDoubleRightIcon className="h-4 w-4" />
+            ) : (
+              <ChevronDoubleLeftIcon className="h-4 w-4" />
+            )}
+          </button>
         </aside>
 
         {/* ── Main Content Area ── */}
         <div className="flex min-w-0 flex-1 flex-col">
+          {/* Desktop command bar — theme, home, sign out */}
+          <header className="sticky top-0 z-30 hidden border-b border-jevah-border bg-jevah-surface/85 px-5 py-2.5 backdrop-blur-xl lg:flex">
+            <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3">
+              <Link
+                to="/"
+                className="inline-flex items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs font-bold text-jevah-text-muted transition hover:bg-jevah-card hover:text-jevah-text"
+              >
+                <HomeIcon className="h-4 w-4" />
+                Homepage
+              </Link>
+              <div className="flex items-center gap-2">
+                <ThemeToggle variant="icon" />
+                <button
+                  type="button"
+                  onClick={() => void handleLogout()}
+                  className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold text-jevah-text-muted transition hover:bg-rose-500/10 hover:text-rose-600"
+                >
+                  <ArrowRightOnRectangleIcon className="h-4 w-4" />
+                  Sign out
+                </button>
+              </div>
+            </div>
+          </header>
+
           {/* Mobile Top Bar */}
           <header className="sticky top-0 z-30 border-b border-jevah-border bg-jevah-surface/90 px-3 py-2.5 pt-[max(0.625rem,env(safe-area-inset-top))] backdrop-blur-md sm:px-4 lg:hidden">
             <div className="flex items-center justify-between gap-2">
@@ -473,12 +442,20 @@ export default function AdminShell() {
                 <Bars3Icon className="h-5 w-5" />
               </button>
 
-              <div className="min-w-0 flex-1 text-center">
-                <JevahLogo width={40} height={17} />
-              </div>
+              <Link to="/" className="min-w-0 flex-1 text-center" title="Jevah homepage">
+                <JevahLogo plated width={40} height={17} />
+              </Link>
 
               <div className="flex items-center gap-1.5">
                 <ThemeToggle variant="icon" />
+                <button
+                  type="button"
+                  onClick={() => void handleLogout()}
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-2xl text-jevah-text-muted transition hover:bg-rose-500/10 hover:text-rose-600"
+                  aria-label="Sign out"
+                >
+                  <ArrowRightOnRectangleIcon className="h-5 w-5" />
+                </button>
                 {onlineCount !== null && (
                   <span className="hidden items-center gap-1 rounded-full bg-jevah-accent/10 px-2 py-1 text-[11px] font-semibold text-jevah-accent sm:inline-flex">
                     <span className="h-1.5 w-1.5 rounded-full bg-jevah-accent" />
@@ -512,9 +489,9 @@ export default function AdminShell() {
               />
               <div className="jevah-dashboard-sidebar absolute inset-y-0 left-0 flex w-[min(100%,22rem)] flex-col pb-[env(safe-area-inset-bottom)] admin-drawer-in">
                 <div className="flex items-center justify-between px-3 py-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
-                  <div className="inline-flex rounded-xl bg-white px-2 py-1 shadow-sm">
-                    <JevahLogo width={48} height={20} />
-                  </div>
+                  <Link to="/" onClick={() => setMobileOpen(false)} title="Jevah homepage">
+                    <JevahLogo plated onDark width={48} height={20} />
+                  </Link>
                   <button
                     type="button"
                     onClick={() => setMobileOpen(false)}
@@ -540,44 +517,19 @@ export default function AdminShell() {
                 </div>
 
                 <NavItems onNavigate={() => setMobileOpen(false)} />
-
-                <div className="mt-auto space-y-2 border-t border-white/10 p-3 pb-5">
-                  <div className="flex justify-center px-2">
-                    <ThemeToggle variant="pill" className="w-full [&>button]:w-full [&>button]:justify-center" />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={replayTour}
-                    className="flex w-full min-h-11 items-center gap-3 rounded-2xl px-3.5 py-2.5 text-sm font-bold text-white/70 transition hover:bg-white/10 hover:text-white"
-                  >
-                    <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/5">
-                      <QuestionMarkCircleIcon className="h-4 w-4" />
-                    </span>
-                    Help & tour
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => void handleLogout()}
-                    className="flex w-full min-h-11 items-center gap-3 rounded-2xl px-3.5 py-2.5 text-sm font-bold text-white/70 transition hover:bg-rose-500/20 hover:text-rose-200"
-                  >
-                    <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/5">
-                      <ArrowRightOnRectangleIcon className="h-4 w-4" />
-                    </span>
-                    Sign Out
-                  </button>
-                </div>
               </div>
             </div>
           )}
 
           {/* Page Content */}
-          <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:px-6 sm:py-7 lg:px-8 lg:py-8">
+          <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-5 pb-[max(5.5rem,env(safe-area-inset-bottom))] sm:px-6 sm:py-7 lg:px-8 lg:py-8">
             <div className="admin-page-enter" key={location.pathname}>
               <Outlet />
             </div>
           </main>
         </div>
       </div>
+      <TourFab onClick={replayTour} hidden={tourOpen} tone="admin" />
       <ProductTour
         open={tourOpen}
         steps={ADMIN_TOUR}

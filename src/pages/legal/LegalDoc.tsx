@@ -48,7 +48,7 @@ export default function LegalDoc({
           <p className="text-[11px] font-extrabold uppercase tracking-[0.22em] text-[#256E63]">
             Jevah legal
           </p>
-          <h1 className="mt-3 font-serif text-4xl font-semibold tracking-tight sm:text-5xl">
+          <h1 className="mt-3 font-sans text-4xl font-semibold tracking-tight sm:text-5xl">
             {title.replace(" — Jevah", "")}
           </h1>
           <p className="mt-4 text-base leading-relaxed text-jevah-text-muted">

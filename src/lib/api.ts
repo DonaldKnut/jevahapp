@@ -36,6 +36,26 @@ const API_BASE = resolveApiBase();
 const TOKEN_KEY = "accessToken";
 const USER_KEY = "adminUser";
 
+/** GET in-flight collapse (Strict Mode remounts + overlapping widgets). */
+const inflightGets = new Map<string, Promise<unknown>>();
+let rateLimitedUntil = 0;
+
+export function isApiRateLimited() {
+  return Date.now() < rateLimitedUntil;
+}
+
+export function getRateLimitWaitMs() {
+  return Math.max(0, rateLimitedUntil - Date.now());
+}
+
+function markRateLimited(res: Response) {
+  const raw = res.headers.get("Retry-After");
+  const sec = raw ? Number(raw) : NaN;
+  const waitMs =
+    Number.isFinite(sec) && sec > 0 ? Math.min(sec * 1000, 120000) : 45000;
+  rateLimitedUntil = Math.max(rateLimitedUntil, Date.now() + waitMs);
+}
+
 export function getAccessToken(): string | null {
   return localStorage.getItem(TOKEN_KEY);
 }
@@ -82,46 +102,66 @@ export async function apiRequest<T>(
   options: RequestOptions = {}
 ): Promise<T> {
   const { body, auth = true, headers: customHeaders, ...rest } = options;
-  const headers = new Headers(customHeaders);
+  const method = String(rest.method || "GET").toUpperCase();
+  const url = `${API_BASE}${path.startsWith("/") ? path : `/${path}`}`;
 
-  if (body !== undefined && !headers.has("Content-Type")) {
-    headers.set("Content-Type", "application/json");
+  if (method === "GET" && body === undefined) {
+    const existing = inflightGets.get(url);
+    if (existing) return existing as Promise<T>;
   }
 
-  if (auth) {
-    const token = getAccessToken();
-    if (token) {
-      headers.set("Authorization", `Bearer ${token}`);
+  const run = (async () => {
+    const headers = new Headers(customHeaders);
+
+    if (body !== undefined && !headers.has("Content-Type")) {
+      headers.set("Content-Type", "application/json");
     }
-  }
 
-  const res = await fetch(`${API_BASE}${path.startsWith("/") ? path : `/${path}`}`, {
-    credentials: "include",
-    ...rest,
-    headers,
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-  });
-
-  let parsed: unknown = null;
-  const text = await res.text();
-  if (text) {
-    try {
-      parsed = JSON.parse(text);
-    } catch {
-      parsed = { message: text };
+    if (auth) {
+      const token = getAccessToken();
+      if (token) {
+        headers.set("Authorization", `Bearer ${token}`);
+      }
     }
+
+    const res = await fetch(url, {
+      credentials: "include",
+      ...rest,
+      headers,
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+    });
+
+    let parsed: unknown = null;
+    const text = await res.text();
+    if (text) {
+      try {
+        parsed = JSON.parse(text);
+      } catch {
+        parsed = { message: text };
+      }
+    }
+
+    if (!res.ok) {
+      if (res.status === 429) markRateLimited(res);
+      const errBody = (parsed || {}) as ApiErrorBody;
+      throw new ApiError(
+        res.status,
+        errBody.message || errBody.error || `Request failed (${res.status})`,
+        errBody
+      );
+    }
+
+    return parsed as T;
+  })();
+
+  if (method === "GET" && body === undefined) {
+    inflightGets.set(url, run);
+    void run.finally(() => {
+      inflightGets.delete(url);
+    });
   }
 
-  if (!res.ok) {
-    const errBody = (parsed || {}) as ApiErrorBody;
-    throw new ApiError(
-      res.status,
-      errBody.message || errBody.error || `Request failed (${res.status})`,
-      errBody
-    );
-  }
-
-  return parsed as T;
+  return run;
 }
 
 export { API_BASE };
