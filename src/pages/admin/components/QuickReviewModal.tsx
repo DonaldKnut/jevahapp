@@ -119,6 +119,7 @@ export default function QuickReviewModal({
       }
       icon={<ShieldCheckIcon className="h-5 w-5" />}
       size="lg"
+      paper
       busy={Boolean(busy)}
       footer={
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
@@ -142,15 +143,15 @@ export default function QuickReviewModal({
       }
     >
       {error && (
-        <p className="mb-3 rounded-xl bg-rose-500/10 px-3 py-2 text-sm font-medium text-rose-600 dark:text-rose-300">
+        <p className="mb-3 rounded-xl bg-rose-50 px-3 py-2 text-sm font-medium text-rose-700">
           {error}
         </p>
       )}
 
       {loading && !detail ? (
         <div className="space-y-3">
-          <div className="h-40 animate-pulse rounded-2xl bg-jevah-card" />
-          <div className="h-4 w-2/3 animate-pulse rounded bg-jevah-card" />
+          <div className="h-40 animate-pulse rounded-2xl bg-slate-100" />
+          <div className="h-4 w-2/3 animate-pulse rounded bg-slate-100" />
         </div>
       ) : detail ? (
         <div className="space-y-4">
@@ -171,12 +172,12 @@ export default function QuickReviewModal({
             )}
           </div>
           {detail.description ? (
-            <p className="text-sm leading-relaxed text-jevah-text-muted">
+            <p className="text-sm leading-relaxed text-slate-600">
               {detail.description}
             </p>
           ) : null}
           <label className="block">
-            <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-jevah-text-muted">
+            <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">
               Reviewer note (optional)
             </span>
             <textarea
@@ -184,12 +185,12 @@ export default function QuickReviewModal({
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Why you’re approving or rejecting…"
-              className="w-full rounded-xl border border-jevah-border bg-jevah-card px-3 py-2 text-sm text-jevah-text outline-none ring-jevah-accent/25 placeholder:text-jevah-text-muted focus:border-jevah-accent focus:ring-2"
+              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-jevah-accent/25 placeholder:text-slate-400 focus:border-jevah-accent focus:ring-2"
             />
           </label>
         </div>
       ) : (
-        <p className="text-sm text-jevah-text-muted">No preview available.</p>
+        <p className="text-sm text-slate-500">No preview available.</p>
       )}
     </AdminModal>
   );

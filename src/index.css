@@ -697,8 +697,55 @@
 .email-rich-editor:focus {
   outline: none;
 }
-.tiptap {
-  outline: none;
+.media-preview:fullscreen,
+.media-preview:-webkit-full-screen {
+  width: 100vw;
+  height: 100vh;
+  max-height: none;
+  border-radius: 0;
+  display: flex;
+  flex-direction: column;
+  background: #000;
+}
+.media-preview:fullscreen .media-preview-stage,
+.media-preview:-webkit-full-screen .media-preview-stage {
+  flex: 1 1 auto;
+  width: 100%;
+  height: auto;
+  max-height: none;
+  aspect-ratio: auto;
+}
+.media-preview:fullscreen video,
+.media-preview:-webkit-full-screen video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.media-seek {
+  appearance: none;
+  background: transparent;
+}
+.media-seek::-webkit-slider-runnable-track {
+  height: 100%;
+  background: transparent;
+}
+.media-seek::-webkit-slider-thumb {
+  appearance: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 9999px;
+  background: transparent;
+}
+.media-seek::-moz-range-track {
+  height: 100%;
+  background: transparent;
+}
+.media-seek::-moz-range-thumb {
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 9999px;
+  background: transparent;
 }
 
 /* Spotify-like vinyl disc */

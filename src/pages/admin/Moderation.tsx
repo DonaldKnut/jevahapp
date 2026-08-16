@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   banUser,
   bulkModerationStatus,
@@ -7,7 +8,6 @@ import {
   deleteMedia,
   fetchModerationNotes,
   fetchModerationQueue,
-  getModerationCase,
   getModerationMedia,
   patchModerationStatus,
   rerunModeration,
@@ -41,7 +41,6 @@ import {
   ChevronRightIcon,
   XMarkIcon,
   ShieldCheckIcon,
-  SparklesIcon,
   NoSymbolIcon,
   TrashIcon,
   PencilSquareIcon,
@@ -49,7 +48,6 @@ import {
   ArrowPathIcon,
   CheckCircleIcon,
   ClockIcon,
-  ExclamationTriangleIcon,
   MagnifyingGlassIcon,
   FilmIcon,
   MusicalNoteIcon,
@@ -61,6 +59,10 @@ import {
   EyeIcon,
   XCircleIcon,
 } from "@heroicons/react/24/outline";
+
+function prettyLabel(value?: string | null) {
+  return (value || "").replace(/_/g, " ");
+}
 
 function statusTone(
   status?: string
@@ -631,8 +633,8 @@ export default function ModerationPage() {
     };
   }, [selectedId, items]);
 
-  // Keyboard Shortcuts (Shift + A: Approve, Shift + H: Hold, Shift + R: Reject)
   useEffect(() => {
+    if (!studioModalOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (
         e.target instanceof HTMLInputElement ||
@@ -655,7 +657,16 @@ export default function ModerationPage() {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [selectedId, busy]);
+  }, [studioModalOpen, selectedId, busy]);
+
+  useEffect(() => {
+    if (!studioModalOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [studioModalOpen]);
 
   function selectItemAndInspect(id: string) {
     setSelectedId(id);
@@ -666,17 +677,6 @@ export default function ModerationPage() {
     if (selectedIndex < 0) return;
     const next = filteredItems[selectedIndex + delta];
     if (next) setSelectedId(next.id);
-  }
-
-  async function loadCases() {
-    if (!selectedId) return;
-    try {
-      const res = await getModerationCase(selectedId);
-      const count = res.cases?.length || 0;
-      toast.info("AI Case Telemetry", count ? `${count} historical case(s) found.` : "No prior moderation flags recorded.");
-    } catch {
-      toast.info("AI Case Telemetry", "No prior moderation flags recorded.");
-    }
   }
 
   async function setStatus(status: "approved" | "rejected" | "under_review") {
@@ -1176,373 +1176,369 @@ export default function ModerationPage() {
         )}
       </div>
 
-      {/* ULTRA PREMIUM MODERATION STUDIO FULLSCREEN/CENTERED MODAL WORKSPACE */}
-      {studioModalOpen && detail && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/90 backdrop-blur-2xl admin-fade-in overflow-y-auto">
-          <div className="relative flex flex-col h-full max-h-[94vh] w-full max-w-7xl overflow-hidden rounded-3xl border border-white/20 bg-gradient-to-b from-gray-950 via-jevah-surface to-gray-950 text-jevah-text shadow-[0_25px_80px_rgba(0,0,0,0.9)] animate-in fade-in zoom-in-95 duration-200">
+      {studioModalOpen &&
+        detail &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div className="fixed inset-0 z-[110] overflow-y-auto">
+            <div className="flex min-h-full items-stretch justify-center sm:items-center sm:p-6 lg:p-8">
+              <button
+                type="button"
+                aria-label="Close review"
+                className="absolute inset-0 bg-[rgba(11,26,31,0.55)] backdrop-blur-xl"
+                onClick={() => setStudioModalOpen(false)}
+              />
 
-            {/* Modal Top Bar */}
-            <div className="flex shrink-0 items-center justify-between border-b border-jevah-border/80 bg-jevah-surface/95 px-5 py-4 backdrop-blur-xl">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-jevah-accent to-emerald-500 text-white shadow-md shadow-jevah-accent/25">
-                  <ShieldCheckIcon className="h-6 w-6" />
-                </div>
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-[10px] font-black uppercase tracking-widest text-jevah-accent">
-                      ITEM {selectedIndex >= 0 ? selectedIndex + 1 : 1} OF {filteredItems.length}
-                    </span>
-                    <Badge tone={statusTone(detail.moderationStatus)} size="sm">
-                      {detail.moderationStatus}
-                    </Badge>
-                  </div>
-                  <h2 className="truncate text-base font-black text-jevah-text sm:text-xl">
-                    {detail.title}
-                  </h2>
-                </div>
-              </div>
-
-              {/* Top Right Quick Shortcuts & Close */}
-              <div className="flex items-center gap-3">
-                <div className="hidden md:flex items-center gap-2 rounded-full bg-jevah-card px-3 py-1 text-[10px] font-mono font-bold text-jevah-text-muted border border-jevah-border/60">
-                  <span>Shift+A Approve</span>
-                  <span>·</span>
-                  <span>Shift+H Hold</span>
-                  <span>·</span>
-                  <span>Shift+R Reject</span>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => setStudioModalOpen(false)}
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-jevah-card text-jevah-text-muted hover:bg-rose-500 hover:text-white transition shadow-sm"
-                  aria-label="Close Moderation Studio"
-                >
-                  <XMarkIcon className="h-6 w-6" />
-                </button>
-              </div>
-            </div>
-
-            {/* Modal Body - 2 Column Split Studio */}
-            <div className="grid min-h-0 flex-1 grid-cols-1 overflow-y-auto lg:grid-cols-[1.2fr_0.8fr] custom-scrollbar">
-
-              {/* LEFT: Video Player Studio */}
-              <div className="flex flex-col space-y-4 p-4 sm:p-6 border-b lg:border-b-0 lg:border-r border-jevah-border/60 bg-black/40">
-                <MediaPreview
-                  media={detail}
-                  onPlaybackError={onPlaybackError}
-                  autoPlay
-                />
-
-                {/* Submissions Details Overview Card */}
-                <div className="rounded-3xl border border-jevah-border/80 bg-jevah-surface/90 p-5 shadow-sm backdrop-blur-xl space-y-4">
-                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-jevah-border/50 pb-3">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-sky-500/10 px-3 py-1 text-xs font-bold text-sky-400 ring-1 ring-sky-500/20">
-                        <UserIcon className="h-3.5 w-3.5" />
-                        {uploaderLabel(detail)}
-                      </span>
-                      {signedExpiryLabel(detail.preview) && (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2.5 py-0.5 text-xs font-semibold text-amber-400 ring-1 ring-amber-500/20">
-                          <ClockIcon className="h-3.5 w-3.5" />
-                          {signedExpiryLabel(detail.preview)}
-                        </span>
-                      )}
-                    </div>
-
-                    <span className="text-xs font-semibold text-jevah-text-muted">
-                      Uploaded {detail.createdAt ? formatAge(detail.createdAt) : "Recently"}
-                    </span>
-                  </div>
-
-                  <div>
-                    <h3 className="text-lg font-black text-jevah-text">Submission Notes & Description</h3>
-                    <p className="mt-2 rounded-2xl border border-jevah-border/60 bg-jevah-card/40 p-4 text-xs leading-relaxed font-medium text-jevah-text">
-                      {detail.description || "No description provided."}
+              <div
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="moderation-review-title"
+                className="relative z-10 flex h-[100dvh] w-full max-w-6xl flex-col overflow-hidden bg-jevah-surface text-jevah-text shadow-[0_32px_90px_rgba(0,0,0,0.35)] sm:h-auto sm:max-h-[min(92dvh,880px)] sm:rounded-[1.75rem] sm:border sm:border-jevah-border"
+              >
+                <div className="flex shrink-0 items-start justify-between gap-3 border-b border-jevah-border bg-jevah-surface px-4 py-3 sm:gap-4 sm:px-6 sm:py-4">
+                  <div className="min-w-0">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-jevah-accent">
+                      Review {selectedIndex >= 0 ? selectedIndex + 1 : 1} of{" "}
+                      {filteredItems.length}
                     </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* RIGHT: AI Evidence, Reviewer Rationale & Actions */}
-              <div className="flex flex-col space-y-5 p-4 sm:p-6 overflow-y-auto custom-scrollbar">
-
-                {/* AI Evidence & Telemetry Score Card */}
-                <div className="rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-500/15 via-jevah-surface to-jevah-surface p-5 shadow-lg backdrop-blur-xl space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-500/20 text-amber-400 ring-1 ring-amber-500/40">
-                        <CpuChipIcon className="h-6 w-6" />
-                      </div>
-                      <div>
-                        <h3 className="text-xs font-black uppercase tracking-wider text-jevah-text">
-                          Automated AI Evidence &amp; Confidence
-                        </h3>
-                        <p className="text-[11px] font-semibold text-jevah-text-muted">
-                          Safety confidence telemetry score
-                        </p>
-                      </div>
-                    </div>
-
-                    <span className={cn(
-                      "text-base font-black px-3 py-1 rounded-full border font-mono",
-                      confidenceScore > 70
-                        ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/40"
-                        : confidenceScore > 40
-                        ? "bg-amber-500/20 text-amber-300 border-amber-500/40"
-                        : "bg-rose-500/20 text-rose-400 border-rose-500/40 animate-pulse"
-                    )}>
-                      {confidenceScore}% confidence
-                    </span>
-                  </div>
-
-                  {/* Confidence Progress Meter Bar */}
-                  <div className="h-2.5 w-full overflow-hidden rounded-full bg-jevah-card border border-jevah-border/60">
-                    <div
-                      className={cn(
-                        "h-full rounded-full transition-all duration-700",
-                        confidenceScore > 70
-                          ? "bg-gradient-to-r from-emerald-500 to-teal-400 shadow-[0_0_12px_#10b981]"
-                          : confidenceScore > 40
-                          ? "bg-gradient-to-r from-amber-500 to-yellow-400 shadow-[0_0_12px_#f59e0b]"
-                          : "bg-gradient-to-r from-rose-600 to-pink-500 shadow-[0_0_12px_#f43f5e]"
-                      )}
-                      style={{ width: `${Math.max(confidenceScore, 6)}%` }}
-                    />
-                  </div>
-
-                  <p className="text-xs font-medium leading-relaxed text-jevah-text-muted">
-                    {decision?.reason ||
-                      "Automated moderation could not complete. Upload is held until the content can be reviewed."}
-                  </p>
-
-                  {/* Flags */}
-                  {!!decision?.flags?.length && (
-                    <div className="flex flex-wrap gap-1.5 pt-1">
-                      {decision.flags.map((flag) => (
-                        <span
-                          key={flag}
-                          className="inline-flex items-center gap-1 rounded-full bg-rose-500/15 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-rose-400 border border-rose-500/30"
-                        >
-                          <ExclamationTriangleIcon className="h-3.5 w-3.5" />
-                          {flag}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Re-run trigger in AI card */}
-                  <div className="pt-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      disabled={busy}
-                      onClick={() => void rerunAi()}
-                      className="w-full text-amber-400 border border-amber-500/30 hover:bg-amber-500/15"
+                    <h2
+                      id="moderation-review-title"
+                      className="mt-1 line-clamp-2 text-base font-semibold tracking-tight text-jevah-text sm:text-xl"
                     >
-                      <ArrowPathIcon className="h-4 w-4" />
-                      Re-run AI Telemetry Scan
-                    </Button>
+                      {detail.title}
+                    </h2>
+                    <div className="mt-2 flex flex-wrap items-center gap-2">
+                      <Badge tone={statusTone(detail.moderationStatus)} size="sm" dot>
+                        {prettyLabel(detail.moderationStatus)}
+                      </Badge>
+                      <span className="break-all text-xs text-jevah-text-muted">
+                        {uploaderLabel(detail)}
+                        {detail.createdAt
+                          ? ` · ${formatAge(detail.createdAt)}`
+                          : ""}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+                    <button
+                      type="button"
+                      disabled={selectedIndex <= 0}
+                      onClick={() => goAdjacent(-1)}
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-jevah-border bg-jevah-card text-jevah-text disabled:opacity-30 sm:hidden"
+                      title="Previous"
+                    >
+                      <ChevronLeftIcon className="h-5 w-5" />
+                    </button>
+                    <button
+                      type="button"
+                      disabled={
+                        selectedIndex < 0 ||
+                        selectedIndex >= filteredItems.length - 1
+                      }
+                      onClick={() => goAdjacent(1)}
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-jevah-border bg-jevah-card text-jevah-text disabled:opacity-30 sm:hidden"
+                      title="Next"
+                    >
+                      <ChevronRightIcon className="h-5 w-5" />
+                    </button>
+                    <div className="hidden items-center gap-1.5 rounded-full border border-jevah-border bg-jevah-card px-3 py-1.5 text-[10px] font-medium text-jevah-text-muted xl:flex">
+                      <kbd className="rounded bg-jevah-surface px-1.5 py-0.5 text-jevah-text">
+                        ⇧A
+                      </kbd>
+                      approve
+                      <kbd className="rounded bg-jevah-surface px-1.5 py-0.5 text-jevah-text">
+                        ⇧H
+                      </kbd>
+                      hold
+                      <kbd className="rounded bg-jevah-surface px-1.5 py-0.5 text-jevah-text">
+                        ⇧R
+                      </kbd>
+                      reject
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setStudioModalOpen(false)}
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-jevah-text-muted transition hover:bg-jevah-card hover:text-jevah-text"
+                      aria-label="Close"
+                    >
+                      <XMarkIcon className="h-5 w-5" />
+                    </button>
                   </div>
                 </div>
 
-                {/* Transcoding Pipeline Status */}
-                {detail.processing?.status && (
-                  <div className="flex items-center justify-between rounded-2xl border border-jevah-border/80 bg-jevah-card/60 px-4 py-3 text-xs font-extrabold text-jevah-text">
-                    <span className="flex items-center gap-2">
-                      <SparklesIcon className="h-4 w-4 text-jevah-accent animate-pulse" />
-                      Transcoding Pipeline: {detail.processing.status}
-                    </span>
-                    <span className="font-mono text-jevah-accent text-sm">
-                      {detail.processing.progress != null ? `${detail.processing.progress}%` : "100%"}
-                    </span>
+                <div className="grid min-h-0 flex-1 auto-rows-min grid-cols-1 overflow-y-auto lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:grid-rows-[auto_minmax(0,1fr)] lg:overflow-hidden">
+                  <div className="relative z-0 order-2 isolate space-y-4 border-b border-jevah-border bg-jevah-surface p-3 sm:p-5 lg:order-none lg:col-start-1 lg:row-span-2 lg:overflow-y-auto lg:border-b-0 lg:border-r">
+                    <MediaPreview
+                      media={detail}
+                      onPlaybackError={onPlaybackError}
+                    />
+
+                    <div className="relative z-10 rounded-2xl border border-jevah-border bg-jevah-card p-4">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <p className="text-xs font-semibold text-jevah-text">
+                          Description
+                        </p>
+                        {signedExpiryLabel(detail.preview) && (
+                          <span className="text-[11px] text-jevah-text-muted">
+                            {signedExpiryLabel(detail.preview)}
+                          </span>
+                        )}
+                      </div>
+                      <p className="mt-2 text-sm leading-relaxed text-jevah-text">
+                        {detail.description || "No description provided."}
+                      </p>
+                    </div>
                   </div>
-                )}
 
-                {/* Reviewer Decision Notes & Preset Rationale */}
-                <div className="rounded-3xl border border-jevah-border/80 bg-jevah-surface/90 p-5 shadow-sm space-y-4">
-                  <div className="space-y-2">
-                    <label className="text-xs font-black uppercase tracking-wider text-jevah-text">
-                      Reviewer Decision Notes
-                    </label>
-
-                    {/* Preset Rationale Chips */}
-                    <div className="flex flex-wrap gap-1.5 pb-1">
-                      {[
-                        "🟢 Faith-based video approved",
-                        "🟡 Held for AI telemetry re-scan",
-                        "🔴 Rejected for policy violation",
-                        "🔵 Needs title/metadata edit",
-                      ].map((preset) => (
-                        <button
-                          key={preset}
-                          type="button"
-                          onClick={() => setNotes(preset)}
-                          className="rounded-full bg-jevah-card hover:bg-jevah-accent hover:text-white px-2.5 py-1 text-[10px] font-bold text-jevah-text-muted transition border border-jevah-border/60"
+                  <div className="relative z-10 order-1 bg-jevah-surface p-3 sm:p-5 lg:order-none lg:col-start-2 lg:row-start-1">
+                    <div className="rounded-2xl border border-jevah-border bg-jevah-card p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-xs font-semibold uppercase tracking-wider text-jevah-text-muted">
+                            Automated scan
+                          </p>
+                          <p className="mt-1 text-sm font-semibold text-jevah-text">
+                            {confidenceScore}% confidence
+                          </p>
+                        </div>
+                        <span
+                          className={cn(
+                            "rounded-full px-2.5 py-1 text-[11px] font-semibold",
+                            confidenceScore > 70
+                              ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300"
+                              : confidenceScore > 40
+                                ? "bg-amber-500/15 text-amber-800 dark:text-amber-300"
+                                : "bg-rose-500/15 text-rose-700 dark:text-rose-300"
+                          )}
                         >
-                          {preset}
-                        </button>
-                      ))}
+                          {confidenceScore === 0 ? "Needs review" : "Scored"}
+                        </span>
+                      </div>
+                      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-jevah-surface">
+                        <div
+                          className={cn(
+                            "h-full rounded-full",
+                            confidenceScore > 70
+                              ? "bg-emerald-500"
+                              : confidenceScore > 40
+                                ? "bg-amber-500"
+                                : "bg-rose-500"
+                          )}
+                          style={{ width: `${Math.max(confidenceScore, 4)}%` }}
+                        />
+                      </div>
+                      <p className="mt-3 text-sm leading-relaxed text-jevah-text">
+                        {decision?.reason ||
+                          "Automated moderation could not complete. This upload is held until a person reviews it."}
+                      </p>
+                      {!!decision?.flags?.length && (
+                        <div className="mt-3 flex flex-wrap gap-1.5">
+                          {decision.flags.map((flag) => (
+                            <span
+                              key={flag}
+                              className="rounded-full border border-jevah-border bg-jevah-surface px-2.5 py-1 text-[11px] font-medium capitalize text-jevah-text"
+                            >
+                              {prettyLabel(flag)}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        disabled={busy}
+                        onClick={() => void rerunAi()}
+                        className="mt-3 w-full"
+                      >
+                        <ArrowPathIcon className="h-4 w-4" />
+                        Re-run scan
+                      </Button>
                     </div>
 
-                    <textarea
-                      value={notes}
-                      onChange={(e) => setNotes(e.target.value)}
-                      rows={3}
-                      className={inputClass}
-                      placeholder="Write reviewer rationale or moderation notes..."
-                    />
+                    {detail.processing?.status && (
+                      <p className="mt-3 text-xs text-jevah-text-muted">
+                        Processing: {prettyLabel(detail.processing.status)}
+                        {detail.processing.progress != null
+                          ? ` · ${detail.processing.progress}%`
+                          : ""}
+                      </p>
+                    )}
                   </div>
 
-                  {/* Audit Log Thread */}
-                  <div className="pt-2 border-t border-jevah-border/50">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-jevah-text-muted mb-2">
-                      Moderation Audit Log Thread ({threadNotes.length})
-                    </p>
-                    <ul className="max-h-36 space-y-2 overflow-y-auto text-xs custom-scrollbar">
-                      {threadNotes.length === 0 ? (
-                        <li className="rounded-2xl border border-dashed border-jevah-border/60 bg-jevah-card/30 p-3 text-center text-xs font-medium text-jevah-text-muted">
-                          No admin audit notes added yet.
-                        </li>
-                      ) : (
-                        threadNotes.map((n, i) => (
-                          <li
-                            key={String(n.id || i)}
-                            className="rounded-2xl border border-jevah-border/60 bg-jevah-card/50 p-3 text-xs font-medium text-jevah-text"
-                          >
-                            {String(n.body || n.text || n.message || "—")}
-                          </li>
-                        ))
-                      )}
-                    </ul>
+                  <div className="relative z-10 order-3 space-y-4 bg-jevah-surface p-3 sm:p-5 lg:order-none lg:col-start-2 lg:row-start-2 lg:overflow-y-auto">
 
-                    <div className="mt-3 flex gap-2">
-                      <input
-                        value={noteDraft}
-                        onChange={(e) => setNoteDraft(e.target.value)}
-                        className={inputClass}
-                        placeholder="Append note to audit thread..."
+                    <div className="rounded-2xl border border-jevah-border bg-jevah-card p-4">
+                      <label className="text-xs font-semibold uppercase tracking-wider text-jevah-text-muted">
+                        Reviewer notes
+                      </label>
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        {[
+                          "Faith-based video approved",
+                          "Held for another look",
+                          "Rejected for policy violation",
+                          "Needs title or metadata edit",
+                        ].map((preset) => (
+                          <button
+                            key={preset}
+                            type="button"
+                            onClick={() => setNotes(preset)}
+                            className="rounded-full border border-jevah-border bg-jevah-surface px-2.5 py-1 text-[11px] font-medium text-jevah-text transition hover:border-jevah-accent hover:text-jevah-accent"
+                          >
+                            {preset}
+                          </button>
+                        ))}
+                      </div>
+                      <textarea
+                        value={notes}
+                        onChange={(e) => setNotes(e.target.value)}
+                        rows={3}
+                        className={`${inputClass} mt-3`}
+                        placeholder="Why you’re approving, holding, or rejecting…"
                       />
+
+                      <div className="mt-4 border-t border-jevah-border/50 pt-3">
+                        <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-jevah-text-muted">
+                          Audit thread ({threadNotes.length})
+                        </p>
+                        <ul className="max-h-28 space-y-2 overflow-y-auto">
+                          {threadNotes.length === 0 ? (
+                            <li className="text-xs text-jevah-text-muted">
+                              No notes yet.
+                            </li>
+                          ) : (
+                            threadNotes.map((n, i) => (
+                              <li
+                                key={String(n.id || i)}
+                                className="rounded-xl bg-jevah-surface px-3 py-2 text-xs text-jevah-text"
+                              >
+                                {String(n.body || n.text || n.message || "—")}
+                              </li>
+                            ))
+                          )}
+                        </ul>
+                        <div className="mt-2 flex gap-2">
+                          <input
+                            value={noteDraft}
+                            onChange={(e) => setNoteDraft(e.target.value)}
+                            className={inputClass}
+                            placeholder="Add to the audit thread…"
+                          />
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            disabled={busy || !noteDraft.trim()}
+                            onClick={() => void submitNote()}
+                          >
+                            <PaperAirplaneIcon className="h-3.5 w-3.5" />
+                            Post
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
                       <Button
-                        variant="secondary"
+                        variant="outline"
                         size="sm"
-                        disabled={busy || !noteDraft.trim()}
-                        onClick={() => void submitNote()}
+                        disabled={busy}
+                        onClick={() => setEditOpen(true)}
                       >
-                        <PaperAirplaneIcon className="h-3.5 w-3.5" />
-                        Post
+                        <PencilSquareIcon className="h-3.5 w-3.5" />
+                        Edit
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        disabled={busy}
+                        onClick={() => void assignToMe()}
+                      >
+                        <UserPlusIcon className="h-3.5 w-3.5" />
+                        Assign
+                      </Button>
+                      <Button
+                        variant="warning"
+                        size="sm"
+                        disabled={busy}
+                        onClick={() => void banUploader()}
+                      >
+                        <NoSymbolIcon className="h-3.5 w-3.5" />
+                        Ban uploader
+                      </Button>
+                      <Button
+                        variant="danger"
+                        size="sm"
+                        disabled={busy}
+                        onClick={() => void hardDelete()}
+                      >
+                        <TrashIcon className="h-3.5 w-3.5" />
+                        Delete
                       </Button>
                     </div>
                   </div>
                 </div>
 
-                {/* Action Toolbox */}
-                <div className="rounded-3xl border border-jevah-border/80 bg-jevah-surface/90 p-4 shadow-sm space-y-3">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-jevah-text-muted">
-                    Action Toolbox
-                  </p>
-                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={busy}
-                      onClick={() => setEditOpen(true)}
+                <div className="relative z-20 flex shrink-0 flex-col gap-3 border-t border-jevah-border bg-jevah-surface px-3 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:flex-row sm:items-center sm:justify-between sm:px-6">
+                  <div className="hidden items-center gap-2 sm:flex">
+                    <button
+                      type="button"
+                      disabled={selectedIndex <= 0}
+                      onClick={() => goAdjacent(-1)}
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-jevah-border bg-jevah-card text-jevah-text disabled:opacity-30"
+                      title="Previous"
                     >
-                      <PencilSquareIcon className="h-3.5 w-3.5 text-jevah-accent" />
-                      Edit Metadata
-                    </Button>
-                    <Button variant="ghost" size="sm" disabled={busy} onClick={() => void loadCases()}>
-                      <CpuChipIcon className="h-3.5 w-3.5 text-amber-500" />
-                      AI Evidence
-                    </Button>
-                    <Button variant="ghost" size="sm" disabled={busy} onClick={() => void assignToMe()}>
-                      <UserPlusIcon className="h-3.5 w-3.5 text-sky-500" />
-                      Assign
-                    </Button>
-                    <Button variant="ghost" size="sm" disabled={busy} onClick={() => void rerunAi()}>
-                      <ArrowPathIcon className="h-3.5 w-3.5 text-emerald-500" />
-                      Re-run AI
-                    </Button>
-                    <Button variant="warning" size="sm" disabled={busy} onClick={() => void banUploader()}>
-                      <NoSymbolIcon className="h-3.5 w-3.5" />
-                      Ban Uploader
-                    </Button>
-                    <Button variant="danger" size="sm" disabled={busy} onClick={() => void hardDelete()}>
-                      <TrashIcon className="h-3.5 w-3.5" />
-                      Delete Media
-                    </Button>
+                      <ChevronLeftIcon className="h-5 w-5" />
+                    </button>
+                    <button
+                      type="button"
+                      disabled={
+                        selectedIndex < 0 ||
+                        selectedIndex >= filteredItems.length - 1
+                      }
+                      onClick={() => goAdjacent(1)}
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-jevah-border bg-jevah-card text-jevah-text disabled:opacity-30"
+                      title="Next"
+                    >
+                      <ChevronRightIcon className="h-5 w-5" />
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:items-center">
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={() => void setStatus("approved")}
+                      className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-emerald-600 px-3 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-700 sm:px-4"
+                    >
+                      <CheckCircleIcon className="h-4 w-4" />
+                      Approve
+                    </button>
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={() => void setStatus("under_review")}
+                      className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-amber-500/40 bg-amber-100 px-3 py-2.5 text-sm font-semibold text-amber-900 hover:bg-amber-200 dark:bg-amber-500/20 dark:text-amber-200 dark:hover:bg-amber-500/30 sm:flex-none sm:px-4"
+                    >
+                      <ClockIcon className="h-4 w-4" />
+                      Hold
+                    </button>
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={() => void setStatus("rejected")}
+                      className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-rose-600 px-3 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-rose-700 sm:px-4"
+                    >
+                      <XCircleIcon className="h-4 w-4" />
+                      Reject
+                    </button>
                   </div>
                 </div>
-
               </div>
             </div>
+          </div>,
+          document.body
+        )}
 
-            {/* Modal Bottom Floating Sticky Decision Bar */}
-            <div className="flex shrink-0 items-center justify-between border-t border-jevah-border/80 bg-jevah-surface/95 px-5 py-4 backdrop-blur-xl">
-              {/* Prev / Next Item */}
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  disabled={selectedIndex <= 0}
-                  onClick={() => goAdjacent(-1)}
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-jevah-border/80 bg-jevah-card text-jevah-text hover:bg-jevah-accent hover:text-white disabled:opacity-30 transition"
-                  title="Previous Item"
-                >
-                  <ChevronLeftIcon className="h-5 w-5" />
-                </button>
-                <button
-                  type="button"
-                  disabled={selectedIndex < 0 || selectedIndex >= filteredItems.length - 1}
-                  onClick={() => goAdjacent(1)}
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-jevah-border/80 bg-jevah-card text-jevah-text hover:bg-jevah-accent hover:text-white disabled:opacity-30 transition"
-                  title="Next Item"
-                >
-                  <ChevronRightIcon className="h-5 w-5" />
-                </button>
-              </div>
-
-              {/* Big Moderation Decision Buttons */}
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  disabled={busy}
-                  onClick={() => void setStatus("approved")}
-                  className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-500 px-6 py-3 text-xs font-black text-white shadow-lg shadow-emerald-500/25 hover:scale-105 active:scale-95 transition-all"
-                >
-                  <CheckCircleIcon className="h-5 w-5" />
-                  Approve Submission
-                </button>
-                <button
-                  type="button"
-                  disabled={busy}
-                  onClick={() => void setStatus("under_review")}
-                  className="inline-flex items-center gap-2 rounded-2xl border border-amber-500/40 bg-amber-500/20 px-5 py-3 text-xs font-black text-amber-300 shadow-md hover:bg-amber-500/30 active:scale-95 transition-all"
-                >
-                  <ClockIcon className="h-5 w-5" />
-                  Hold Under Review
-                </button>
-                <button
-                  type="button"
-                  disabled={busy}
-                  onClick={() => void setStatus("rejected")}
-                  className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-rose-600 to-red-500 px-6 py-3 text-xs font-black text-white shadow-lg shadow-rose-500/25 hover:scale-105 active:scale-95 transition-all"
-                >
-                  <XCircleIcon className="h-5 w-5" />
-                  Reject Submission
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setStudioModalOpen(false)}
-                  className="inline-flex items-center justify-center rounded-2xl border border-jevah-border bg-jevah-card px-4 py-3 text-xs font-bold text-jevah-text-muted hover:text-jevah-text transition"
-                >
-                  Dismiss
-                </button>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      )}
 
       {/* Metadata Edit Modal */}
       <AdminModal

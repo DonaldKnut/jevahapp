@@ -260,6 +260,7 @@ export default function OverviewKpiPeek({
       subtitle={meta?.subtitle}
       icon={Icon ? <Icon className="h-5 w-5" /> : undefined}
       size="lg"
+      paper
       footer={
         meta ? (
           <div className="flex justify-end">
@@ -278,25 +279,25 @@ export default function OverviewKpiPeek({
       }
     >
       {error && (
-        <p className="mb-3 rounded-xl bg-rose-500/10 px-3 py-2 text-sm font-medium text-rose-600 dark:text-rose-300">
+        <p className="mb-3 rounded-xl bg-rose-50 px-3 py-2 text-sm font-medium text-rose-700">
           {error}
         </p>
       )}
       {loading && rows.length === 0 ? (
         <div className="space-y-2">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-14 animate-pulse rounded-xl bg-jevah-card" />
+            <div key={i} className="h-14 animate-pulse rounded-xl bg-slate-100" />
           ))}
         </div>
       ) : rows.length === 0 ? (
-        <p className="py-8 text-center text-sm font-medium text-jevah-text-muted">
+        <p className="py-8 text-center text-sm font-medium text-slate-500">
           Nothing in this queue right now.
         </p>
       ) : (
         <ul
           className={
             peek === "reports" || peek === "comments"
-              ? "-mx-1 space-y-2.5 rounded-2xl bg-gradient-to-b from-rose-500/15 via-jevah-muted to-jevah-card p-3 ring-1 ring-rose-500/20 sm:p-3.5"
+              ? "-mx-1 space-y-2.5 rounded-2xl bg-rose-50 p-3 ring-1 ring-rose-100 sm:p-3.5"
               : "space-y-2.5"
           }
         >
@@ -306,11 +307,11 @@ export default function OverviewKpiPeek({
             const rowBg =
               peek === "reports" || peek === "comments"
                 ? tone === "danger"
-                  ? "border-rose-500/25 bg-jevah-surface shadow-sm shadow-rose-500/5"
+                  ? "border-rose-200 bg-white shadow-sm"
                   : tone === "warning"
-                    ? "border-amber-500/25 bg-jevah-surface shadow-sm shadow-amber-500/5"
-                    : "border-jevah-border bg-jevah-surface shadow-sm"
-                : "border-jevah-border/80 bg-jevah-surface shadow-sm";
+                    ? "border-amber-200 bg-white shadow-sm"
+                    : "border-slate-200 bg-white shadow-sm"
+                : "border-slate-200 bg-white shadow-sm";
             const stripe =
               tone === "danger"
                 ? "bg-rose-500"
@@ -334,10 +335,10 @@ export default function OverviewKpiPeek({
                   {Icon ? <Icon className="h-4 w-4" /> : <FlagIcon className="h-4 w-4" />}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-bold capitalize text-jevah-text">
+                  <p className="truncate text-sm font-bold capitalize text-slate-900">
                     {row.title}
                   </p>
-                  <p className="truncate text-xs text-jevah-text-muted">{row.meta}</p>
+                  <p className="truncate text-xs text-slate-500">{row.meta}</p>
                 </div>
                 {row.badge && (
                   <Badge

@@ -18,9 +18,11 @@ type AdminModalProps = {
   /** Optional header illustration / icon chip */
   icon?: ReactNode;
   /** Wider sheet for upload / inspect forms */
-  size?: "md" | "lg" | "xl";
+  size?: "md" | "lg" | "xl" | "full";
   /** Prevent close while submitting */
   busy?: boolean;
+  /** Solid white panel — readable over dark dashboards */
+  paper?: boolean;
 };
 
 /**
@@ -37,6 +39,7 @@ export default function AdminModal({
   icon,
   size = "md",
   busy = false,
+  paper = false,
 }: AdminModalProps) {
   const titleId = useId();
   const [mounted, setMounted] = useState(open);
@@ -100,9 +103,14 @@ export default function AdminModal({
         aria-modal="true"
         aria-labelledby={titleId}
         className={cn(
-          "relative z-10 flex max-h-[min(92dvh,900px)] w-full flex-col overflow-hidden rounded-t-3xl border border-jevah-border/80 bg-jevah-surface/95 shadow-[0_25px_70px_rgba(0,0,0,0.35)] backdrop-blur-2xl transition-all duration-300 ease-out sm:rounded-3xl",
-          size === "xl"
-            ? "max-w-none sm:max-w-2xl"
+          "relative z-10 flex max-h-[min(92dvh,900px)] w-full flex-col overflow-hidden rounded-t-3xl border shadow-[0_25px_70px_rgba(0,0,0,0.35)] transition-all duration-300 ease-out sm:rounded-3xl",
+          paper
+            ? "border-slate-200 bg-white text-slate-900"
+            : "border-jevah-border/80 bg-jevah-surface/95 text-jevah-text backdrop-blur-2xl",
+          size === "xl" || size === "full"
+            ? size === "full"
+              ? "max-w-none sm:max-w-6xl"
+              : "max-w-none sm:max-w-2xl"
             : size === "lg"
               ? "max-w-none sm:max-w-xl"
               : "max-w-none sm:max-w-md",
@@ -114,7 +122,10 @@ export default function AdminModal({
         {/* Top glowing brand accent gradient */}
         <div className="h-1 w-full bg-gradient-to-r from-jevah-accent via-[#4ECDC4] to-emerald-500" />
 
-        <div className="flex shrink-0 items-start justify-between gap-3 border-b border-jevah-border/60 px-5 py-4 sm:px-6">
+        <div className={cn(
+          "flex shrink-0 items-start justify-between gap-3 border-b px-5 py-4 sm:px-6",
+          paper ? "border-slate-200 bg-white" : "border-jevah-border/60"
+        )}>
           <div className="flex min-w-0 items-start gap-3.5">
             {icon && (
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-jevah-accent/20 to-teal-500/10 text-jevah-accent ring-1 ring-jevah-accent/25 shadow-sm">
@@ -124,12 +135,20 @@ export default function AdminModal({
             <div className="min-w-0 pt-0.5">
               <h3
                 id={titleId}
-                className="text-lg font-bold tracking-tight text-jevah-text"
+                className={cn(
+                  "text-lg font-bold tracking-tight",
+                  paper ? "text-slate-900" : "text-jevah-text"
+                )}
               >
                 {title}
               </h3>
               {subtitle && (
-                <p className="mt-0.5 text-xs font-medium leading-relaxed text-jevah-text-muted">
+                <p
+                  className={cn(
+                    "mt-0.5 text-xs font-medium leading-relaxed",
+                    paper ? "text-slate-500" : "text-jevah-text-muted"
+                  )}
+                >
                   {subtitle}
                 </p>
               )}
@@ -139,19 +158,34 @@ export default function AdminModal({
             type="button"
             onClick={requestClose}
             disabled={busy}
-            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-jevah-text-muted transition-all duration-200 hover:bg-jevah-card hover:text-jevah-text hover:rotate-90 active:scale-95 disabled:opacity-40"
+            className={cn(
+              "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all duration-200 hover:rotate-90 active:scale-95 disabled:opacity-40",
+              paper
+                ? "text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+                : "text-jevah-text-muted hover:bg-jevah-card hover:text-jevah-text"
+            )}
             aria-label="Close"
           >
             <XMarkIcon className="h-5 w-5" />
           </button>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-6 custom-scrollbar">
+        <div className={cn(
+          "custom-scrollbar min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-6",
+          paper && "bg-white"
+        )}>
           {children}
         </div>
 
         {footer && (
-          <div className="shrink-0 border-t border-jevah-border/60 bg-jevah-surface/95 px-5 py-4 backdrop-blur-md sm:px-6 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:pb-4">
+          <div
+            className={cn(
+              "shrink-0 border-t px-5 py-4 sm:px-6 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:pb-4",
+              paper
+                ? "border-slate-200 bg-white"
+                : "border-jevah-border/60 bg-jevah-surface/95 backdrop-blur-md"
+            )}
+          >
             {footer}
           </div>
         )}
