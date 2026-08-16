@@ -1,4 +1,4 @@
-import { FormEvent, useCallback, useEffect, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   createArtist,
   listArtists,
@@ -19,6 +19,8 @@ import {
 } from "../../components/admin/ui";
 import AdminModal from "../../components/admin/AdminModal";
 import { useFeedback } from "../../components/admin/Feedback";
+import { useDebouncedValue } from "../../hooks/useDebouncedValue";
+import { matchesSearch } from "../../lib/searchMatch";
 import {
   MicrophoneIcon,
   SparklesIcon,
@@ -58,6 +60,8 @@ export default function ArtistsPage() {
   const { toast } = useFeedback();
   const [artists, setArtists] = useState<Artist[]>([]);
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebouncedValue(search, 180);
+  const loadedOnce = useRef(false);
   const [status, setStatus] = useState<StatusFilter>("pending");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -70,16 +74,17 @@ export default function ArtistsPage() {
   const [onboardMessage, setOnboardMessage] = useState("");
 
   const load = useCallback(async () => {
-    setLoading(true);
+    if (!loadedOnce.current) setLoading(true);
     setError(null);
     try {
       const res = await listArtists({
-        search: search || undefined,
+        search: debouncedSearch || undefined,
         status: status || undefined,
         page: 1,
         limit: 50,
       });
       setArtists(res.items as Artist[]);
+      loadedOnce.current = true;
     } catch (err) {
       setError(
         err instanceof ApiError
@@ -89,11 +94,26 @@ export default function ArtistsPage() {
     } finally {
       setLoading(false);
     }
-  }, [search, status]);
+  }, [debouncedSearch, status]);
 
   useEffect(() => {
     void load();
   }, [load]);
+
+  const visibleArtists = useMemo(
+    () =>
+      artists.filter((a) =>
+        matchesSearch(search, [
+          artistName(a),
+          a.email,
+          a.status,
+          a.bio,
+          a.applicationNote,
+          ...(a.creatorTypes || []),
+        ])
+      ),
+    [artists, search]
+  );
 
   async function onCreate(e: FormEvent) {
     e.preventDefault();
@@ -210,7 +230,9 @@ export default function ArtistsPage() {
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search creator name or email..."
+              placeholder="Search name, email, type, notes…"
+              autoComplete="off"
+              spellCheck={false}
               className={`${inputClass} pl-10`}
             />
           </div>
@@ -238,7 +260,7 @@ export default function ArtistsPage() {
 
       {loading ? (
         <SkeletonRows rows={4} />
-      ) : artists.length === 0 ? (
+      ) : visibleArtists.length === 0 ? (
         <EmptyState
           title={
             status === "pending"
@@ -253,7 +275,7 @@ export default function ArtistsPage() {
         />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {artists.map((a, i) => {
+          {visibleArtists.map((a, i) => {
             const verified = Boolean(a.isVerified ?? a.isVerifiedArtist);
             const st = a.status || (a.isActive === false ? "suspended" : "active");
             const initial = artistName(a).charAt(0).toUpperCase();

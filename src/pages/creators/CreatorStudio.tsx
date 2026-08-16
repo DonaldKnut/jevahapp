@@ -39,7 +39,11 @@ import {
   PencilSquareIcon,
   ArrowUpTrayIcon,
   ArrowRightOnRectangleIcon,
+  QuestionMarkCircleIcon,
 } from "@heroicons/react/24/outline";
+import ProductTour from "../../components/ProductTour";
+import { useProductTour } from "../../lib/onboarding";
+import { CREATOR_TOUR } from "../../lib/tours";
 
 const VIEWS: StudioView[] = [
   "home",
@@ -79,6 +83,9 @@ export default function CreatorStudio() {
   const [imageBusy, setImageBusy] = useState<"avatar" | "banner" | null>(null);
   const [playing, setPlaying] = useState<TrackCard | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const tourUserId = user?.id || user?.email;
+  const { open: tourOpen, finish: finishTour, replay: replayTour } =
+    useProductTour("creator", tourUserId, !loading && Boolean(me));
 
   const setView = (v: StudioView) => {
     const next = new URLSearchParams(params);
@@ -352,6 +359,15 @@ export default function CreatorStudio() {
                   <span className="hidden sm:inline">Upload Track</span>
                 </Link>
               )}
+              <button
+                type="button"
+                onClick={replayTour}
+                className="inline-flex items-center gap-1.5 rounded-2xl px-3 py-2 text-xs font-bold text-jevah-text-muted transition hover:bg-jevah-card hover:text-jevah-text"
+                aria-label="Take the studio tour"
+              >
+                <QuestionMarkCircleIcon className="h-4 w-4" />
+                <span className="hidden sm:inline">Help</span>
+              </button>
               <ThemeToggle variant="icon" />
               <button
                 type="button"
@@ -636,6 +652,13 @@ export default function CreatorStudio() {
         </AdminModal>
       )}
 
+      <ProductTour
+        open={tourOpen}
+        steps={CREATOR_TOUR}
+        eyebrow="Studio tour"
+        finishLabel="Open Studio"
+        onFinish={finishTour}
+      />
     </div>
   );
 }

@@ -29,6 +29,18 @@ const MARKETING_SEO_ROUTES = [
       "Upload gospel music, build a public artist profile, and reach listeners who love worship, Afro-gospel, and the Word.",
   },
   {
+    path: "/creators/how",
+    title: "How Creator Studio works — Jevah",
+    description:
+      "Apply as a gospel artist, get verified, upload tracks with cover art, and grow from Jevah Studio.",
+  },
+  {
+    path: "/creators/benefits",
+    title: "Why gospel artists join Jevah — Creator Studio",
+    description:
+      "A gospel audience, a public artist page, stream analytics, and a trusted Artists shelf — why ministers publish on Jevah.",
+  },
+  {
     path: "/about",
     title: "About Jevah — a gospel community platform",
     description:

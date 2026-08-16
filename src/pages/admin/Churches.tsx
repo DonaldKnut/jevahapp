@@ -1,4 +1,4 @@
-import { FormEvent, useCallback, useEffect, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   createAdminChurch,
   listChurches,
@@ -20,6 +20,8 @@ import {
 } from "../../components/admin/ui";
 import AdminModal from "../../components/admin/AdminModal";
 import { useFeedback } from "../../components/admin/Feedback";
+import { useDebouncedValue } from "../../hooks/useDebouncedValue";
+import { matchesSearch } from "../../lib/searchMatch";
 import {
   BuildingLibraryIcon,
   MagnifyingGlassIcon,
@@ -69,6 +71,8 @@ export default function ChurchesPage() {
   const { toast } = useFeedback();
   const [churches, setChurches] = useState<Church[]>([]);
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebouncedValue(search, 180);
+  const loadedOnce = useRef(false);
   const [verifiedFilter, setVerifiedFilter] = useState<"" | "true" | "false">("");
   const [listedFilter, setListedFilter] = useState<"" | "true" | "false">("");
   const [loading, setLoading] = useState(true);
@@ -78,11 +82,11 @@ export default function ChurchesPage() {
   const [form, setForm] = useState(emptyForm);
 
   const load = useCallback(async () => {
-    setLoading(true);
+    if (!loadedOnce.current) setLoading(true);
     setError(null);
     try {
       const res = await listChurches({
-        search: search || undefined,
+        search: debouncedSearch || undefined,
         isVerified:
           verifiedFilter === "" ? undefined : verifiedFilter === "true",
         isListed: listedFilter === "" ? undefined : listedFilter === "true",
@@ -90,16 +94,35 @@ export default function ChurchesPage() {
         limit: 50,
       });
       setChurches(res.churches as Church[]);
+      loadedOnce.current = true;
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Failed to load churches.");
     } finally {
       setLoading(false);
     }
-  }, [search, verifiedFilter, listedFilter]);
+  }, [debouncedSearch, verifiedFilter, listedFilter]);
 
   useEffect(() => {
     void load();
   }, [load]);
+
+  const visibleChurches = useMemo(
+    () =>
+      churches.filter((c) =>
+        matchesSearch(search, [
+          c.name,
+          c.city,
+          c.state,
+          c.lga,
+          c.address,
+          c.country,
+          c.contactEmail,
+          c.contactName,
+          c.contactPhone,
+        ])
+      ),
+    [churches, search]
+  );
 
   function closeCreate() {
     if (busy) return;
@@ -225,7 +248,9 @@ export default function ChurchesPage() {
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by name, city, or state..."
+              placeholder="Search name, city, phone, email…"
+              autoComplete="off"
+              spellCheck={false}
               className={`${inputClass} pl-10`}
             />
           </div>
@@ -265,7 +290,7 @@ export default function ChurchesPage() {
 
       {loading ? (
         <SkeletonRows rows={4} />
-      ) : churches.length === 0 ? (
+      ) : visibleChurches.length === 0 ? (
         <EmptyState
           title="No Churches Found"
           description="Add a new congregation to the onboarding catalog or adjust filter criteria."
@@ -283,7 +308,7 @@ export default function ChurchesPage() {
         />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {churches.map((c, i) => {
+          {visibleChurches.map((c, i) => {
             const verified = Boolean(c.isVerified ?? c.verified);
             const listed = c.isListed !== false;
             const location = [c.lga, c.city, c.state, c.country].filter(Boolean).join(", ");

@@ -37,6 +37,8 @@ import ArtistsPage from "./pages/admin/Artists";
 import SettingsPage from "./pages/admin/Settings";
 import SystemHealthPage from "./pages/admin/SystemHealth";
 import CreatorsLanding from "./pages/creators/CreatorsLanding";
+import CreatorHow from "./pages/creators/CreatorHow";
+import CreatorBenefits from "./pages/creators/CreatorBenefits";
 import CreatorApply from "./pages/creators/CreatorApply";
 import CreatorStudio from "./pages/creators/CreatorStudio";
 import CreatorUpload from "./pages/creators/CreatorUpload";
@@ -183,6 +185,8 @@ function App() {
                 <Route path=":book/:chapter/:verse" element={<BibleReader />} />
               </Route>
               <Route path="/creators" element={<CreatorsLanding />} />
+              <Route path="/creators/how" element={<CreatorHow />} />
+              <Route path="/creators/benefits" element={<CreatorBenefits />} />
               <Route path="/artists/:slug" element={<ArtistPublicProfile />} />
             </Route>
           </Routes>

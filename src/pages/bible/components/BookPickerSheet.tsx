@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowLeftIcon, MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { readerHref } from "../../../lib/bible/paths";
 import type { BibleBook } from "../../../types/bible";
+import { matchesSearch } from "../../../lib/searchMatch";
 
 export default function BookPickerSheet({
   open,
@@ -39,24 +40,23 @@ export default function BookPickerSheet({
     };
   }, [open, currentBook, startOnChapters]);
 
-  const needle = filter.trim().toLowerCase();
   const ot = useMemo(
     () =>
       books.filter(
         (b) =>
           b.testament === "old" &&
-          (!needle || b.name.toLowerCase().includes(needle))
+          matchesSearch(filter, [b.name, b.abbreviation])
       ),
-    [books, needle]
+    [books, filter]
   );
   const nt = useMemo(
     () =>
       books.filter(
         (b) =>
           b.testament === "new" &&
-          (!needle || b.name.toLowerCase().includes(needle))
+          matchesSearch(filter, [b.name, b.abbreviation])
       ),
-    [books, needle]
+    [books, filter]
   );
 
   const meta = books.find(

@@ -14,9 +14,10 @@ export default {
         "sans-serif",
       ],
       serif: [
-        '"Cormorant Garamond"',
-        "Georgia",
-        "serif",
+        '"Plus Jakarta Sans"',
+        "ui-sans-serif",
+        "system-ui",
+        "sans-serif",
       ],
       mono: [
         "ui-monospace",

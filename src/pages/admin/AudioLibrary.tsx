@@ -1,4 +1,4 @@
-import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   createCopyrightFreeSong,
   createTrackUploadIntent,
@@ -31,6 +31,8 @@ import {
 } from "../../components/admin/ui";
 import AdminModal from "../../components/admin/AdminModal";
 import { useFeedback } from "../../components/admin/Feedback";
+import { useDebouncedValue } from "../../hooks/useDebouncedValue";
+import { matchesSearch } from "../../lib/searchMatch";
 import {
   normalizeCategoryList,
   withCategoryFallbacks,
@@ -64,6 +66,8 @@ export default function AudioLibraryPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const debouncedSearch = useDebouncedValue(search, 180);
+  const loadedOnce = useRef(false);
   const [lane, setLane] = useState<"curated" | "artist">("curated");
   const [busy, setBusy] = useState(false);
   const [uploadOpen, setUploadOpen] = useState(false);
@@ -83,25 +87,42 @@ export default function AudioLibraryPage() {
   const [customCategory, setCustomCategory] = useState(false);
 
   const load = useCallback(async () => {
-    setLoading(true);
+    if (!loadedOnce.current) setLoading(true);
     setError(null);
     try {
       const res = await listAdminTracks({
         lane,
-        search: search || undefined,
+        search: debouncedSearch || undefined,
         limit: 50,
       });
       setTracks(res.items);
+      loadedOnce.current = true;
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Failed to load tracks.");
     } finally {
       setLoading(false);
     }
-  }, [search, lane]);
+  }, [debouncedSearch, lane]);
 
   useEffect(() => {
     void load();
   }, [load]);
+
+  const visibleTracks = useMemo(
+    () =>
+      tracks.filter((t) =>
+        matchesSearch(search, [
+          t.title,
+          trackArtist(t),
+          t.genre,
+          t.category,
+          t.playCount,
+          t.visibility,
+          trackId(t),
+        ])
+      ),
+    [tracks, search]
+  );
 
   useEffect(() => {
     let alive = true;
@@ -363,7 +384,9 @@ export default function AudioLibraryPage() {
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search by track title or artist..."
+                placeholder="Search title, artist, #, C#…"
+                autoComplete="off"
+                spellCheck={false}
                 className={`${inputClass} pl-10`}
               />
             </div>
@@ -383,7 +406,7 @@ export default function AudioLibraryPage() {
       {/* Track Cards Grid */}
       {loading ? (
         <SkeletonRows rows={4} />
-      ) : tracks.length === 0 ? (
+      ) : visibleTracks.length === 0 ? (
         <EmptyState
           title="No Audio Tracks Found"
           description={
@@ -400,7 +423,7 @@ export default function AudioLibraryPage() {
         />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {tracks.map((t, i) => {
+          {visibleTracks.map((t, i) => {
             const url = trackPlaybackUrl(t);
             const status = trackProcessing(t);
             return (

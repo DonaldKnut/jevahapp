@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, type ComponentType, type SVGProps } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import JevahLogo from "../components/JevahLogo";
 import ThemeToggle from "../components/ThemeToggle";
@@ -17,65 +17,52 @@ import {
   InformationCircleIcon,
   EnvelopeIcon,
   BookOpenIcon,
+  ArrowUpTrayIcon,
+  RectangleStackIcon,
+  HeartIcon,
+  LightBulbIcon,
 } from "@heroicons/react/24/outline";
 
-// ── Mega Menu 1: Music & Artists ──────────────────────────────────────────
-const musicAndArtistsMenu = [
+type MenuItem = {
+  title: string;
+  description: string;
+  href: string;
+  icon: ComponentType<SVGProps<SVGSVGElement>>;
+  badge?: string | null;
+  color: string;
+};
+
+const musicMenu: MenuItem[] = [
   {
     title: "Gospel Music",
-    description: "Stream inspiring worship, praise, and gospel tracks",
+    description: "Worship, praise, and Afro-gospel to stream now",
     href: "/music",
     icon: MusicalNoteIcon,
-    badge: "Popular",
+    badge: "Play",
     color: "bg-amber-50 text-amber-600 border-amber-200/60",
   },
   {
-    title: "Jevah Bible",
-    description: "Read and search Scripture in a classic, shareable reader",
-    href: "/bible",
-    icon: BookOpenIcon,
-    badge: "Read",
-    color: "bg-amber-50 text-amber-700 border-amber-200/60",
-  },
-  {
-    title: "Gospel Artists & Ministries",
-    description: "Discover verified artists, worship leaders, and choirs",
-    href: "/artists/popular",
+    title: "Gospel Artists",
+    description: "Verified ministers, worship leaders, and choirs",
+    href: "/music",
     icon: UserGroupIcon,
     badge: "Verified",
     color: "bg-teal-50 text-teal-600 border-teal-200/60",
   },
   {
     title: "Sermons & Audio",
-    description: "Listen to life-changing sermons & spiritual audio",
+    description: "Teaching and spiritual audio for the week",
     href: "/sermons",
     icon: AcademicCapIcon,
     badge: null,
     color: "bg-sky-50 text-sky-600 border-sky-200/60",
   },
-  {
-    title: "Creator Studio & Registration",
-    description: "Register as an artist, upload music & track streams",
-    href: "/creators",
-    icon: SparklesIcon,
-    badge: "Studio",
-    color: "bg-emerald-50 text-emerald-600 border-emerald-200/60",
-  },
 ];
 
-// ── Mega Menu 2: About & Community ──────────────────────────────────────────
-const aboutAndCommunityMenu = [
-  {
-    title: "Jevah Bible",
-    description: "Read, search, and share Scripture — a classic online reader",
-    href: "/bible",
-    icon: BookOpenIcon,
-    badge: "New",
-    color: "bg-amber-50 text-amber-700 border-amber-200/60",
-  },
+const moreMenu: MenuItem[] = [
   {
     title: "About Jevah",
-    description: "Our vision, mission, and commitment to spiritual growth",
+    description: "Vision, mission, and why we built this house",
     href: "/about",
     icon: InformationCircleIcon,
     badge: null,
@@ -83,15 +70,15 @@ const aboutAndCommunityMenu = [
   },
   {
     title: "Community Forum",
-    description: "Connect, share testimonies, and pray with believers",
+    description: "Testimonies, prayer, and conversation",
     href: "/forum",
     icon: ChatBubbleLeftRightIcon,
     badge: null,
     color: "bg-purple-50 text-purple-600 border-purple-200/60",
   },
   {
-    title: "Faith Events & Conferences",
-    description: "Discover upcoming faith events, conferences & services",
+    title: "Faith Events",
+    description: "Conferences, services, and live nights",
     href: "/events",
     icon: CalendarDaysIcon,
     badge: "Live",
@@ -99,7 +86,7 @@ const aboutAndCommunityMenu = [
   },
   {
     title: "Contact & Support",
-    description: "Get in touch with our team or request prayer support",
+    description: "Reach the team or request prayer",
     href: "/contact",
     icon: EnvelopeIcon,
     badge: null,
@@ -107,24 +94,108 @@ const aboutAndCommunityMenu = [
   },
 ];
 
+const creatorMenu: MenuItem[] = [
+  {
+    title: "Become a Creator",
+    description: "Apply once — upload after you are verified",
+    href: "/creators/apply",
+    icon: SparklesIcon,
+    badge: "Join",
+    color: "bg-emerald-50 text-emerald-600 border-emerald-200/60",
+  },
+  {
+    title: "How Studio works",
+    description: "Apply, get approved, then publish to the shelf",
+    href: "/creators/how",
+    icon: LightBulbIcon,
+    badge: null,
+    color: "bg-amber-50 text-amber-600 border-amber-200/60",
+  },
+  {
+    title: "Why artists join",
+    description: "Gospel listeners, a public page, and stream stats",
+    href: "/creators/benefits",
+    icon: HeartIcon,
+    badge: null,
+    color: "bg-rose-50 text-rose-600 border-rose-200/60",
+  },
+  {
+    title: "Creator Studio",
+    description: "Catalog, discography, brand, and analytics",
+    href: "/creators/studio",
+    icon: RectangleStackIcon,
+    badge: "Desk",
+    color: "bg-teal-50 text-teal-600 border-teal-200/60",
+  },
+  {
+    title: "Upload music",
+    description: "Tracks, album art, then draft or publish",
+    href: "/creators/studio/upload",
+    icon: ArrowUpTrayIcon,
+    badge: null,
+    color: "bg-sky-50 text-sky-600 border-sky-200/60",
+  },
+];
+
+function MegaLink({
+  item,
+  onClick,
+  badgeClass = "bg-jevah-accent/10 text-jevah-accent",
+}: {
+  item: MenuItem;
+  onClick: () => void;
+  badgeClass?: string;
+}) {
+  const Icon = item.icon;
+  return (
+    <Link
+      to={item.href}
+      onClick={onClick}
+      className="jevah-mega-item group flex items-start gap-3.5 rounded-2xl p-3.5 transition-all duration-200 hover:shadow-sm"
+    >
+      <div
+        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border ${item.color} transition-transform duration-200 group-hover:scale-105`}
+      >
+        <Icon className="h-5 w-5" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-bold text-jevah-text group-hover:text-jevah-accent">
+            {item.title}
+          </span>
+          {item.badge ? (
+            <span
+              className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${badgeClass}`}
+            >
+              {item.badge}
+            </span>
+          ) : null}
+        </div>
+        <p className="mt-0.5 line-clamp-1 text-xs text-jevah-text-muted">
+          {item.description}
+        </p>
+      </div>
+    </Link>
+  );
+}
+
 export default function Nav() {
   const isScrolled = useScroll(60);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [activeMega, setActiveMega] = useState<"music" | "about" | null>(null);
+  const [activeMega, setActiveMega] = useState<
+    "music" | "community" | "creator" | null
+  >(null);
   const location = useLocation();
   const { isAuthenticated, isAdmin, loading } = useAuth();
-  const dashboardPath =
-    !loading
-      ? sessionDashboardPath({ isAuthenticated, isAdmin })
-      : null;
+  const dashboardPath = !loading
+    ? sessionDashboardPath({ isAuthenticated, isAdmin })
+    : null;
 
-  // Close menus on route change
   useEffect(() => {
     setMobileOpen(false);
     setActiveMega(null);
   }, [location.pathname]);
 
-  // Lock body scroll when mobile menu is open
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? "hidden" : "";
     return () => {
@@ -132,39 +203,27 @@ export default function Nav() {
     };
   }, [mobileOpen]);
 
+  const linkIdle =
+    "text-gray-700 hover:bg-black/5 hover:text-gray-900 dark:text-jevah-text-muted dark:hover:bg-white/5 dark:hover:text-jevah-text";
+  const linkActive =
+    "bg-[#256E63]/10 text-[#256E63] dark:bg-jevah-accent/15 dark:text-jevah-accent";
+
   return (
     <header className="relative z-50">
-      {/* ── Main Navigation Bar ── */}
       <nav
         className={`fixed left-0 right-0 top-0 z-50 transition-all duration-300 ${
-              isScrolled
+          isScrolled
             ? "border-b border-jevah-border bg-[var(--jevah-nav)] shadow-md backdrop-blur-xl"
             : "bg-gradient-to-r from-[var(--jevah-hero-from)] via-[var(--jevah-hero-via)] to-[var(--jevah-hero-to)] backdrop-blur-md"
         }`}
       >
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:h-20 sm:px-8 lg:px-12">
-          {/* Brand Logo */}
           <Link to="/" className="z-10 shrink-0 transition-transform active:scale-95">
             <JevahLogo width={112} height={52} />
-            </Link>
+          </Link>
 
-          {/* Desktop Nav Links */}
-          <div className="hidden items-center gap-1 md:flex lg:gap-2">
-            <NavLink
-              to="/"
-              end
-              className={({ isActive }) =>
-                `rounded-full px-4 py-2 text-sm font-semibold transition-all ${
-                  isActive
-                    ? "bg-[#256E63]/10 text-[#256E63] dark:bg-jevah-accent/15 dark:text-jevah-accent"
-                    : "text-gray-700 hover:bg-black/5 hover:text-gray-900 dark:text-jevah-text-muted dark:hover:bg-white/5 dark:hover:text-jevah-text"
-                }`
-              }
-            >
-              Home
-            </NavLink>
-
-            {/* ── Mega Menu 1 Trigger: Music & Artists ── */}
+          {/* Four items: Music · Community · Creator · Bible */}
+          <div className="hidden items-center gap-1 md:flex lg:gap-1.5">
             <div
               className="relative"
               onMouseEnter={() => setActiveMega("music")}
@@ -172,23 +231,23 @@ export default function Nav() {
             >
               <button
                 type="button"
-                onClick={() => setActiveMega((v) => (v === "music" ? null : "music"))}
+                onClick={() =>
+                  setActiveMega((v) => (v === "music" ? null : "music"))
+                }
                 className={`group inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold transition-all ${
-                  activeMega === "music"
-                    ? "bg-[#256E63]/10 text-[#256E63] dark:bg-jevah-accent/15 dark:text-jevah-accent"
-                    : "text-gray-700 hover:bg-black/5 hover:text-gray-900 dark:text-jevah-text-muted dark:hover:bg-white/5 dark:hover:text-jevah-text"
+                  activeMega === "music" ? linkActive : linkIdle
                 }`}
                 aria-expanded={activeMega === "music"}
               >
-                Music & Artists
+                Music
                 <ChevronDownIcon
                   className={`h-4 w-4 transition-transform duration-300 ${
-                    activeMega === "music" ? "rotate-180 text-[#256E63]" : "text-gray-400 group-hover:text-gray-600"
+                    activeMega === "music"
+                      ? "rotate-180 text-[#256E63]"
+                      : "text-gray-400 group-hover:text-gray-600"
                   }`}
                 />
               </button>
-
-              {/* Mega Dropdown Panel 1 */}
               <div
                 className={`absolute left-1/2 top-full -translate-x-1/2 pt-3 transition-all duration-300 ${
                   activeMega === "music"
@@ -196,164 +255,176 @@ export default function Nav() {
                     : "pointer-events-none translate-y-2 opacity-0"
                 }`}
               >
-                <div className="jevah-mega-panel w-[620px] overflow-hidden rounded-3xl border p-6 shadow-2xl shadow-black/10 ring-1 ring-black/5 backdrop-blur-xl">
-                  <div className="grid grid-cols-2 gap-3">
-                    {musicAndArtistsMenu.map((item) => {
-                      const Icon = item.icon;
-                      return (
-                        <Link
-                          key={item.title}
-                          to={item.href}
-                          onClick={() => setActiveMega(null)}
-                          className="jevah-mega-item group flex items-start gap-3.5 rounded-2xl p-3.5 transition-all duration-200 hover:shadow-sm"
-                        >
-                          <div
-                            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border ${item.color} transition-transform duration-200 group-hover:scale-105`}
-                          >
-                            <Icon className="h-5 w-5" />
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm font-bold text-jevah-text group-hover:text-jevah-accent">
-                                {item.title}
-                              </span>
-                              {item.badge && (
-                                <span className="rounded-full bg-jevah-accent/10 px-2 py-0.5 text-[10px] font-bold text-jevah-accent">
-                                  {item.badge}
-                                </span>
-                              )}
-                            </div>
-                            <p className="mt-0.5 line-clamp-1 text-xs text-jevah-text-muted">
-                              {item.description}
-                            </p>
-                          </div>
-                        </Link>
-                      );
-                    })}
+                <div className="jevah-mega-panel w-[420px] overflow-hidden rounded-3xl border p-5 shadow-2xl shadow-black/10 ring-1 ring-black/5 backdrop-blur-xl">
+                  <p className="px-1 pb-3 text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#9a7b3c]">
+                    Listen
+                  </p>
+                  <div className="grid gap-1.5">
+                    {musicMenu.map((item) => (
+                      <MegaLink
+                        key={item.title}
+                        item={item}
+                        onClick={() => setActiveMega(null)}
+                      />
+                    ))}
                   </div>
-
-                  {/* Mega Menu Banner */}
                   <div className="mt-4 flex items-center justify-between rounded-2xl bg-gradient-to-r from-[#0B1A1F] to-[#12263a] p-4 text-white">
                     <div className="flex items-center gap-3">
                       <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 backdrop-blur-md">
                         <SparklesIcon className="h-5 w-5 text-[#4ECDC4]" />
                       </div>
                       <div>
-                        <p className="text-xs font-bold text-white">Are you a Gospel Artist?</p>
-                        <p className="text-[11px] text-white/60">Register & upload your tracks to Jevah.</p>
+                        <p className="text-xs font-bold text-white">
+                          Are you a Gospel Artist?
+                        </p>
+                        <p className="text-[11px] text-white/60">
+                          Register and upload your tracks to Jevah.
+                        </p>
                       </div>
                     </div>
                     <Link
                       to="/creators/apply"
                       onClick={() => setActiveMega(null)}
-                      className="inline-flex items-center gap-1.5 rounded-full bg-[#256E63] px-3.5 py-1.5 text-xs font-bold text-white transition hover:bg-[#1e5a52] active:scale-95"
+                      className="shrink-0 rounded-full bg-white px-3.5 py-1.5 text-[11px] font-bold text-[#0B1A1F] transition hover:bg-amber-100"
                     >
-                      Register Artist
-                      <ArrowRightIcon className="h-3.5 w-3.5" />
-                </Link>
+                      Register
+                    </Link>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* ── Mega Menu 2 Trigger: About & Community ── */}
             <div
               className="relative"
-              onMouseEnter={() => setActiveMega("about")}
+              onMouseEnter={() => setActiveMega("community")}
               onMouseLeave={() => setActiveMega(null)}
             >
               <button
                 type="button"
-                onClick={() => setActiveMega((v) => (v === "about" ? null : "about"))}
+                onClick={() =>
+                  setActiveMega((v) => (v === "community" ? null : "community"))
+                }
                 className={`group inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold transition-all ${
-                  activeMega === "about"
-                    ? "bg-[#256E63]/10 text-[#256E63] dark:bg-jevah-accent/15 dark:text-jevah-accent"
-                    : "text-gray-700 hover:bg-black/5 hover:text-gray-900 dark:text-jevah-text-muted dark:hover:bg-white/5 dark:hover:text-jevah-text"
+                  activeMega === "community" ? linkActive : linkIdle
                 }`}
-                aria-expanded={activeMega === "about"}
+                aria-expanded={activeMega === "community"}
               >
-                About & Community
+                Community
                 <ChevronDownIcon
                   className={`h-4 w-4 transition-transform duration-300 ${
-                    activeMega === "about" ? "rotate-180 text-[#256E63]" : "text-gray-400 group-hover:text-gray-600"
+                    activeMega === "community"
+                      ? "rotate-180 text-[#256E63]"
+                      : "text-gray-400 group-hover:text-gray-600"
                   }`}
                 />
               </button>
-
-              {/* Mega Dropdown Panel 2 */}
               <div
                 className={`absolute left-1/2 top-full -translate-x-1/2 pt-3 transition-all duration-300 ${
-                  activeMega === "about"
+                  activeMega === "community"
                     ? "pointer-events-auto translate-y-0 opacity-100"
                     : "pointer-events-none translate-y-2 opacity-0"
                 }`}
               >
-                <div className="jevah-mega-panel w-[600px] overflow-hidden rounded-3xl border p-6 shadow-2xl shadow-black/10 ring-1 ring-black/5 backdrop-blur-xl">
-                  <div className="grid grid-cols-2 gap-3">
-                    {aboutAndCommunityMenu.map((item) => {
-                      const Icon = item.icon;
-                      return (
-                        <Link
-                          key={item.title}
-                          to={item.href}
-                          onClick={() => setActiveMega(null)}
-                          className="jevah-mega-item group flex items-start gap-3.5 rounded-2xl p-3.5 transition-all duration-200 hover:shadow-sm"
-                        >
-                          <div
-                            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border ${item.color} transition-transform duration-200 group-hover:scale-105`}
-                          >
-                            <Icon className="h-5 w-5" />
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm font-bold text-jevah-text group-hover:text-jevah-accent">
-                                {item.title}
-                              </span>
-                              {item.badge && (
-                                <span className="rounded-full bg-rose-500/10 px-2 py-0.5 text-[10px] font-bold text-rose-600">
-                                  {item.badge}
-                                </span>
-                              )}
-                            </div>
-                            <p className="mt-0.5 line-clamp-1 text-xs text-jevah-text-muted">
-                              {item.description}
-                            </p>
-                          </div>
-                        </Link>
-                      );
-                    })}
+                <div className="jevah-mega-panel w-[480px] overflow-hidden rounded-3xl border p-5 shadow-2xl shadow-black/10 ring-1 ring-black/5 backdrop-blur-xl">
+                  <p className="px-1 pb-3 text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#9a7b3c]">
+                    About & community
+                  </p>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {moreMenu.map((item) => (
+                      <MegaLink
+                        key={item.title}
+                        item={item}
+                        onClick={() => setActiveMega(null)}
+                        badgeClass="bg-rose-500/10 text-rose-600"
+                      />
+                    ))}
                   </div>
                 </div>
+              </div>
             </div>
+
+            <div
+              className="relative"
+              onMouseEnter={() => setActiveMega("creator")}
+              onMouseLeave={() => setActiveMega(null)}
+            >
+              <button
+                type="button"
+                onClick={() =>
+                  setActiveMega((v) => (v === "creator" ? null : "creator"))
+                }
+                className={`group inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-bold transition-all ${
+                  activeMega === "creator" ||
+                  location.pathname.startsWith("/creators")
+                    ? "bg-[#256E63] text-white shadow-sm shadow-[#256E63]/25"
+                    : "bg-[#256E63]/10 text-[#256E63] hover:bg-[#256E63] hover:text-white dark:bg-jevah-accent/20 dark:text-emerald-200"
+                }`}
+                aria-expanded={activeMega === "creator"}
+              >
+                <SparklesIcon className="h-4 w-4" />
+                Creator
+                <ChevronDownIcon
+                  className={`h-4 w-4 transition-transform duration-300 ${
+                    activeMega === "creator" ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+              <div
+                className={`absolute left-1/2 top-full -translate-x-1/2 pt-3 transition-all duration-300 ${
+                  activeMega === "creator"
+                    ? "pointer-events-auto translate-y-0 opacity-100"
+                    : "pointer-events-none translate-y-2 opacity-0"
+                }`}
+              >
+                <div className="jevah-mega-panel w-[540px] overflow-hidden rounded-3xl border p-5 shadow-2xl shadow-black/10 ring-1 ring-black/5 backdrop-blur-xl">
+                  <p className="px-1 pb-3 text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#9a7b3c]">
+                    For gospel artists
+                  </p>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {creatorMenu.map((item) => (
+                      <MegaLink
+                        key={item.title}
+                        item={item}
+                        onClick={() => setActiveMega(null)}
+                      />
+                    ))}
+                  </div>
+                  <div className="mt-4 flex items-center justify-between rounded-2xl bg-gradient-to-r from-[#0B1A1F] to-[#12263a] p-4 text-white">
+                    <div>
+                      <p className="text-xs font-bold text-white">
+                        Ready to publish?
+                      </p>
+                      <p className="text-[11px] text-white/60">
+                        Apply, get verified, then upload from Studio.
+                      </p>
+                    </div>
+                    <Link
+                      to="/creators/apply"
+                      onClick={() => setActiveMega(null)}
+                      className="shrink-0 rounded-full bg-white px-3.5 py-1.5 text-[11px] font-bold text-[#0B1A1F] transition hover:bg-amber-100"
+                    >
+                      Start application
+                    </Link>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <NavLink
               to="/bible"
               className={({ isActive }) =>
-                `rounded-full px-4 py-2 text-sm font-semibold transition-all ${
+                `inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-bold transition-all ${
                   isActive
-                    ? "bg-[#256E63]/10 text-[#256E63] dark:bg-jevah-accent/15 dark:text-jevah-accent"
-                    : "text-gray-700 hover:bg-black/5 hover:text-gray-900 dark:text-jevah-text-muted dark:hover:bg-white/5 dark:hover:text-jevah-text"
+                    ? "bg-amber-500/15 text-amber-800 ring-1 ring-amber-500/30 dark:text-amber-200"
+                    : `${linkIdle} font-semibold`
                 }`
               }
             >
-              Jevah Bible
-            </NavLink>
-            <NavLink
-              to="/creators"
-              className={({ isActive }) =>
-                `rounded-full px-4 py-2 text-sm font-semibold transition-all ${
-                  isActive
-                    ? "bg-[#256E63]/10 text-[#256E63] dark:bg-jevah-accent/15 dark:text-jevah-accent"
-                    : "text-gray-700 hover:bg-black/5 hover:text-gray-900 dark:text-jevah-text-muted dark:hover:bg-white/5 dark:hover:text-jevah-text"
-                }`
-              }
-            >
-              Creators
+              <BookOpenIcon className="h-4 w-4" />
+              Bible
             </NavLink>
           </div>
 
-          {/* Desktop Right Actions */}
           <div className="z-10 flex items-center gap-2 sm:gap-3">
             <ThemeToggle variant="icon" />
             {dashboardPath ? (
@@ -386,7 +457,6 @@ export default function Nav() {
               Download App
             </a>
 
-            {/* ── Dope Animated Hamburger Icon Button ── */}
             <button
               type="button"
               onClick={() => setMobileOpen((v) => !v)}
@@ -415,10 +485,11 @@ export default function Nav() {
         </div>
       </nav>
 
-      {/* ── Premium Mobile Menu Drawer ── */}
       <div
         className={`fixed inset-0 z-40 backdrop-blur-md transition-opacity duration-300 md:hidden ${
-          mobileOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+          mobileOpen
+            ? "pointer-events-auto opacity-100"
+            : "pointer-events-none opacity-0"
         }`}
         style={{ backgroundColor: "var(--jevah-overlay)" }}
         onClick={() => setMobileOpen(false)}
@@ -428,8 +499,8 @@ export default function Nav() {
       <div
         className={`fixed left-3 right-3 top-20 z-50 max-h-[calc(100vh-6rem)] overflow-y-auto rounded-3xl border p-5 shadow-2xl backdrop-blur-2xl transition-all duration-300 ease-out md:hidden ${
           mobileOpen
-            ? "translate-y-0 scale-100 opacity-100 pointer-events-auto"
-            : "-translate-y-6 scale-95 opacity-0 pointer-events-none"
+            ? "pointer-events-auto translate-y-0 scale-100 opacity-100"
+            : "pointer-events-none -translate-y-6 scale-95 opacity-0"
         }`}
         style={{
           backgroundColor: "var(--jevah-mobile-menu-bg)",
@@ -438,27 +509,106 @@ export default function Nav() {
       >
         <div className="flex items-center justify-between border-b border-jevah-border pb-3">
           <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-[#256E63]">
-            Navigation
+            Menu
           </p>
-          <span className="rounded-full bg-[#256E63]/10 px-2.5 py-0.5 text-[10px] font-bold text-[#256E63]">
-            Jevah App
-          </span>
-        </div>
-
-        {/* Links list */}
-        <div className="mt-3 space-y-1">
           <Link
             to="/"
             onClick={() => setMobileOpen(false)}
-            className="flex items-center justify-between rounded-2xl px-4 py-3 text-base font-bold text-jevah-text transition hover:bg-jevah-accent/10 hover:text-jevah-accent"
+            className="text-[11px] font-bold text-jevah-text-muted"
           >
             Home
-            <ArrowRightIcon className="h-4 w-4 text-gray-300" />
           </Link>
+        </div>
+
+        <div className="mt-3 space-y-2">
+          <div className="jevah-mobile-section my-2 rounded-2xl p-3 ring-1 ring-jevah-border">
+            <p className="px-2 pb-2 text-[10px] font-bold uppercase tracking-wider text-jevah-text-muted">
+              Music
+            </p>
+            <div className="grid grid-cols-3 gap-2">
+              {musicMenu.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <Link
+                    key={item.title}
+                    to={item.href}
+                    onClick={() => setMobileOpen(false)}
+                    className="flex flex-col gap-1.5 rounded-xl bg-jevah-card p-2.5 shadow-sm transition active:scale-95"
+                  >
+                    <div
+                      className={`flex h-8 w-8 items-center justify-center rounded-lg border ${item.color}`}
+                    >
+                      <Icon className="h-4 w-4" />
+                    </div>
+                    <span className="line-clamp-2 text-[11px] font-bold text-jevah-text">
+                      {item.title}
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="jevah-mobile-section my-2 rounded-2xl p-3 ring-1 ring-jevah-border">
+            <p className="px-2 pb-2 text-[10px] font-bold uppercase tracking-wider text-jevah-text-muted">
+              About & community
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              {moreMenu.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <Link
+                    key={item.title}
+                    to={item.href}
+                    onClick={() => setMobileOpen(false)}
+                    className="flex flex-col gap-1.5 rounded-xl bg-jevah-card p-2.5 shadow-sm transition active:scale-95"
+                  >
+                    <div
+                      className={`flex h-8 w-8 items-center justify-center rounded-lg border ${item.color}`}
+                    >
+                      <Icon className="h-4 w-4" />
+                    </div>
+                    <span className="line-clamp-1 text-xs font-bold text-jevah-text">
+                      {item.title}
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="jevah-mobile-section my-2 rounded-2xl p-3 ring-1 ring-jevah-border">
+            <p className="px-2 pb-2 text-[10px] font-bold uppercase tracking-wider text-jevah-text-muted">
+              Creator
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              {creatorMenu.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <Link
+                    key={item.title}
+                    to={item.href}
+                    onClick={() => setMobileOpen(false)}
+                    className="flex flex-col gap-1.5 rounded-xl bg-jevah-card p-2.5 shadow-sm transition active:scale-95"
+                  >
+                    <div
+                      className={`flex h-8 w-8 items-center justify-center rounded-lg border ${item.color}`}
+                    >
+                      <Icon className="h-4 w-4" />
+                    </div>
+                    <span className="line-clamp-1 text-xs font-bold text-jevah-text">
+                      {item.title}
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+
           <Link
             to="/bible"
             onClick={() => setMobileOpen(false)}
-            className="flex items-center justify-between rounded-2xl bg-gradient-to-r from-amber-500/15 to-jevah-accent/10 px-4 py-3 text-base font-bold text-jevah-text ring-1 ring-amber-500/25 transition hover:from-amber-500/25"
+            className="flex items-center justify-between rounded-2xl bg-gradient-to-r from-amber-500/20 to-jevah-accent/10 px-4 py-3.5 text-base font-bold text-jevah-text ring-1 ring-amber-500/30"
           >
             <span className="inline-flex items-center gap-2">
               <BookOpenIcon className="h-5 w-5 text-amber-700" />
@@ -466,65 +616,14 @@ export default function Nav() {
             </span>
             <ArrowRightIcon className="h-4 w-4 text-amber-700/70" />
           </Link>
-
-          {/* Mobile Category Grid: Music & Artists */}
-          <div className="jevah-mobile-section my-2 rounded-2xl p-3 ring-1 ring-jevah-border">
-            <p className="px-2 pb-2 text-[10px] font-bold uppercase tracking-wider text-jevah-text-muted">
-              Music & Artists
-            </p>
-            <div className="grid grid-cols-2 gap-2">
-              {musicAndArtistsMenu.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <Link
-                    key={item.title}
-                    to={item.href}
-                    onClick={() => setMobileOpen(false)}
-                    className="flex flex-col gap-1.5 rounded-xl bg-jevah-card p-2.5 shadow-sm transition active:scale-95"
-                  >
-                    <div className={`flex h-8 w-8 items-center justify-center rounded-lg border ${item.color}`}>
-                      <Icon className="h-4 w-4" />
-                    </div>
-                    <span className="text-xs font-bold text-jevah-text line-clamp-1">{item.title}</span>
-                  </Link>
-                );
-              })}
-            </div>
-                </div>
-
-          {/* Mobile Category Grid: About & Community */}
-          <div className="jevah-mobile-section my-2 rounded-2xl p-3 ring-1 ring-jevah-border">
-            <p className="px-2 pb-2 text-[10px] font-bold uppercase tracking-wider text-jevah-text-muted">
-              About & Community
-            </p>
-            <div className="grid grid-cols-2 gap-2">
-              {aboutAndCommunityMenu.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <Link
-                    key={item.title}
-                    to={item.href}
-                    onClick={() => setMobileOpen(false)}
-                    className="flex flex-col gap-1.5 rounded-xl bg-jevah-card p-2.5 shadow-sm transition active:scale-95"
-                  >
-                    <div className={`flex h-8 w-8 items-center justify-center rounded-lg border ${item.color}`}>
-                      <Icon className="h-4 w-4" />
-                    </div>
-                    <span className="text-xs font-bold text-jevah-text line-clamp-1">{item.title}</span>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
         </div>
 
-        {/* Action Buttons */}
         <div className="mt-5 space-y-2.5 border-t border-jevah-border pt-4">
           {dashboardPath ? (
             <Link
               to={dashboardPath}
               onClick={() => setMobileOpen(false)}
-              className="flex w-full items-center justify-center rounded-2xl bg-jevah-accent py-3.5 text-base font-bold text-white shadow-lg shadow-jevah-accent/25 transition hover:bg-jevah-accent-hover active:scale-95"
+              className="flex w-full items-center justify-center rounded-2xl bg-jevah-accent py-3.5 text-base font-bold text-white shadow-lg shadow-jevah-accent/25"
             >
               Dashboard
             </Link>
@@ -549,12 +648,12 @@ export default function Nav() {
           <a
             href="/#download"
             onClick={() => setMobileOpen(false)}
-            className="flex w-full items-center justify-center rounded-2xl bg-jevah-accent py-3.5 text-base font-bold text-white shadow-lg shadow-jevah-accent/25 transition hover:bg-jevah-accent-hover active:scale-95"
+            className="flex w-full items-center justify-center rounded-2xl bg-jevah-accent py-3.5 text-base font-bold text-white shadow-lg shadow-jevah-accent/25"
           >
             Download App
           </a>
         </div>
-              </div>
+      </div>
     </header>
   );
 }

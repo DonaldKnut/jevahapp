@@ -15,6 +15,7 @@ import {
 } from "../../services/adminApi";
 import type { AdminMediaCard, ModerationCaseSummary } from "../../types/admin";
 import { getErrorMessage } from "../../lib/errors";
+import { matchesSearch } from "../../lib/searchMatch";
 import {
   formatAge,
   signedExpiryLabel,
@@ -98,14 +99,14 @@ export default function ModerationPage() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredItems = useMemo(() => {
-    if (!searchQuery.trim()) return items;
-    const q = searchQuery.toLowerCase().trim();
-    return items.filter(
-      (m) =>
-        m.title?.toLowerCase().includes(q) ||
-        uploaderLabel(m).toLowerCase().includes(q) ||
-        m.contentType?.toLowerCase().includes(q) ||
-        m.category?.toLowerCase().includes(q)
+    return items.filter((m) =>
+      matchesSearch(searchQuery, [
+        m.title,
+        uploaderLabel(m),
+        m.contentType,
+        m.category,
+        m.id,
+      ])
     );
   }, [items, searchQuery]);
 
@@ -830,7 +831,9 @@ export default function ModerationPage() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search queue items..."
+            placeholder="Search title, uploader, type…"
+            autoComplete="off"
+            spellCheck={false}
             className={`${inputClass} pl-9 pr-8 text-xs`}
           />
           {searchQuery && (

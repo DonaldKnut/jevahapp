@@ -13,6 +13,7 @@ import {
   SparklesIcon,
 } from "@heroicons/react/24/outline";
 import { useBible } from "./BibleContext";
+import { matchesSearch } from "../../lib/searchMatch";
 import { useDocumentMeta } from "../../hooks/useDocumentMeta";
 import {
   fetchBibleStats,
@@ -129,24 +130,23 @@ export default function BibleHome() {
     }
   }
 
-  const needle = filter.trim().toLowerCase();
   const ot = useMemo(
     () =>
       books.filter(
         (b) =>
           b.testament === "old" &&
-          (!needle || b.name.toLowerCase().includes(needle))
+          matchesSearch(filter, [b.name, b.abbreviation])
       ),
-    [books, needle]
+    [books, filter]
   );
   const nt = useMemo(
     () =>
       books.filter(
         (b) =>
           b.testament === "new" &&
-          (!needle || b.name.toLowerCase().includes(needle))
+          matchesSearch(filter, [b.name, b.abbreviation])
       ),
-    [books, needle]
+    [books, filter]
   );
 
   return (

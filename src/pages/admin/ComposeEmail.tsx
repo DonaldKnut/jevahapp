@@ -30,6 +30,7 @@ import ChurchRecipientPicker, {
 } from "./components/ChurchRecipientPicker";
 import EmailComposeTabs from "./components/EmailComposeTabs";
 import EmailRichEditor from "../../components/admin/EmailRichEditor";
+import { useDebouncedValue } from "../../hooks/useDebouncedValue";
 
 export default function ComposeEmailPage() {
   const { toast } = useFeedback();
@@ -39,7 +40,7 @@ export default function ComposeEmailPage() {
   const [userTotal, setUserTotal] = useState(0);
   const [userPage, setUserPage] = useState(1);
   const [userSearch, setUserSearch] = useState("");
-  const [userQuery, setUserQuery] = useState("");
+  const userQuery = useDebouncedValue(userSearch, 160);
   const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(
     new Set()
   );
@@ -50,7 +51,7 @@ export default function ComposeEmailPage() {
   const [churchTotal, setChurchTotal] = useState(0);
   const [churchPage, setChurchPage] = useState(1);
   const [churchSearch, setChurchSearch] = useState("");
-  const [churchQuery, setChurchQuery] = useState("");
+  const churchQuery = useDebouncedValue(churchSearch, 160);
   const [churchIds, setChurchIds] = useState<Set<string>>(new Set());
   const [churchesLoading, setChurchesLoading] = useState(false);
 
@@ -433,7 +434,7 @@ export default function ComposeEmailPage() {
                 manualEmails={manualEmails}
                 allVisibleSelected={allVisibleUsersSelected}
                 onUserSearchChange={setUserSearch}
-                onSearch={() => setUserQuery(userSearch.trim())}
+                onSearch={() => void loadUsers(1, false, userSearch)}
                 onToggleUser={toggleUser}
                 onSelectVisible={selectAllVisibleUsers}
                 onClearVisible={clearVisibleUsers}
@@ -453,7 +454,7 @@ export default function ComposeEmailPage() {
                 churchesLoading={churchesLoading}
                 allVisibleSelected={allVisibleChurchesSelected}
                 onChurchSearchChange={setChurchSearch}
-                onSearch={() => setChurchQuery(churchSearch.trim())}
+                onSearch={() => void loadChurches(1, false, churchSearch)}
                 onToggleChurch={toggleChurch}
                 onSelectVisible={selectAllVisibleChurches}
                 onClearVisible={clearVisibleChurches}

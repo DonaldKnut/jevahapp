@@ -19,6 +19,8 @@ import { normalizeTrackList, trackPlaybackUrl } from "../lib/media";
 import { ErrorToaster } from "../components/ErrorToaster";
 import { useAuth } from "../context/AuthContext";
 import { useDocumentMeta } from "../hooks/useDocumentMeta";
+import { useDebouncedValue } from "../hooks/useDebouncedValue";
+import { matchesSearch } from "../lib/searchMatch";
 
 export default function Music() {
   useDocumentMeta({
@@ -33,7 +35,7 @@ export default function Music() {
   const [forYou, setForYou] = useState<TrackCard[]>([]);
   const [ranked, setRanked] = useState(false);
   const [search, setSearch] = useState("");
-  const [q, setQ] = useState("");
+  const q = useDebouncedValue(search, 160);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [active, setActive] = useState<TrackCard | null>(null);
@@ -42,28 +44,22 @@ export default function Music() {
   const impressed = useRef<Set<string>>(new Set());
   const activeIdRef = useRef<string | null>(null);
 
+  const artistQuery = lane === "artist" ? q : "";
+  const skipSpinner = useRef(false);
+
   const load = useCallback(async () => {
-    setLoading(true);
+    if (!skipSpinner.current) setLoading(true);
     setError(null);
     setRanked(false);
     setForYou([]);
     try {
       if (lane === "curated") {
         const list = await fetchCopyrightFreeTracks();
-        const filtered = q
-          ? list.filter(
-              (t) =>
-                t.title?.toLowerCase().includes(q.toLowerCase()) ||
-                (t.artistName || t.singer || "")
-                  .toLowerCase()
-                  .includes(q.toLowerCase())
-            )
-          : list;
-        setTracks(filtered);
+        setTracks(list);
         return;
       }
 
-      if (isAuthenticated && getAccessToken() && !q) {
+      if (isAuthenticated && getAccessToken() && !artistQuery) {
         try {
           const page = await fetchMusicForYou({ lane: "artist", limit: 20 });
           const rankedTracks = normalizeTrackList(
@@ -82,7 +78,7 @@ export default function Music() {
 
       const list = await fetchMusicTracks({
         lane: "artist",
-        search: q || undefined,
+        search: artistQuery || undefined,
         limit: 50,
       });
       setTracks(list);
@@ -95,8 +91,13 @@ export default function Music() {
       setTracks([]);
     } finally {
       setLoading(false);
+      skipSpinner.current = true;
     }
-  }, [lane, q, isAuthenticated]);
+  }, [lane, artistQuery, isAuthenticated]);
+
+  useEffect(() => {
+    skipSpinner.current = false;
+  }, [lane]);
 
   useEffect(() => {
     void load();
@@ -108,7 +109,18 @@ export default function Music() {
     };
   }, []);
 
-  const shelf = ranked && !q ? forYou : tracks;
+  const shelf = useMemo(() => {
+    const base = ranked && !search.trim() ? forYou : tracks;
+    return base.filter((t) =>
+      matchesSearch(search, [
+        t.title,
+        t.artistName,
+        t.singer,
+        t.genre,
+        t.playCount,
+      ])
+    );
+  }, [tracks, forYou, ranked, search]);
   const playableQueue = useMemo(
     () => shelf.filter((t) => Boolean(trackPlaybackUrl(t))),
     [shelf]
@@ -177,7 +189,7 @@ export default function Music() {
   }
 
   const shelfLabel =
-    lane === "curated" ? "Copyright-free" : ranked && !q ? "Made for you" : "Artists";
+    lane === "curated" ? "Copyright-free" : ranked && !search.trim() ? "Made for you" : "Artists";
 
   return (
     <>
@@ -230,32 +242,22 @@ export default function Music() {
             </button>
           </div>
 
-          <form
-            className="mt-4 flex gap-2"
-            onSubmit={(e) => {
-              e.preventDefault();
-              setQ(search.trim());
-            }}
-          >
+          <div className="relative mt-4">
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              autoComplete="off"
+              spellCheck={false}
               placeholder={
                 lane === "curated"
-                  ? "Search curated tracks"
-                  : "Search artists & songs"
+                  ? "Search tracks, artists, numbers…"
+                  : "Search artists, songs, 23, C#…"
               }
               className="w-full rounded-xl border border-jevah-border bg-jevah-input px-4 py-3 text-sm text-jevah-text outline-none focus:border-jevah-accent focus:ring-2 focus:ring-jevah-accent/15"
             />
-            <button
-              type="submit"
-              className="shrink-0 rounded-xl bg-jevah-accent px-5 text-sm font-semibold text-white hover:bg-jevah-accent-hover"
-            >
-              Search
-            </button>
-          </form>
+          </div>
 
-          {lane === "artist" && ranked && !q && (
+          {lane === "artist" && ranked && !search.trim() && (
             <div className="mt-8">
               <h2 className="text-lg font-bold tracking-tight text-jevah-text">
                 Made for you

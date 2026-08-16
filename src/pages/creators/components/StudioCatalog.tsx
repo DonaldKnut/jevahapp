@@ -20,6 +20,7 @@ import {
   trackThumb,
   type TrackCard,
 } from "../../../lib/media";
+import { matchesSearch } from "../../../lib/searchMatch";
 
 function formatDate(iso?: string) {
   if (!iso) return "—";
@@ -62,23 +63,21 @@ export default function StudioCatalog({
   const [viewMode, setViewMode] = useState<ViewMode>("table");
 
   const rows = useMemo(() => {
-    const needle = q.trim().toLowerCase();
     let next = tracks.filter((t) => {
       if (visibility !== "all" && (t.visibility || "published") !== visibility) {
         return false;
       }
-      if (!needle) return true;
-      const hay = [
+      return matchesSearch(q, [
         t.title,
         trackArtist(t),
         t.genre,
+        t.genre ? genreLabel(t.genre) : undefined,
         t.release?.title,
         t.language,
-      ]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
-      return hay.includes(needle);
+        t.visibility,
+        t.playCount,
+        trackId(t),
+      ]);
     });
     next = [...next].sort((a, b) => {
       if (sort === "title") return (a.title || "").localeCompare(b.title || "");
@@ -124,7 +123,9 @@ export default function StudioCatalog({
               <input
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
-                placeholder="Search titles, genres..."
+                placeholder="Search title, artist, genre, #plays…"
+                autoComplete="off"
+                spellCheck={false}
                 className="h-10 w-full rounded-2xl border border-jevah-border/80 bg-jevah-card/60 pl-10 pr-3.5 text-xs font-bold text-jevah-text placeholder:text-jevah-text-muted/70 focus:border-jevah-accent focus:outline-none focus:ring-2 focus:ring-jevah-accent/20 transition-all"
               />
             </label>

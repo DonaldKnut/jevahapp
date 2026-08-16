@@ -16,6 +16,7 @@ import {
   type TrackCard,
 } from "../../lib/media";
 import { ApiError } from "../../lib/api";
+import { matchesSearch } from "../../lib/searchMatch";
 import { useFeedback } from "../../components/admin/Feedback";
 import JevahLogo from "../../components/JevahLogo";
 import NowPlayingBar from "../../components/music/NowPlayingBar";
@@ -94,16 +95,17 @@ export default function ArtistPublicProfile() {
   // Filtered tracks by search and genre tab
   const filteredTracks = useMemo(() => {
     return tracks.filter((t) => {
-      const matchesSearch =
-        !searchQuery.trim() ||
-        t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (t.genre && t.genre.toLowerCase().includes(searchQuery.toLowerCase()));
-
+      const okSearch = matchesSearch(searchQuery, [
+        t.title,
+        t.genre,
+        t.genre ? genreLabel(t.genre) : undefined,
+        trackArtist(t),
+        t.playCount,
+      ]);
       const matchesGenre =
         selectedGenre === "all" ||
         (t.genre && t.genre.toLowerCase() === selectedGenre.toLowerCase());
-
-      return matchesSearch && matchesGenre;
+      return okSearch && matchesGenre;
     });
   }, [tracks, searchQuery, selectedGenre]);
 

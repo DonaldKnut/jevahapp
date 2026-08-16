@@ -1,4 +1,4 @@
-import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   banUser,
@@ -35,6 +35,8 @@ import {
 } from "../../components/admin/ui";
 import AdminModal from "../../components/admin/AdminModal";
 import { useFeedback } from "../../components/admin/Feedback";
+import { useDebouncedValue } from "../../hooks/useDebouncedValue";
+import { matchesSearch } from "../../lib/searchMatch";
 import {
   UsersIcon,
   MagnifyingGlassIcon,
@@ -97,6 +99,7 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState(params.get("search") || "");
+  const debouncedSearch = useDebouncedValue(search, 180);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [emailOpen, setEmailOpen] = useState(false);
   const [banTarget, setBanTarget] = useState<AdminUser | null>(null);
@@ -118,9 +121,10 @@ export default function UsersPage() {
   const isBanned = params.get("isBanned");
   const presence = params.get("presence") || "";
   const page = Number(params.get("page") || "1");
+  const loadedOnce = useRef(false);
 
   const load = useCallback(async () => {
-    setLoading(true);
+    if (!loadedOnce.current) setLoading(true);
     setError(null);
     try {
       if (presence === "online" || presence === "offline") {
@@ -128,7 +132,7 @@ export default function UsersPage() {
           status: presence,
           page,
           limit: 20,
-          search: search || undefined,
+          search: debouncedSearch || undefined,
         });
         setUsers(res.users);
         setOnlineCount(res.onlineCount);
@@ -137,7 +141,7 @@ export default function UsersPage() {
         const res = await fetchUsers({
           page,
           limit: 20,
-          search: search || undefined,
+          search: debouncedSearch || undefined,
           role: role || undefined,
           isBanned:
             isBanned === "true" ? true : isBanned === "false" ? false : undefined,
@@ -146,16 +150,32 @@ export default function UsersPage() {
         setOnlineCount(res.onlineCount);
         setTotal(res.total ?? res.users.length);
       }
+      loadedOnce.current = true;
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Failed to load users.");
     } finally {
       setLoading(false);
     }
-  }, [page, presence, role, isBanned, search]);
+  }, [page, presence, role, isBanned, debouncedSearch]);
 
   useEffect(() => {
     void load();
   }, [load]);
+
+  const visibleUsers = useMemo(
+    () =>
+      users.filter((u) =>
+        matchesSearch(search, [
+          u.firstName,
+          u.lastName,
+          u.email,
+          u.username,
+          u.role,
+          u.id,
+        ])
+      ),
+    [users, search]
+  );
 
   const selectedEmails = useMemo(
     () =>
@@ -390,7 +410,9 @@ export default function UsersPage() {
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by name or email address..."
+              placeholder="Search name, email, role, numbers…"
+              autoComplete="off"
+              spellCheck={false}
               className={`${inputClass} pl-10`}
             />
           </div>
@@ -454,7 +476,7 @@ export default function UsersPage() {
       {/* ── User Directory Table ── */}
       {loading ? (
         <SkeletonRows rows={6} />
-      ) : users.length === 0 ? (
+      ) : visibleUsers.length === 0 ? (
         <EmptyState
           title="No Users Found"
           description="No user accounts match your current filter parameters."
@@ -484,7 +506,7 @@ export default function UsersPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-jevah-border/40">
-                {users.map((u) => {
+                {visibleUsers.map((u) => {
                   const name = [u.firstName, u.lastName].filter(Boolean).join(" ") || "Unnamed User";
                   const initials = name.split(" ").slice(0, 2).map((w) => w[0]?.toUpperCase() ?? "").join("");
                   return (

@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useNavigate, useLocation } from "react-router-dom";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState } from "react";
 import {
   ChartBarIcon,
   UsersIcon,
@@ -23,6 +23,7 @@ import {
   ChevronDoubleLeftIcon,
   ChevronDoubleRightIcon,
   ChevronDownIcon,
+  QuestionMarkCircleIcon,
 } from "@heroicons/react/24/outline";
 import {
   ShieldCheckIcon as ShieldSolid,
@@ -35,6 +36,10 @@ import {
 } from "../../services/adminApi";
 import JevahLogo from "../../components/JevahLogo";
 import ThemeToggle from "../../components/ThemeToggle";
+import ProductTour from "../../components/ProductTour";
+import SidebarTip from "../../components/SidebarTip";
+import { useProductTour } from "../../lib/onboarding";
+import { ADMIN_TOUR } from "../../lib/tours";
 import { cn } from "../../components/admin/ui";
 
 const SIDEBAR_COLLAPSED_KEY = "jevah-admin-sidebar-collapsed";
@@ -56,30 +61,6 @@ const navItems = [
   { to: "/admin/settings", label: "Settings", icon: Cog6ToothIcon, badge: null },
   { to: "/admin/health", label: "System Health", icon: HeartIcon, badge: null },
 ];
-
-function SidebarTip({
-  label,
-  show,
-  children,
-}: {
-  label: string;
-  show: boolean;
-  children: ReactNode;
-}) {
-  if (!show) return <>{children}</>;
-  return (
-    <div className="group/tip relative flex w-full justify-center">
-      {children}
-      <span
-        role="tooltip"
-        className="pointer-events-none absolute left-full top-1/2 z-50 ml-2.5 -translate-y-1/2 whitespace-nowrap rounded-lg bg-[#0b1a1f] px-2.5 py-1.5 text-[11px] font-bold text-white opacity-0 shadow-xl ring-1 ring-white/15 transition duration-150 group-hover/tip:opacity-100"
-      >
-        {label}
-        <span className="absolute right-full top-1/2 -mr-px h-2 w-2 -translate-y-1/2 rotate-45 bg-[#0b1a1f] ring-1 ring-white/15" />
-      </span>
-    </div>
-  );
-}
 
 export default function AdminShell() {
   const { user, logout, isSuperAdmin } = useAuth();
@@ -176,6 +157,10 @@ export default function AdminShell() {
     user?.email ||
     "Admin";
 
+  const tourUserId = user?.id || user?.email;
+  const { open: tourOpen, finish: finishTour, replay: replayTour } =
+    useProductTour("admin", tourUserId, Boolean(tourUserId));
+
   const initials = displayName
     .split(" ")
     .slice(0, 2)
@@ -192,7 +177,7 @@ export default function AdminShell() {
     return (
       <nav
         className={cn(
-          "admin-nav flex-1 space-y-1 overflow-y-auto py-3",
+          "admin-nav min-h-0 flex-1 space-y-1 overflow-y-auto py-3",
           compact ? "px-2" : "px-3"
         )}
       >
@@ -396,13 +381,29 @@ export default function AdminShell() {
 
           <NavItems compact={collapsed} />
 
-          {/* Sidebar Footer */}
+          {/* Sidebar Footer — pinned to the bottom of the rail */}
           <div
             className={cn(
-              "space-y-2 border-t border-white/10",
-              collapsed ? "p-2" : "space-y-2.5 p-3.5"
+              "mt-auto space-y-2 border-t border-white/10",
+              collapsed ? "p-2 pb-4" : "space-y-2.5 px-3.5 pt-5 pb-6"
             )}
           >
+            <SidebarTip label="Take the tour" show={collapsed}>
+              <button
+                type="button"
+                onClick={replayTour}
+                className={cn(
+                  "flex w-full items-center rounded-2xl text-xs font-bold text-white/60 transition hover:bg-white/10 hover:text-white",
+                  collapsed ? "justify-center px-2 py-2.5" : "gap-3 px-3.5 py-2.5"
+                )}
+                aria-label="Take the tour"
+              >
+                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/10">
+                  <QuestionMarkCircleIcon className="h-4 w-4" />
+                </span>
+                {!collapsed && <span>Help</span>}
+              </button>
+            </SidebarTip>
             <SidebarTip
               label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
               show={collapsed}
@@ -540,10 +541,20 @@ export default function AdminShell() {
 
                 <NavItems onNavigate={() => setMobileOpen(false)} />
 
-                <div className="border-t border-white/10 p-3 space-y-2">
+                <div className="mt-auto space-y-2 border-t border-white/10 p-3 pb-5">
                   <div className="flex justify-center px-2">
                     <ThemeToggle variant="pill" className="w-full [&>button]:w-full [&>button]:justify-center" />
                   </div>
+                  <button
+                    type="button"
+                    onClick={replayTour}
+                    className="flex w-full min-h-11 items-center gap-3 rounded-2xl px-3.5 py-2.5 text-sm font-bold text-white/70 transition hover:bg-white/10 hover:text-white"
+                  >
+                    <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/5">
+                      <QuestionMarkCircleIcon className="h-4 w-4" />
+                    </span>
+                    Help & tour
+                  </button>
                   <button
                     type="button"
                     onClick={() => void handleLogout()}
@@ -567,6 +578,13 @@ export default function AdminShell() {
           </main>
         </div>
       </div>
+      <ProductTour
+        open={tourOpen}
+        steps={ADMIN_TOUR}
+        eyebrow="Admin tour"
+        finishLabel="Open the desk"
+        onFinish={finishTour}
+      />
     </div>
   );
 }
