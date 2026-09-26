@@ -8,6 +8,8 @@ import {
   Squares2X2Icon,
   ListBulletIcon,
   MusicalNoteIcon,
+  ShareIcon,
+  CheckIcon,
 } from "@heroicons/react/24/outline";
 import {
   formatTrackDuration,
@@ -21,6 +23,7 @@ import {
   type TrackCard,
 } from "../../../lib/media";
 import { matchesSearch } from "../../../lib/searchMatch";
+import { useFeedback } from "../../../components/admin/Feedback";
 
 function formatDate(iso?: string) {
   if (!iso) return "—";
@@ -57,10 +60,12 @@ export default function StudioCatalog({
   subheading?: string;
   compact?: boolean;
 }) {
+  const { toast } = useFeedback();
   const [q, setQ] = useState("");
   const [visibility, setVisibility] = useState("all");
   const [sort, setSort] = useState<SortKey>("recent");
   const [viewMode, setViewMode] = useState<ViewMode>("table");
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const rows = useMemo(() => {
     let next = tracks.filter((t) => {
@@ -94,6 +99,21 @@ export default function StudioCatalog({
 
   const totalDur = tracks.reduce((n, t) => n + (trackDuration(t) || 0), 0);
 
+  const handleShareTrack = async (t: TrackCard) => {
+    const id = trackId(t);
+    const fullUrl = `${window.location.origin}/tracks/${id}`;
+    try {
+      if (navigator.clipboard) {
+        await navigator.clipboard.writeText(fullUrl);
+        setCopiedId(id);
+        toast.success(`Share link copied for "${t.title}"`);
+        setTimeout(() => setCopiedId(null), 2500);
+      }
+    } catch {
+      toast.info("Track URL", fullUrl);
+    }
+  };
+
   return (
     <section className="overflow-hidden rounded-3xl border border-jevah-border/70 bg-jevah-surface/90 shadow-2xl backdrop-blur-2xl transition-all duration-300">
       {/* Header Bar */}
@@ -103,7 +123,7 @@ export default function StudioCatalog({
             <h2 className="text-xl font-black tracking-tight text-jevah-text">
               {heading}
             </h2>
-            <span className="inline-flex rounded-full bg-jevah-accent/10 px-3 py-0.5 text-xs font-black text-jevah-accent ring-1 ring-jevah-accent/20">
+            <span className="inline-flex rounded-full bg-amber-400/15 px-3 py-0.5 text-xs font-black text-amber-500 ring-1 ring-amber-400/30">
               {tracks.length} {tracks.length === 1 ? "track" : "tracks"}
             </span>
           </div>
@@ -188,7 +208,7 @@ export default function StudioCatalog({
       {/* Track Content */}
       {rows.length === 0 ? (
         <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-jevah-accent/10 text-jevah-accent ring-1 ring-jevah-accent/20">
+          <div className="flex h-16 w-16 items-center justify-center rounded-3xl bg-amber-400/15 text-amber-500 ring-1 ring-amber-400/30">
             <MusicalNoteIcon className="h-8 w-8" />
           </div>
           <h3 className="mt-4 text-base font-black text-jevah-text">No tracks found</h3>
@@ -209,7 +229,7 @@ export default function StudioCatalog({
                 key={id}
                 className={`group relative overflow-hidden rounded-3xl border p-4 transition-all duration-300 hover:-translate-y-1 ${
                   active
-                    ? "border-jevah-accent bg-jevah-accent/10 shadow-xl shadow-jevah-accent/15"
+                    ? "border-amber-400 bg-amber-400/10 shadow-xl shadow-amber-400/10"
                     : "border-jevah-border/60 bg-jevah-card/40 hover:border-jevah-accent/40 hover:bg-jevah-card/80 shadow-md"
                 }`}
               >
@@ -221,7 +241,7 @@ export default function StudioCatalog({
                       className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center text-3xl font-black text-jevah-accent">
+                    <div className="flex h-full w-full items-center justify-center text-3xl font-black text-amber-400">
                       ♪
                     </div>
                   )}
@@ -232,23 +252,23 @@ export default function StudioCatalog({
                     onClick={() => onPlay(t)}
                     className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 backdrop-blur-xs transition-opacity duration-300 disabled:opacity-0"
                   >
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-jevah-accent shadow-2xl transition hover:scale-110">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-[#061114] shadow-2xl transition hover:scale-110">
                       {active && playing ? (
-                        <PauseIcon className="h-6 w-6" />
+                        <PauseIcon className="h-6 w-6 text-amber-500" />
                       ) : (
-                        <PlayIcon className="h-6 w-6 ml-0.5" />
+                        <PlayIcon className="h-6 w-6 ml-0.5 text-[#061114]" />
                       )}
                     </div>
                   </button>
 
-                  <span className="absolute bottom-2.5 right-2.5 rounded-full bg-black/60 px-2.5 py-0.5 text-[10px] font-black text-white backdrop-blur-md">
+                  <span className="absolute bottom-2.5 right-2.5 rounded-full bg-black/70 px-2.5 py-0.5 text-[10px] font-black text-white backdrop-blur-md">
                     {formatTrackDuration(trackDuration(t))}
                   </span>
                 </div>
 
                 <div className="mt-3.5 space-y-1">
                   <div className="flex items-center justify-between gap-2">
-                    <p className={`truncate font-extrabold text-sm ${active ? "text-jevah-accent" : "text-jevah-text"}`}>
+                    <p className={`truncate font-black text-sm ${active ? "text-amber-500" : "text-jevah-text"}`}>
                       {t.title}
                     </p>
                   </div>
@@ -256,11 +276,23 @@ export default function StudioCatalog({
                     {trackArtist(t)}
                   </p>
 
-                  <div className="mt-3 flex items-center justify-between pt-2 border-t border-jevah-border/40 text-[11px]">
-                    <span className="font-bold text-jevah-text-muted">
+                  <div className="mt-3 flex items-center justify-between pt-2.5 border-t border-jevah-border/40 text-[11px]">
+                    <span className="font-extrabold text-jevah-text-muted">
                       {(t.playCount || 0).toLocaleString()} streams
                     </span>
                     <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => void handleShareTrack(t)}
+                        className="rounded-lg p-1.5 text-jevah-text-muted hover:bg-jevah-card hover:text-emerald-400 transition"
+                        title="Share Track Link"
+                      >
+                        {copiedId === id ? (
+                          <CheckIcon className="h-4 w-4 text-emerald-400" />
+                        ) : (
+                          <ShareIcon className="h-4 w-4" />
+                        )}
+                      </button>
                       <button
                         type="button"
                         onClick={() => onEdit(t)}
@@ -314,16 +346,16 @@ export default function StudioCatalog({
                     key={id}
                     className={`group transition-colors duration-200 ${
                       active
-                        ? "bg-jevah-accent/15"
+                        ? "bg-amber-400/15"
                         : "hover:bg-jevah-card/60"
                     }`}
                   >
                     <td className="px-4 py-3 text-center">
                       {active && playing ? (
                         <span className="inline-flex h-4 items-end gap-0.5">
-                          <span className="eq-bar eq-bar-1 w-0.5 rounded-full bg-jevah-accent" />
-                          <span className="eq-bar eq-bar-2 w-0.5 rounded-full bg-jevah-accent" />
-                          <span className="eq-bar eq-bar-3 w-0.5 rounded-full bg-jevah-accent" />
+                          <span className="h-3 w-1 animate-pulse rounded-full bg-amber-400" />
+                          <span className="h-4 w-1 animate-bounce rounded-full bg-amber-400" />
+                          <span className="h-2 w-1 animate-pulse rounded-full bg-amber-400" />
                         </span>
                       ) : (
                         <span className="text-xs font-bold tabular-nums text-jevah-text-muted group-hover:hidden">
@@ -334,7 +366,7 @@ export default function StudioCatalog({
                         type="button"
                         disabled={!url}
                         onClick={() => onPlay(t)}
-                        className="hidden text-jevah-accent group-hover:inline-flex disabled:opacity-30 transition"
+                        className="hidden text-amber-500 group-hover:inline-flex disabled:opacity-30 transition"
                         aria-label={active && playing ? "Pause" : "Play"}
                       >
                         {active && playing ? (
@@ -350,7 +382,7 @@ export default function StudioCatalog({
                           type="button"
                           disabled={!url}
                           onClick={() => onPlay(t)}
-                          className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-jevah-accent/15 disabled:opacity-40 ring-1 ring-jevah-border/50 group-hover:ring-jevah-accent/50 transition"
+                          className="relative h-12 w-12 shrink-0 overflow-hidden rounded-2xl bg-amber-400/15 disabled:opacity-40 ring-1 ring-jevah-border/50 group-hover:ring-amber-400/50 transition shadow-sm"
                         >
                           {thumb ? (
                             <img
@@ -359,27 +391,27 @@ export default function StudioCatalog({
                               className="h-full w-full object-cover"
                             />
                           ) : (
-                            <div className="flex h-full w-full items-center justify-center text-sm font-black text-jevah-accent">
+                            <div className="flex h-full w-full items-center justify-center text-sm font-black text-amber-400">
                               ♪
                             </div>
                           )}
                         </button>
                         <div className="min-w-0">
                           <p
-                            className={`truncate font-extrabold text-sm ${
-                              active ? "text-jevah-accent" : "text-jevah-text"
+                            className={`truncate font-black text-sm ${
+                              active ? "text-amber-500" : "text-jevah-text"
                             }`}
                           >
                             {t.title}
                           </p>
-                          <div className="flex items-center gap-2 mt-0.5 text-xs text-jevah-text-muted font-medium">
+                          <div className="flex items-center gap-2 mt-0.5 text-xs text-jevah-text-muted font-semibold">
                             <span>{trackArtist(t)}</span>
                             <span className="opacity-40">·</span>
                             <span className="inline-flex rounded-full bg-jevah-card px-2 py-0.2 text-[10px] font-extrabold capitalize text-jevah-text-muted ring-1 ring-jevah-border/60">
                               {t.visibility || "published"}
                             </span>
                             {status !== "ready" && (
-                              <span className="capitalize text-amber-600 dark:text-amber-400">
+                              <span className="capitalize text-amber-600 dark:text-amber-400 font-bold">
                                 {status}
                               </span>
                             )}
@@ -403,7 +435,19 @@ export default function StudioCatalog({
                       {formatTrackDuration(trackDuration(t))}
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <div className="inline-flex gap-1">
+                      <div className="inline-flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => void handleShareTrack(t)}
+                          className="rounded-xl p-2 text-jevah-text-muted hover:bg-jevah-card hover:text-emerald-400 transition"
+                          title="Share Track Link"
+                        >
+                          {copiedId === id ? (
+                            <CheckIcon className="h-4 w-4 text-emerald-400" />
+                          ) : (
+                            <ShareIcon className="h-4 w-4" />
+                          )}
+                        </button>
                         <button
                           type="button"
                           onClick={() => onEdit(t)}
@@ -432,3 +476,4 @@ export default function StudioCatalog({
     </section>
   );
 }
+

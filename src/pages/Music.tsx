@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { TrackRow } from "../components/TrackRow";
-import NowPlayingBar from "../components/music/NowPlayingBar";
+import { usePlayer } from "../context/PlayerContext";
 import { MusicSalon } from "../components/music/MusicSalon";
 import { MusicViewToggle } from "../components/music/MusicViewToggle";
 import { TrackCover } from "../components/music/TrackCover";
@@ -11,7 +11,7 @@ import {
   trackId,
   type TrackCard,
 } from "../services/creatorsApi";
-import { ApiError, getAccessToken } from "../lib/api";
+import { getAccessToken } from "../lib/api";
 import { listFromUnknown } from "../lib/api/unwrap";
 import {
   enqueueFeedEvent,
@@ -19,7 +19,8 @@ import {
   flushFeedEvents,
 } from "../lib/feedRanker";
 import { normalizeTrackList, trackPlaybackUrl } from "../lib/media";
-import { ErrorToaster } from "../components/ErrorToaster";
+import { useFeedback } from "../components/admin/Feedback";
+import { toastApiError } from "../lib/errors";
 import { useAuth } from "../context/AuthContext";
 import { useDocumentMeta } from "../hooks/useDocumentMeta";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
@@ -43,6 +44,7 @@ export default function Music() {
     canonicalPath: "/music",
   });
   const { isAuthenticated } = useAuth();
+  const { toast } = useFeedback();
   const [lane, setLane] = useState<"curated" | "artist">("curated");
   const [view, setView] = useState<MusicView>(() => readMusicView());
   const [tracks, setTracks] = useState<TrackCard[]>([]);
@@ -51,9 +53,9 @@ export default function Music() {
   const [search, setSearch] = useState("");
   const q = useDebouncedValue(search, 160);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [active, setActive] = useState<TrackCard | null>(null);
-  const [playing, setPlaying] = useState(false);
+  const player = usePlayer();
+  const active = player.track;
+  const playing = player.isPlaying;
   const playStartedAt = useRef<number | null>(null);
   const impressed = useRef<Set<string>>(new Set());
   const activeIdRef = useRef<string | null>(null);
@@ -63,7 +65,6 @@ export default function Music() {
 
   const load = useCallback(async () => {
     if (!skipSpinner.current) setLoading(true);
-    setError(null);
     setRanked(false);
     setForYou([]);
     try {
@@ -97,17 +98,18 @@ export default function Music() {
       });
       setTracks(list);
     } catch (err) {
-      setError(
-        err instanceof ApiError
-          ? err.message
-          : "Could not load music right now."
+      toastApiError(
+        toast,
+        "Could not load music",
+        err,
+        "Could not load music right now."
       );
       setTracks([]);
     } finally {
       setLoading(false);
       skipSpinner.current = true;
     }
-  }, [lane, artistQuery, isAuthenticated]);
+  }, [lane, artistQuery, isAuthenticated, toast]);
 
   useEffect(() => {
     skipSpinner.current = false;
@@ -171,8 +173,7 @@ export default function Music() {
       emitLeave(prevId);
       activeIdRef.current = null;
       playStartedAt.current = null;
-      setActive(null);
-      setPlaying(false);
+      player.close();
       return;
     }
 
@@ -181,8 +182,7 @@ export default function Music() {
       emitLeave(prevId);
       activeIdRef.current = null;
       playStartedAt.current = null;
-      setActive(null);
-      setPlaying(false);
+      player.close();
       return;
     }
 
@@ -190,8 +190,7 @@ export default function Music() {
     noteImpression(tid);
     activeIdRef.current = tid;
     playStartedAt.current = Date.now();
-    setActive(tr);
-    setPlaying(true);
+    player.start(tr, { queue: playableQueue, shelfLabel });
   }
 
   function onRowPlay(tr: TrackCard) {
@@ -224,7 +223,6 @@ export default function Music() {
 
   return (
     <>
-      <ErrorToaster error={error} title="Could not load music" />
       <div
         className={`jevah-dashboard-shell relative min-h-screen overflow-hidden bg-[linear-gradient(180deg,var(--jevah-hero-via)_0%,var(--jevah-bg)_42%)] pt-24 ${
           active ? "pb-36" : "pb-20"
@@ -258,7 +256,6 @@ export default function Music() {
               type="button"
               onClick={() => {
                 setLane("curated");
-                selectTrack(null);
               }}
               className={`flex-1 rounded-full py-2.5 text-sm font-semibold transition ${
                 lane === "curated"
@@ -272,7 +269,6 @@ export default function Music() {
               type="button"
               onClick={() => {
                 setLane("artist");
-                selectTrack(null);
               }}
               className={`flex-1 rounded-full py-2.5 text-sm font-semibold transition ${
                 lane === "artist"
@@ -324,7 +320,20 @@ export default function Music() {
               <h2 className="text-lg font-semibold tracking-tight text-jevah-text">
                 {shelfLabel}
               </h2>
-              <p className="mt-1 text-xs text-jevah-text-muted">{shelfCopy}</p>
+              <p className="mt-1 text-xs text-jevah-text-muted">
+                {shelfCopy}
+                {lane === "artist" && (
+                  <>
+                    {" "}
+                    <Link
+                      to="/artists"
+                      className="font-semibold text-jevah-accent hover:underline"
+                    >
+                      Browse artist pages
+                    </Link>
+                  </>
+                )}
+              </p>
             </div>
           </div>
 
@@ -423,28 +432,6 @@ export default function Music() {
         </div>
       </div>
 
-      <NowPlayingBar
-        track={active}
-        queue={playableQueue}
-        shelfLabel={shelfLabel}
-        onPlayingChange={setPlaying}
-        onTrackChange={(tr) => {
-          if (!tr) {
-            selectTrack(null);
-            return;
-          }
-          const tid = trackId(tr);
-          if (activeIdRef.current !== tid) {
-            emitLeave(activeIdRef.current);
-            noteImpression(tid);
-            activeIdRef.current = tid;
-            playStartedAt.current = Date.now();
-          }
-          setActive(tr);
-          setPlaying(true);
-        }}
-        onClose={() => selectTrack(null)}
-      />
     </>
   );
 }

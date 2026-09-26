@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  fetchModerationQueue,
   fetchReports,
   fetchUsers,
-  listArtists,
   listCommentReports,
 } from "../../../services/adminApi";
 import type { AdminMediaCard, AdminUser, ReportItem } from "../../../types/admin";
+import { isApiRateLimited } from "../../../lib/api";
 import { getErrorMessage } from "../../../lib/errors";
 import AdminModal from "../../../components/admin/AdminModal";
 import { Badge, Button } from "../../../components/admin/ui";
@@ -110,6 +109,27 @@ function reportTitle(r: ReportItem) {
   return String(raw).replace(/_/g, " ");
 }
 
+function artistRows(items: Array<Record<string, unknown>>): Row[] {
+  return items
+    .map((raw) => {
+      const a = raw as {
+        id?: string;
+        _id?: string;
+        name?: string;
+        displayName?: string;
+        email?: string;
+        status?: string;
+      };
+      return {
+        id: String(a.id || a._id || a.email || ""),
+        title: a.displayName || a.name || "Unnamed artist",
+        meta: a.email || "Pending review",
+        badge: a.status || "pending",
+      };
+    })
+    .filter((row) => row.id);
+}
+
 function reasonTone(reason?: string): "danger" | "warning" | "brand" {
   const s = (reason || "").toLowerCase();
   if (s.includes("blasphem") || s.includes("hate") || s.includes("abuse")) {
@@ -125,12 +145,14 @@ export default function OverviewKpiPeek({
   peek,
   onlineUsers,
   queuePreview,
+  pendingArtists = [],
   onClose,
   onOpenReview,
 }: {
   peek: OverviewPeek | null;
   onlineUsers: AdminUser[];
   queuePreview: AdminMediaCard[];
+  pendingArtists?: Array<Record<string, unknown>>;
   onClose: () => void;
   onOpenReview: (item: AdminMediaCard) => void;
 }) {
@@ -160,7 +182,14 @@ export default function OverviewKpiPeek({
       return;
     }
 
-    if (peek === "review" && queuePreview.length > 0) {
+    if (peek === "artists") {
+      setRows(artistRows(pendingArtists));
+      setLoading(false);
+      setError(null);
+      return;
+    }
+
+    if (peek === "review") {
       setRows(
         queuePreview.map((m) => ({
           id: m.id,
@@ -170,6 +199,16 @@ export default function OverviewKpiPeek({
           media: m,
         }))
       );
+      setLoading(false);
+      setError(null);
+      return;
+    }
+
+    if (isApiRateLimited()) {
+      setRows([]);
+      setLoading(false);
+      setError(null);
+      return;
     }
 
     let alive = true;
@@ -197,18 +236,6 @@ export default function OverviewKpiPeek({
             badge: r.status || "pending",
             reason: r.reason,
           }));
-        } else if (peek === "review") {
-          const res = await fetchModerationQueue({
-            status: "under_review",
-            limit: 12,
-          });
-          next = res.items.map((m) => ({
-            id: m.id,
-            title: m.title || "Untitled",
-            meta: m.contentType || "upload",
-            badge: m.moderationStatus.replace(/_/g, " "),
-            media: m,
-          }));
         } else if (peek === "banned") {
           const res = await fetchUsers({ isBanned: true, limit: 12 });
           next = res.users.map((u) => ({
@@ -217,28 +244,16 @@ export default function OverviewKpiPeek({
             meta: u.banReason || u.email || "Banned",
             badge: "Banned",
           }));
-        } else if (peek === "artists") {
-          const res = await listArtists({ status: "pending", limit: 12 });
-          next = res.items.map((raw) => {
-            const a = raw as {
-              id?: string;
-              _id?: string;
-              name?: string;
-              displayName?: string;
-              email?: string;
-              status?: string;
-            };
-            return {
-              id: String(a.id || a._id || a.email || Math.random()),
-              title: a.displayName || a.name || "Unnamed artist",
-              meta: a.email || "Pending review",
-              badge: a.status || "pending",
-            };
-          });
         }
         if (alive) setRows(next.filter((r) => r.id));
       } catch (err) {
-        if (alive) setError(getErrorMessage(err, "Could not load this list."));
+        if (!alive) return;
+        const message = getErrorMessage(err, "Could not load this list.");
+        if (isApiRateLimited() || /too many requests/i.test(message)) {
+          setError(null);
+          return;
+        }
+        setError(message);
       } finally {
         if (alive) setLoading(false);
       }
@@ -247,7 +262,7 @@ export default function OverviewKpiPeek({
     return () => {
       alive = false;
     };
-  }, [peek, onlineUsers, queuePreview]);
+  }, [peek, onlineUsers, queuePreview, pendingArtists]);
 
   const meta = peek ? PEEK_META[peek] : null;
   const Icon = meta?.icon;
@@ -291,7 +306,9 @@ export default function OverviewKpiPeek({
         </div>
       ) : rows.length === 0 ? (
         <p className="py-8 text-center text-sm font-medium text-slate-500">
-          Nothing in this queue right now.
+          {peek === "artists"
+            ? "No creator applications waiting."
+            : "Nothing in this queue right now."}
         </p>
       ) : (
         <ul

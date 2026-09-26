@@ -14,21 +14,67 @@ import {
   CloudArrowUpIcon,
   ShareIcon,
   ArrowTrendingUpIcon,
+  MicrophoneIcon,
+  RadioIcon,
+  CheckCircleIcon,
+  ArrowRightIcon,
 } from "@heroicons/react/24/outline";
 import { CheckBadgeIcon as CheckBadgeSolid, PlayIcon, PauseIcon } from "@heroicons/react/24/solid";
 
-const TYPES = [
+const CREATOR_CATEGORIES = [
   {
+    id: "artists",
     title: "Artists",
-    body: "Gospel, worship, and afro-gospel catalogs with a public profile listeners can follow.",
+    badge: "Worship & Gospel Music",
+    tagline: "Gospel, worship, and afro-gospel catalogs with a public profile listeners can follow.",
+    image:
+      "https://res.cloudinary.com/bt01nio6/image/upload/v1790355600/Man_singing_on_stage_2K_20260925175816.jpg",
+    features: [
+      "Gold Verified Gospel Artist Badge",
+      "Public artist profile URL (/artists/your-name)",
+      "Upload singles, EPs & full albums to the shelf",
+      "Stream stats, completion rates & listener analytics",
+    ],
+    ctaText: "Apply as an Artist",
+    borderClass: "border-amber-400/35 hover:border-amber-400/70",
+    badgeClass: "bg-amber-500/15 text-amber-600 dark:text-amber-300 border-amber-400/30",
+    icon: MusicalNoteIcon,
   },
   {
+    id: "ministers",
     title: "Ministers",
-    body: "Share messages and music that travels with your congregation beyond Sunday.",
+    badge: "Sermons & Ministry Audio",
+    tagline: "Share messages and music that travels with your congregation beyond Sunday.",
+    image:
+      "https://res.cloudinary.com/bt01nio6/image/upload/v1790355598/Pastor_preaching_from_wooden_pulpit_2K_20260925175857.jpg",
+    features: [
+      "Organized sermon audio & ministry series",
+      "Congregation & mid-week audio streaming",
+      "Unified ministry & music catalog under one name",
+      "Clear separation on trusted Gospel shelves",
+    ],
+    ctaText: "Publish Ministry Audio",
+    borderClass: "border-emerald-400/35 hover:border-emerald-400/70",
+    badgeClass: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 border-emerald-400/30",
+    icon: MicrophoneIcon,
   },
   {
+    id: "podcasters",
     title: "Podcasters",
-    body: "Faith conversations that sit beside music — same catalog, clear shelves.",
+    badge: "Faith & Christian Life",
+    tagline: "Faith conversations that sit beside music — same catalog, clear shelves.",
+    image:
+      "https://res.cloudinary.com/bt01nio6/image/upload/v1790355598/Podcaster_speaking_into_microphone_2K_20260925175837.jpg",
+    features: [
+      "Structured seasons & podcast episode indexing",
+      "Faith & lifestyle talk audio streaming",
+      "Cross-promotion alongside curated worship beds",
+      "Dedicated podcast detail pages & RSS compatibility",
+    ],
+    ctaText: "Launch Faith Podcast",
+    borderClass: "border-teal-400/35 hover:border-teal-400/70",
+    badgeClass: "bg-teal-500/15 text-teal-600 dark:text-teal-300 border-teal-400/30",
+    icon: RadioIcon,
   },
 ];
 
@@ -140,12 +186,7 @@ export default function CreatorsLanding() {
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link
-              to={isAuthenticated ? "/creators/apply" : "/creators/login"}
-              state={
-                isAuthenticated
-                  ? undefined
-                  : { from: "/creators/apply", intent: "creator" }
-              }
+              to={isAuthenticated ? "/creators/apply" : "/creators/signup"}
               className="inline-flex min-h-12 w-full items-center justify-center rounded-full bg-gradient-to-r from-jevah-accent to-emerald-600 px-8 text-sm font-extrabold text-white shadow-lg shadow-jevah-accent/25 transition hover:scale-105 sm:w-auto"
             >
               {isAuthenticated ? "Continue application" : "Become a creator"}
@@ -169,15 +210,81 @@ export default function CreatorsLanding() {
         </div>
       </section>
 
-      {/* CATEGORIES GRID */}
-      <section className="mx-auto max-w-5xl px-4 pb-16 sm:px-8 lg:px-12">
-        <div className="grid gap-6 sm:grid-cols-3">
-          {TYPES.map((t) => (
-            <div key={t.title} className="rounded-2xl border border-jevah-border bg-jevah-surface p-6 shadow-sm transition hover:border-jevah-accent/40">
-              <h2 className="text-lg font-bold text-jevah-text">{t.title}</h2>
-              <p className="mt-2 text-sm leading-relaxed text-jevah-text-muted">{t.body}</p>
-            </div>
-          ))}
+      {/* CATEGORIES ADVERTISING SHOWCASE */}
+      <section className="mx-auto max-w-6xl px-4 pb-20 sm:px-8 lg:px-12">
+        <div className="text-center max-w-3xl mx-auto mb-12">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-400/40 bg-amber-500/10 px-3.5 py-1 text-xs font-extrabold uppercase tracking-widest text-amber-500">
+            <SparklesIcon className="h-3.5 w-3.5" />
+            Built for Every Gospel Creator
+          </span>
+          <h2 className="mt-3 text-3xl font-black text-jevah-text sm:text-4xl">
+            Publish Your Ministry, Music &amp; Podcasts
+          </h2>
+          <p className="mt-2 text-sm leading-relaxed text-jevah-text-muted sm:text-base">
+            One application gives you access to a dedicated audience, verified creator badge, and automated distribution across Jevah app and web.
+          </p>
+        </div>
+
+        <div className="grid gap-8 lg:grid-cols-3">
+          {CREATOR_CATEGORIES.map((c) => {
+            const Icon = c.icon;
+            return (
+              <div
+                key={c.id}
+                className={`group relative flex flex-col overflow-hidden rounded-3xl border ${c.borderClass} bg-jevah-surface shadow-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl`}
+              >
+                {/* Image Illustration Container */}
+                <div className="relative h-52 w-full overflow-hidden bg-slate-900">
+                  <img
+                    src={c.image}
+                    alt={c.title}
+                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0e1620] via-[#0e1620]/40 to-transparent" />
+                  
+                  {/* Badge Pill */}
+                  <span
+                    className={`absolute top-4 left-4 inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-extrabold uppercase tracking-wider backdrop-blur-md ${c.badgeClass}`}
+                  >
+                    <Icon className="h-3.5 w-3.5" />
+                    {c.badge}
+                  </span>
+                </div>
+
+                {/* Card Body */}
+                <div className="flex flex-1 flex-col p-6 sm:p-7">
+                  <h3 className="text-2xl font-black text-jevah-text flex items-center justify-between">
+                    {c.title}
+                    <Icon className="h-6 w-6 text-jevah-accent opacity-80" />
+                  </h3>
+                  <p className="mt-2 text-xs leading-relaxed font-medium text-jevah-text-muted">
+                    {c.tagline}
+                  </p>
+
+                  {/* Feature Bullets */}
+                  <ul className="mt-5 space-y-2.5 flex-1 border-t border-jevah-border/60 pt-5">
+                    {c.features.map((feat, idx) => (
+                      <li key={idx} className="flex items-start gap-2 text-xs font-semibold text-jevah-text">
+                        <CheckCircleIcon className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
+                        <span>{feat}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  {/* Card CTA */}
+                  <div className="mt-6 pt-2">
+                    <Link
+                      to={isAuthenticated ? "/creators/apply" : "/creators/signup"}
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-jevah-elevated py-3 text-xs font-extrabold text-jevah-text ring-1 ring-jevah-border transition-all duration-200 hover:bg-jevah-accent hover:text-white hover:ring-jevah-accent"
+                    >
+                      <span>{c.ctaText}</span>
+                      <ArrowRightIcon className="h-3.5 w-3.5" />
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </section>
 
@@ -511,10 +618,10 @@ export default function CreatorsLanding() {
             </div>
             <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
               <Link
-                to="/creators/apply"
+                to={isAuthenticated ? "/creators/apply" : "/creators/signup"}
                 className="inline-flex items-center justify-center rounded-full bg-white px-5 py-2.5 text-sm font-bold text-[#0B1A1F] transition hover:bg-slate-100"
               >
-                Apply now
+                {isAuthenticated ? "Apply now" : "Create an account"}
               </Link>
               <Link
                 to="/creators/studio"

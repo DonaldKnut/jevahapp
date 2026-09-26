@@ -44,7 +44,7 @@ const musicMenu: MenuItem[] = [
   {
     title: "Gospel Artists",
     description: "Verified ministers, worship leaders, and choirs",
-    href: "/music",
+    href: "/artists",
     icon: UserGroupIcon,
     badge: "Verified",
     color: "bg-teal-50 text-teal-600 border-teal-200/60",
@@ -98,7 +98,7 @@ const creatorMenu: MenuItem[] = [
   {
     title: "Become a Creator",
     description: "Apply once — upload after you are verified",
-    href: "/creators/apply",
+    href: "/creators/signup",
     icon: SparklesIcon,
     badge: "Join",
     color: "bg-emerald-50 text-emerald-600 border-emerald-200/60",
@@ -186,9 +186,9 @@ export default function Nav() {
     "music" | "community" | "creator" | null
   >(null);
   const location = useLocation();
-  const { isAuthenticated, isAdmin, loading } = useAuth();
+  const { isAuthenticated, isAdmin, loading, user } = useAuth();
   const dashboardPath = !loading
-    ? sessionDashboardPath({ isAuthenticated, isAdmin })
+    ? sessionDashboardPath({ isAuthenticated, isAdmin, user })
     : null;
 
   useEffect(() => {
@@ -283,7 +283,7 @@ export default function Nav() {
                       </div>
                     </div>
                     <Link
-                      to="/creators/apply"
+                      to={isAuthenticated ? "/creators/apply" : "/creators/signup"}
                       onClick={() => setActiveMega(null)}
                       className="shrink-0 rounded-full bg-white px-3.5 py-1.5 text-[11px] font-bold text-[#0B1A1F] transition hover:bg-amber-100"
                     >
@@ -399,7 +399,7 @@ export default function Nav() {
                       </p>
                     </div>
                     <Link
-                      to="/creators/apply"
+                      to={isAuthenticated ? "/creators/apply" : "/creators/signup"}
                       onClick={() => setActiveMega(null)}
                       className="shrink-0 rounded-full bg-white px-3.5 py-1.5 text-[11px] font-bold text-[#0B1A1F] transition hover:bg-amber-100"
                     >

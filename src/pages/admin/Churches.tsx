@@ -234,7 +234,7 @@ export default function ChurchesPage() {
           <p className="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">Verified Congregations</p>
           <p className="mt-1 text-2xl font-black text-emerald-600 dark:text-emerald-400">{verifiedCount}</p>
         </div>
-        <div className="rounded-2xl border border-jevah-accent/20 bg-jevah-accent/10 p-4 shadow-sm col-span-2 lg:col-span-1">
+        <div className="col-span-2 rounded-2xl border border-jevah-accent bg-jevah-card p-4 shadow-sm lg:col-span-1">
           <p className="text-xs font-bold uppercase tracking-wider text-jevah-accent">Listed in Onboarding</p>
           <p className="mt-1 text-2xl font-black text-jevah-accent">{listedCount}</p>
         </div>

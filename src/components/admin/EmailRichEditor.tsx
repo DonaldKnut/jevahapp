@@ -87,7 +87,7 @@ function Toolbar({ editor }: { editor: Editor }) {
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-0.5 border-b border-jevah-border bg-jevah-card/50 px-2 py-1.5">
+    <div className="flex flex-wrap items-center gap-0.5 border-b border-jevah-border bg-jevah-card px-2 py-1.5">
       <ToolbarBtn
         label="Bold"
         active={editor.isActive("bold")}
@@ -256,7 +256,7 @@ export default function EmailRichEditor({
     return (
       <div
         className={cn(
-          "animate-pulse rounded-2xl border border-jevah-border bg-jevah-card/40",
+          "animate-pulse rounded-2xl border border-jevah-border bg-jevah-card",
           minHeightClass
         )}
       />

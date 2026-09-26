@@ -1,5 +1,27 @@
 import type { PresignSlot, TrackUploadIntent } from "../../types/media";
 
+function uploadTarget(putUrl: string) {
+  if (!import.meta.env.DEV) return putUrl;
+  try {
+    const u = new URL(putUrl);
+    if (!u.hostname.endsWith(".r2.cloudflarestorage.com")) return putUrl;
+    return `/__r2/${u.hostname}${u.pathname}${u.search}`;
+  } catch {
+    return putUrl;
+  }
+}
+
+export function uploadFailureMessage(err: unknown) {
+  const msg = err instanceof Error ? err.message : "Upload failed";
+  if (
+    /cors|access-control|failed to fetch|network error/i.test(msg) ||
+    msg === "Network error during upload"
+  ) {
+    return "The file store blocked this browser upload. Refresh and try again. If it still fails, storage must allow this site.";
+  }
+  return msg;
+}
+
 export async function putPresignedFile(
   putUrl: string,
   file: File,
@@ -8,7 +30,7 @@ export async function putPresignedFile(
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
-    xhr.open("PUT", putUrl);
+    xhr.open("PUT", uploadTarget(putUrl));
     xhr.setRequestHeader(
       "Content-Type",
       file.type || "application/octet-stream"
@@ -32,7 +54,8 @@ export async function putPresignedFile(
         reject(new Error(`Upload failed (${xhr.status})`));
       }
     };
-    xhr.onerror = () => reject(new Error("Network error during upload"));
+    xhr.onerror = () =>
+      reject(new Error(uploadFailureMessage(new Error("Network error during upload"))));
     xhr.send(file);
   });
 }

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeftIcon, MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import { readerHref } from "../../../lib/bible/paths";
+import { bookChapterCount, readerHref } from "../../../lib/bible/paths";
 import type { BibleBook } from "../../../types/bible";
 import { matchesSearch } from "../../../lib/searchMatch";
 
@@ -62,7 +62,7 @@ export default function BookPickerSheet({
   const meta = books.find(
     (b) => b.name.toLowerCase() === picked.toLowerCase()
   );
-  const chapterCount = meta?.chapters || 1;
+  const chapterCount = meta ? bookChapterCount(meta) || 1 : 1;
 
   if (!open) return null;
 
@@ -153,7 +153,7 @@ export default function BookPickerSheet({
               </button>
 
               <span className="text-xs font-semibold text-[#8a7d68]">
-                {meta?.chapters ? `${meta.chapters} chapters` : ""}
+                {chapterCount > 1 ? `${chapterCount} chapters` : ""}
               </span>
             </div>
 
@@ -223,7 +223,7 @@ function BookGroup({
               <div className="flex items-center justify-between">
                 <span>{b.name}</span>
                 <span className="text-[10px] font-sans font-normal text-[#8a7d68]">
-                  {b.chapters || ""}
+                  {bookChapterCount(b) || ""}
                 </span>
               </div>
             </button>

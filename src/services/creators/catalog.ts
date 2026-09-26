@@ -1,5 +1,5 @@
 import { apiRequest } from "../../lib/api";
-import { listFromUnknown, unwrapData } from "../../lib/api/unwrap";
+import { listFromUnknown, paginationFrom, unwrapData } from "../../lib/api/unwrap";
 import { entityId } from "../../lib/api/unwrap";
 import {
   normalizeTrackCard,
@@ -7,6 +7,39 @@ import {
 } from "../../lib/mediaParts/normalizeTrack";
 import type { ArtistCard } from "../../types/creator";
 import type { TrackCard } from "../../types/media";
+
+export async function fetchPublicArtists(params?: {
+  search?: string;
+  page?: number;
+  limit?: number;
+}) {
+  const q = new URLSearchParams();
+  q.set("status", "active");
+  if (params?.search?.trim()) q.set("search", params.search.trim());
+  q.set("page", String(params?.page ?? 1));
+  q.set("limit", String(params?.limit ?? 48));
+  const res = await apiRequest(`/artists?${q.toString()}`, { auth: false });
+  const data = unwrapData(res);
+  const items = listFromUnknown<ArtistCard>(data, ["artists", "items"]).filter(
+    (a) => {
+      const slug = a.slug?.trim();
+      return Boolean(slug) && (a.status == null || a.status === "active");
+    }
+  );
+  const meta = paginationFrom(res);
+  const extra =
+    data && typeof data === "object"
+      ? (data as { hasMore?: boolean; nextCursor?: string | null })
+      : {};
+  return {
+    items,
+    total: meta.total ?? items.length,
+    page: meta.page ?? 1,
+    hasMore:
+      extra.hasMore ??
+      ((meta.page ?? 1) < (meta.totalPages ?? 1)),
+  };
+}
 
 export async function fetchPublicArtist(slug: string) {
   return unwrapData(

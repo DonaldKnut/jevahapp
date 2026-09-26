@@ -7,6 +7,7 @@ import {
   fetchPresence,
   fetchRecentMedia,
   fetchTimeseries,
+  listArtists,
 } from "../../services/adminApi";
 import type {
   DashboardAnalytics,
@@ -14,8 +15,9 @@ import type {
   AdminMediaCard,
   AdminUser,
 } from "../../types/admin";
-import { ApiError, isApiRateLimited } from "../../lib/api";
-import { ErrorToaster } from "../../components/ErrorToaster";
+import { isApiRateLimited } from "../../lib/api";
+import { useFeedback } from "../../components/admin/Feedback";
+import { toastApiError } from "../../lib/errors";
 import {
   KpiLink,
   Panel,
@@ -102,23 +104,28 @@ export default function Overview() {
   const [onlineCount, setOnlineCount] = useState(0);
   const [recent, setRecent] = useState<AdminMediaCard[]>([]);
   const [queuePreview, setQueuePreview] = useState<AdminMediaCard[]>([]);
+  const [pendingArtists, setPendingArtists] = useState(0);
+  const [pendingArtistItems, setPendingArtistItems] = useState<
+    Array<Record<string, unknown>>
+  >([]);
   const [series, setSeries] = useState<
     Array<{ date?: string; label?: string; value?: number; count?: number }>
   >([]);
   const [metric, setMetric] = useState("signups");
-  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [reviewId, setReviewId] = useState<string | null>(null);
   const [reviewSeed, setReviewSeed] = useState<AdminMediaCard | null>(null);
   const [peek, setPeek] = useState<OverviewPeek | null>(null);
   const hasDataRef = useRef(false);
+  const toastedFailRef = useRef(false);
+  const { toast } = useFeedback();
 
   const load = useCallback(async (isManual = false) => {
     if (!isManual && isApiRateLimited()) return;
     try {
       if (isManual) setRefreshing(true);
-      const [a, f, p, m, q] = await Promise.all([
+      const [a, f, p, m, q, artists] = await Promise.all([
         fetchAnalytics().catch(() => null),
         fetchFeed(25).catch(() => null),
         fetchPresence({ status: "online", limit: 20 }).catch(() => null),
@@ -126,6 +133,7 @@ export default function Overview() {
         fetchModerationQueue({ status: "under_review", limit: 5 }).catch(
           () => null
         ),
+        listArtists({ status: "pending", page: 1, limit: 50 }).catch(() => null),
       ]);
       if (a) setAnalytics(a);
       if (f) setFeed(f.items);
@@ -137,27 +145,35 @@ export default function Overview() {
       }
       if (m) setRecent(m.media);
       if (q) setQueuePreview(q.items);
-      const gotAny = Boolean(a || f || p || m || q);
+      if (artists) {
+        setPendingArtistItems(artists.items);
+        setPendingArtists(Math.max(artists.total ?? 0, artists.items.length));
+      }
+      const gotAny = Boolean(a || f || p || m || q || artists);
       if (gotAny) {
         hasDataRef.current = true;
-        setError(null);
-      } else if (isManual || !hasDataRef.current) {
-        setError(
-          isApiRateLimited()
-            ? "The API asked us to slow down. Wait a minute, then hit Refresh."
-            : "Failed to load dashboard data."
-        );
+        toastedFailRef.current = false;
+        return;
       }
+      if (!isManual && hasDataRef.current) return;
+      if (!isManual && toastedFailRef.current) return;
+      toast.error(
+        "Dashboard error",
+        isApiRateLimited()
+          ? "The API asked us to slow down. Wait a minute, then hit Refresh."
+          : "Failed to load dashboard data."
+      );
+      toastedFailRef.current = true;
     } catch (err) {
       if (hasDataRef.current && !isManual) return;
-      setError(
-        err instanceof ApiError ? err.message : "Failed to load dashboard data."
-      );
+      if (!isManual && toastedFailRef.current) return;
+      toastApiError(toast, "Dashboard error", err, "Failed to load dashboard data.");
+      toastedFailRef.current = true;
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [toast]);
 
   useEffect(() => {
     void load();
@@ -238,8 +254,6 @@ export default function Overview() {
       tone: "danger",
       icon: FlagIcon,
       desc: "Requires admin review",
-      trend: "+12%",
-      trendUp: false,
     },
     {
       peek: "comments",
@@ -248,18 +262,17 @@ export default function Overview() {
       tone: "warning",
       icon: ChatBubbleLeftEllipsisIcon,
       desc: "Community flags",
-      trend: "+4%",
-      trendUp: false,
     },
     {
       peek: "review",
       label: "Under Review",
-      value: analytics?.moderation?.pending ?? 0,
+      value: Math.max(
+        analytics?.moderation?.pending ?? 0,
+        queuePreview.length
+      ),
       tone: "brand",
       icon: ShieldCheckIcon,
       desc: "In moderation queue",
-      trend: "-8%",
-      trendUp: true,
     },
     {
       peek: "banned",
@@ -272,12 +285,14 @@ export default function Overview() {
     {
       peek: "artists",
       label: "Unverified Artists",
-      value: analytics?.verification?.unverifiedArtists ?? 0,
+      value: Math.max(
+        analytics?.verification?.pendingCreatorApplications ?? 0,
+        analytics?.verification?.unverifiedArtists ?? 0,
+        pendingArtists
+      ),
       tone: "success",
       icon: UserGroupIcon,
-      desc: "Verification requests",
-      trend: "+18%",
-      trendUp: true,
+      desc: "Pending creator applications",
     },
     {
       peek: "sessions",
@@ -316,38 +331,50 @@ export default function Overview() {
         }
       />
 
-      <ErrorToaster error={error} title="Dashboard error" />
-
       {(() => {
         const missingOnboard =
           analytics?.verification?.activeArtistsMissingOnboardEmail ?? 0;
-        const pendingApps =
-          analytics?.verification?.pendingCreatorApplications ?? 0;
+        const pendingApps = Math.max(
+          analytics?.verification?.pendingCreatorApplications ?? 0,
+          analytics?.verification?.unverifiedArtists ?? 0,
+          pendingArtists
+        );
         const reminders = Array.isArray(analytics?.reminders)
           ? analytics.reminders
           : [];
-        if (missingOnboard <= 0 && reminders.length === 0) return null;
+        if (missingOnboard <= 0 && pendingApps <= 0 && reminders.length === 0)
+          return null;
         return (
           <div className="mb-5 rounded-2xl border border-amber-400/40 bg-amber-400/10 px-4 py-3.5 sm:px-5">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-sm font-extrabold text-amber-800 dark:text-amber-200">
-                  Artists still need a welcome email
+                  {pendingApps > 0 && missingOnboard <= 0
+                    ? "Creator applications waiting"
+                    : "Artists still need a welcome email"}
                 </p>
                 <p className="mt-0.5 text-xs text-amber-700/80 dark:text-amber-300/80">
-                  {missingOnboard > 0
-                    ? `${missingOnboard} approved artist${missingOnboard === 1 ? "" : "s"} haven’t gotten the Studio invite yet.`
-                    : "A few creator reminders need a look."}
                   {pendingApps > 0
-                    ? ` · ${pendingApps} application${pendingApps === 1 ? "" : "s"} waiting for review.`
+                    ? `${pendingApps} application${pendingApps === 1 ? "" : "s"} waiting for review.`
+                    : missingOnboard > 0
+                      ? `${missingOnboard} approved artist${missingOnboard === 1 ? "" : "s"} haven’t gotten the Studio invite yet.`
+                      : "A few creator reminders need a look."}
+                  {pendingApps > 0 && missingOnboard > 0
+                    ? ` · ${missingOnboard} approved artist${missingOnboard === 1 ? "" : "s"} still need a welcome email.`
                     : ""}
                 </p>
               </div>
               <Link
-                to="/admin/email/artist-onboard"
+                to={
+                  pendingApps > 0 && missingOnboard <= 0
+                    ? "/admin/artists"
+                    : "/admin/email/artist-onboard"
+                }
                 className="inline-flex shrink-0 items-center justify-center rounded-xl bg-amber-500 px-4 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-amber-600"
               >
-                Send welcome emails
+                {pendingApps > 0 && missingOnboard <= 0
+                  ? "Review applications"
+                  : "Send welcome emails"}
               </Link>
             </div>
           </div>
@@ -398,7 +425,7 @@ export default function Overview() {
           </div>
 
           {series.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-44 rounded-xl border border-dashed border-jevah-border/60 bg-jevah-surface/40">
+            <div className="flex h-44 flex-col items-center justify-center rounded-xl border border-dashed border-jevah-border bg-jevah-card">
               <p className="text-xs font-semibold text-jevah-text-muted">No telemetry data recorded for this timeframe.</p>
             </div>
           ) : (
@@ -518,7 +545,7 @@ export default function Overview() {
               return (
                 <li
                   key={ev.id || String(i)}
-                  className="group flex items-start gap-3 rounded-xl border border-jevah-border/50 bg-jevah-surface/60 p-3.5 transition hover:border-jevah-accent/30 hover:bg-jevah-surface"
+                  className="group flex items-start gap-3 rounded-xl border border-jevah-border bg-jevah-card p-3.5 transition hover:border-jevah-accent hover:bg-jevah-elevated"
                 >
                   <div className="mt-0.5">
                     <Badge tone={style.tone} size="sm">
@@ -656,6 +683,7 @@ export default function Overview() {
         peek={peek}
         onlineUsers={onlineUsers}
         queuePreview={queuePreview}
+        pendingArtists={pendingArtistItems}
         onClose={() => setPeek(null)}
         onOpenReview={(item) => {
           setPeek(null);

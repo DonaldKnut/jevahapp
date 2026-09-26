@@ -26,3 +26,14 @@ export const TRACK_GENRE_LABELS: Record<TrackGenre, string> = {
 export function genreLabel(g: string) {
   return TRACK_GENRE_LABELS[g as TrackGenre] || g.replace(/_/g, " ");
 }
+
+/** Apply / profile tag: known slugs stay as-is; typed labels become snake_case. */
+export function normalizeGenreTag(raw: string): string | null {
+  const slug = raw
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+  if (slug.length < 2 || slug.length > 40) return null;
+  return slug;
+}

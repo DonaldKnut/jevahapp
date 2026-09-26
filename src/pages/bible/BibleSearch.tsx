@@ -11,9 +11,9 @@ import {
 } from "@heroicons/react/24/outline";
 import { useBible } from "./BibleContext";
 import { useDocumentMeta } from "../../hooks/useDocumentMeta";
-import { searchBible } from "../../services/bible";
+import { fetchPopularVerses, searchBible } from "../../services/bible";
 import { HighlightQuery } from "../../lib/bible/highlight";
-import { readerHref, verseRef } from "../../lib/bible/paths";
+import { formatVerseCopy, readerHref, verseRef } from "../../lib/bible/paths";
 import type { BibleVerse } from "../../types/bible";
 import { ApiError } from "../../lib/api";
 
@@ -30,7 +30,14 @@ const TOPICS = [
 ];
 
 export default function BibleSearch() {
-  const { translationId, books, catalogReady, catalogFailed } = useBible();
+  const {
+    translationId,
+    currentTranslation,
+    corpusVersion,
+    books,
+    catalogReady,
+    catalogFailed,
+  } = useBible();
   const [params, setParams] = useSearchParams();
   const q = params.get("q") || "";
   const bookFilter = params.get("book") || "";
@@ -41,12 +48,14 @@ export default function BibleSearch() {
   const [error, setError] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const t = catalogFailed ? null : translationId;
+  const transAbbr = currentTranslation?.abbreviation || "WEB";
+  const transName = currentTranslation?.name || "World English Bible";
 
   useDocumentMeta({
-    title: q ? `“${q}” — Scripture Search | Jevah Holy Bible` : "Search Scripture — Jevah Holy Bible",
+    title: q ? `“${q}” (${transAbbr}) · Jevah` : `Search Scripture (${transAbbr}) · Jevah`,
     description: q
-      ? `Search results for “${q}” in the Holy Bible.`
-      : "Search the World English Bible by keywords, verses, books, or testaments.",
+      ? `Search results for “${q}” in the ${transName}.`
+      : `Search the ${transName} by keyword or reference.`,
     canonicalPath: q
       ? `/bible/search?q=${encodeURIComponent(q)}${t ? `&translation=${encodeURIComponent(t)}` : ""}`
       : t
@@ -56,19 +65,37 @@ export default function BibleSearch() {
 
   useEffect(() => {
     setInput(q);
-    if (!q.trim() || !catalogReady) {
-      if (!q.trim()) setHits([]);
-      return;
-    }
+  }, [q]);
+
+  useEffect(() => {
+    const handle = window.setTimeout(() => {
+      const term = input.trim();
+      if (term === (params.get("q") || "").trim()) return;
+      patchParams((next) => {
+        if (term) next.set("q", term);
+        else next.delete("q");
+      });
+    }, 250);
+    return () => window.clearTimeout(handle);
+    // patchParams closes over params; debounce only on typed input
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [input]);
+
+  useEffect(() => {
+    if (!catalogReady) return;
     let alive = true;
     setBusy(true);
     setError(null);
-    void searchBible({
-      q: q.trim(),
-      translation: t,
-      book: bookFilter || undefined,
-      testament: testament || undefined,
-    })
+    const run = q.trim()
+      ? searchBible({
+          q: q.trim(),
+          translation: t,
+          book: bookFilter || undefined,
+          testament: testament || undefined,
+          corpusVersion,
+        })
+      : fetchPopularVerses(t, 10, corpusVersion);
+    void run
       .then((list) => {
         if (alive) setHits(list);
       })
@@ -83,7 +110,7 @@ export default function BibleSearch() {
     return () => {
       alive = false;
     };
-  }, [q, bookFilter, testament, t, catalogReady]);
+  }, [q, bookFilter, testament, t, catalogReady, corpusVersion]);
 
   function patchParams(mutate: (next: URLSearchParams) => void) {
     const next = new URLSearchParams(params);
@@ -110,7 +137,7 @@ export default function BibleSearch() {
 
   async function copyVerseHit(id: string, text: string, ref: string) {
     try {
-      await navigator.clipboard.writeText(`"${text}" — ${ref}`);
+      await navigator.clipboard.writeText(formatVerseCopy(ref, transAbbr, text));
       setCopiedId(id);
       setTimeout(() => setCopiedId(null), 2000);
     } catch {
@@ -241,13 +268,24 @@ export default function BibleSearch() {
       )}
 
       {/* Search Result Counter */}
-      {!busy && q && !error && (
+      {!busy && !error && (
         <div className="mt-8 flex items-center justify-between border-b border-[#c4a574]/30 pb-3">
-          <p className="font-sans text-sm font-bold uppercase tracking-wider text-[#9a7b3c] dark:text-[#e2c286]">
-            {hits.length} Passage{hits.length === 1 ? "" : "s"} Found for “{q}”
+          <p className="font-sans text-sm font-bold uppercase tracking-wider text-[#9a7b3c] dark:text-[#8fd4c8]">
+            {q
+              ? `${hits.length} passage${hits.length === 1 ? "" : "s"} for “${q}”`
+              : "Beloved verses in this translation"}
           </p>
-          <span className="text-xs text-[#8a7d68]">World English Bible</span>
+          <span className="rounded-full bg-[#256E63]/10 px-2 py-0.5 text-[10px] font-extrabold tracking-wide text-[#256E63] dark:text-[#8fd4c8]">
+            {transAbbr}
+          </span>
         </div>
+      )}
+
+      {!busy && q && !error && hits.length === 0 && (
+        <p className="mt-10 text-center text-sm leading-relaxed text-[#6b6256] dark:text-[#c8d5d2]">
+          Nothing in {transAbbr} for that search. Some translations are simply
+          quieter than others.
+        </p>
       )}
 
       {/* Results List */}
@@ -264,8 +302,11 @@ export default function BibleSearch() {
             >
               <div className="group rounded-2xl border border-[#c4a574]/30 bg-white/60 p-5 backdrop-blur-md transition-all duration-300 hover:border-[#256E63] hover:shadow-md dark:bg-white/5">
                 <div className="flex items-center justify-between">
-                  <span className="font-sans text-sm font-bold uppercase tracking-widest text-[#9a7b3c] dark:text-[#e2c286]">
-                    {refString}
+                  <span className="font-sans text-sm font-bold uppercase tracking-widest text-[#9a7b3c] dark:text-[#8fd4c8]">
+                    {refString}{" "}
+                    <span className="rounded-full bg-[#256E63]/10 px-1.5 py-0.5 text-[10px] tracking-wide text-[#256E63] dark:text-[#8fd4c8]">
+                      {transAbbr}
+                    </span>
                   </span>
                   <div className="flex items-center gap-2">
                     <button

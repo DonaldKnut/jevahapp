@@ -23,6 +23,11 @@ import {
   UserGroupIcon,
 } from "@heroicons/react/24/outline";
 import EmailComposeTabs from "./components/EmailComposeTabs";
+import CreatorWelcomeEmailPreview from "../../components/admin/CreatorWelcomeEmailPreview";
+import {
+  CREATOR_WELCOME_SUBJECT,
+  CREATOR_WELCOME_TEMPLATE_ID,
+} from "../../lib/creatorWelcomeEmail";
 
 const SEGMENTS: {
   value: ArtistOnboardSegment;
@@ -170,8 +175,9 @@ export default function ComposeArtistOnboardPage() {
         artistIds: segment === "artistIds" ? ids : undefined,
         userIds: segment === "userIds" ? ids : undefined,
         emails: segment === "emails" ? emails : undefined,
-        subject: subject.trim() || undefined,
+        subject: subject.trim() || CREATOR_WELCOME_SUBJECT,
         message: message.trim() || undefined,
+        templateId: CREATOR_WELCOME_TEMPLATE_ID,
         dryRun: testOnly,
         limit: 100,
       });
@@ -228,7 +234,7 @@ export default function ComposeArtistOnboardPage() {
           <form onSubmit={(e) => void onSubmit(e)} className="space-y-6">
             {error && <Alert tone="error">{error}</Alert>}
 
-            <div className="rounded-2xl border border-jevah-accent/25 bg-jevah-accent/5 px-4 py-3.5 text-sm text-jevah-text">
+            <div className="rounded-2xl border border-jevah-border bg-jevah-card px-4 py-3.5 text-sm text-jevah-text">
               <p className="font-semibold text-jevah-accent">What this is</p>
               <p className="mt-1 text-xs leading-relaxed text-jevah-text-muted">
                 A welcome email for creators you approve. It is{" "}
@@ -256,7 +262,7 @@ export default function ComposeArtistOnboardPage() {
                       className={`flex cursor-pointer gap-3 rounded-2xl border px-4 py-3 transition ${
                         on
                           ? "border-jevah-accent bg-jevah-accent/10"
-                          : "border-jevah-border bg-jevah-card/40 hover:border-jevah-accent/40"
+                          : "border-jevah-border bg-jevah-card hover:border-jevah-accent"
                       }`}
                     >
                       <input
@@ -320,27 +326,36 @@ export default function ComposeArtistOnboardPage() {
               </h2>
               <Field
                 label="Subject line"
-                helperText="Leave blank to use: You're invited to create on Jevah"
+                helperText="Leave blank to use: Welcome to Jevah, {{firstName}}"
               >
                 <input
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
                   className={inputClass}
-                  placeholder="You're invited to create on Jevah"
+                  placeholder={CREATOR_WELCOME_SUBJECT}
                 />
               </Field>
               <Field
-                label="Short personal note"
-                helperText="Optional. Shows inside the welcome email."
+                label="Optional note in the email"
+                helperText="Shown as a short personal line inside the welcome. Leave blank to send the template as-is."
               >
                 <textarea
                   rows={4}
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   className={inputClass}
-                  placeholder="Congrats — you're live. Open Studio and upload your first track."
+                  placeholder="Studio is unlocked — upload your first track when you’re ready."
                 />
               </Field>
+              <div className="space-y-1.5">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-jevah-text-muted">
+                  Example preview · first name is filled per person
+                </p>
+                <CreatorWelcomeEmailPreview
+                  firstName="Jizzy"
+                  optionalNote={message}
+                />
+              </div>
             </section>
 
             <section className="space-y-3">

@@ -81,7 +81,7 @@ export function Panel({
   return (
     <div
       className={cn(
-        "rounded-2xl border border-jevah-border/80 bg-jevah-surface/90 shadow-[0_4px_20px_var(--jevah-shadow)] backdrop-blur-xl transition-all duration-300",
+        "rounded-2xl border border-jevah-border bg-jevah-surface shadow-[0_4px_20px_var(--jevah-shadow)] transition-all duration-300",
         hover && "hover:-translate-y-0.5 hover:border-jevah-accent/40 hover:shadow-[0_12px_32px_var(--jevah-shadow)]",
         padding && "p-4 sm:p-6",
         className
@@ -219,7 +219,7 @@ export function EmptyState({
   icon?: ComponentType<{ className?: string }>;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-jevah-border bg-jevah-surface/50 px-6 py-12 text-center backdrop-blur-sm">
+    <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-jevah-border bg-jevah-card px-6 py-12 text-center">
       <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-jevah-accent/20 to-teal-500/10 text-jevah-accent ring-1 ring-jevah-accent/20 shadow-inner">
         {Icon ? <Icon className="h-7 w-7" /> : <SparklesIcon className="h-7 w-7" />}
       </div>
@@ -236,7 +236,7 @@ export function Skeleton({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "animate-pulse rounded-xl bg-jevah-card/70",
+        "animate-pulse rounded-xl bg-jevah-card",
         className
       )}
     />
@@ -270,7 +270,7 @@ export function Alert({
   return (
     <div
       className={cn(
-        "flex flex-wrap items-center justify-between gap-2 rounded-xl border px-4 py-3 text-sm shadow-sm backdrop-blur-md",
+        "flex flex-wrap items-center justify-between gap-2 rounded-xl border px-4 py-3 text-sm shadow-sm",
         tones[tone]
       )}
     >
@@ -290,7 +290,7 @@ export function Alert({
 
 const kpiToneConfig = {
   brand: {
-    card: "from-jevah-accent/15 via-jevah-surface/95 to-jevah-surface/90 border-jevah-accent/30 shadow-[0_8px_32px_rgba(37,110,99,0.12)]",
+    card: "bg-jevah-surface border-jevah-accent shadow-[0_8px_32px_rgba(37,110,99,0.12)]",
     icon: "bg-gradient-to-br from-jevah-accent/20 to-teal-500/10 text-jevah-accent ring-jevah-accent/25 shadow-sm",
     value: "text-jevah-accent",
     arrow: "text-jevah-accent/70",
@@ -299,7 +299,7 @@ const kpiToneConfig = {
     glow: "bg-jevah-accent/15",
   },
   danger: {
-    card: "from-rose-500/15 via-jevah-surface/95 to-jevah-surface/90 border-rose-500/30 shadow-[0_8px_32px_rgba(244,63,94,0.08)]",
+    card: "bg-jevah-surface border-rose-500/40 shadow-[0_8px_32px_rgba(244,63,94,0.08)]",
     icon: "bg-gradient-to-br from-rose-500/20 to-pink-500/10 text-rose-500 ring-rose-500/25 shadow-sm",
     value: "text-rose-600 dark:text-rose-400",
     arrow: "text-rose-400/70",
@@ -308,7 +308,7 @@ const kpiToneConfig = {
     glow: "bg-rose-500/15",
   },
   warning: {
-    card: "from-amber-500/15 via-jevah-surface/95 to-jevah-surface/90 border-amber-500/30 shadow-[0_8px_32px_rgba(245,158,11,0.08)]",
+    card: "bg-jevah-surface border-amber-500/40 shadow-[0_8px_32px_rgba(245,158,11,0.08)]",
     icon: "bg-gradient-to-br from-amber-500/20 to-orange-500/10 text-amber-500 ring-amber-500/25 shadow-sm",
     value: "text-amber-600 dark:text-amber-400",
     arrow: "text-amber-400/70",
@@ -317,7 +317,7 @@ const kpiToneConfig = {
     glow: "bg-amber-500/15",
   },
   neutral: {
-    card: "from-jevah-card/80 via-jevah-surface/95 to-jevah-surface/90 border-jevah-border/80 shadow-[0_8px_32px_var(--jevah-shadow)]",
+    card: "bg-jevah-surface border-jevah-border shadow-[0_8px_32px_var(--jevah-shadow)]",
     icon: "bg-jevah-card text-jevah-text-muted ring-jevah-border/40 shadow-sm",
     value: "text-jevah-text",
     arrow: "text-jevah-text-muted",
@@ -326,7 +326,7 @@ const kpiToneConfig = {
     glow: "bg-jevah-border/30",
   },
   success: {
-    card: "from-emerald-500/15 via-jevah-surface/95 to-jevah-surface/90 border-emerald-500/30 shadow-[0_8px_32px_rgba(16,185,129,0.08)]",
+    card: "bg-jevah-surface border-emerald-500/40 shadow-[0_8px_32px_rgba(16,185,129,0.08)]",
     icon: "bg-gradient-to-br from-emerald-500/20 to-teal-500/10 text-emerald-500 ring-emerald-500/25 shadow-sm",
     value: "text-emerald-600 dark:text-emerald-400",
     arrow: "text-emerald-400/70",
@@ -359,7 +359,7 @@ export function KpiLink({
 }) {
   const t = kpiToneConfig[tone];
   const className = cn(
-    "group relative min-h-[148px] overflow-hidden rounded-3xl border bg-gradient-to-br p-6 text-left backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 active:scale-[0.98]",
+    "group relative min-h-[148px] overflow-hidden rounded-3xl border p-6 text-left transition-all duration-300 hover:-translate-y-1 active:scale-[0.98]",
     t.card,
     t.hover
   );

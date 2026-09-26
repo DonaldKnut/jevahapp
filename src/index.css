@@ -456,6 +456,82 @@
   animation: pageEnter 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* Size admin grids from the desk, not the viewport — so an open
+   sidebar drops a column instead of crushing the cards. */
+.admin-desk {
+  container-type: inline-size;
+  container-name: admin-desk;
+}
+
+.moderation-queue {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+}
+
+@container admin-desk (min-width: 34rem) {
+  .moderation-queue {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.1rem;
+  }
+}
+
+@container admin-desk (min-width: 50rem) {
+  .moderation-queue {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.15rem;
+  }
+}
+
+@container admin-desk (min-width: 74rem) {
+  .moderation-queue {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1.15rem;
+  }
+}
+
+.moderation-card {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 1rem;
+  border: 1px solid color-mix(in srgb, var(--jevah-border) 85%, transparent);
+  background: var(--jevah-surface);
+  box-shadow: 0 8px 22px var(--jevah-shadow);
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.moderation-card:hover {
+  border-color: color-mix(in srgb, #f59e0b 42%, var(--jevah-border));
+  box-shadow: 0 12px 28px var(--jevah-shadow);
+}
+
+.moderation-card.is-active {
+  border-color: color-mix(in srgb, #f59e0b 70%, var(--jevah-border));
+  box-shadow: 0 0 0 1px color-mix(in srgb, #f59e0b 28%, transparent),
+    0 12px 28px var(--jevah-shadow);
+}
+
+.review-studio {
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.38);
+}
+
+.review-kbd {
+  display: inline-flex;
+  min-width: 1.5rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.375rem;
+  background: var(--jevah-card-bg);
+  padding: 0.15rem 0.4rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--jevah-text);
+  box-shadow: inset 0 -1px 0 color-mix(in srgb, var(--jevah-border) 80%, transparent);
+}
+
 .admin-list-item {
   animation: listItemIn 380ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
@@ -542,9 +618,12 @@
   animation: glowPulse 3s infinite ease-in-out;
 }
 
-/* Nav items scrollbar */
+/* Nav items — keep the active link in view; don’t chain-scroll the page */
 .admin-nav {
   scrollbar-width: none;
+  overscroll-behavior: contain;
+  scroll-padding-block: 0.5rem;
+  scroll-behavior: smooth;
 }
 .admin-nav::-webkit-scrollbar {
   display: none;
@@ -697,6 +776,62 @@
 .email-rich-editor:focus {
   outline: none;
 }
+
+/* Creator apply bio (TipTap, dark form) */
+.apply-bio-editor {
+  font-family: var(--jevah-font);
+}
+.apply-bio-editor p {
+  margin: 0 0 0.65em;
+}
+.apply-bio-editor p:last-child {
+  margin-bottom: 0;
+}
+.apply-bio-editor h2 {
+  margin: 0.35em 0 0.45em;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #fff;
+}
+.apply-bio-editor ul {
+  list-style: disc;
+  padding-left: 1.25rem;
+  margin: 0.4em 0 0.75em;
+}
+.apply-bio-editor ol {
+  list-style: decimal;
+  padding-left: 1.25rem;
+  margin: 0.4em 0 0.75em;
+}
+.apply-bio-editor li {
+  margin: 0.2em 0;
+}
+.apply-bio-editor blockquote {
+  margin: 0.5em 0;
+  padding: 0.35em 0 0.35em 0.9em;
+  border-left: 3px solid rgb(251 191 36 / 0.7);
+  color: rgb(203 213 225);
+}
+.apply-bio-editor a {
+  color: rgb(252 211 77);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.apply-bio-editor strong {
+  font-weight: 700;
+  color: #fff;
+}
+.apply-bio-editor p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+  color: rgb(100 116 139);
+}
+.apply-bio-editor:focus {
+  outline: none;
+}
 .media-preview:fullscreen,
 .media-preview:-webkit-full-screen {
   width: 100vw;
@@ -724,28 +859,19 @@
 .media-seek {
   appearance: none;
   background: transparent;
+  opacity: 0;
 }
-.media-seek::-webkit-slider-runnable-track {
-  height: 100%;
-  background: transparent;
-}
+.media-seek::-webkit-slider-runnable-track,
 .media-seek::-webkit-slider-thumb {
   appearance: none;
-  width: 28px;
-  height: 28px;
-  border-radius: 9999px;
   background: transparent;
-}
-.media-seek::-moz-range-track {
-  height: 100%;
-  background: transparent;
-}
-.media-seek::-moz-range-thumb {
-  width: 28px;
-  height: 28px;
   border: none;
-  border-radius: 9999px;
+}
+.media-seek::-moz-range-track,
+.media-seek::-moz-range-thumb,
+.media-seek::-moz-range-progress {
   background: transparent;
+  border: none;
 }
 
 /* Spotify-like vinyl disc */
@@ -905,10 +1031,10 @@
 }
 .dark .bible-shell {
   background:
-    radial-gradient(ellipse 80% 45% at 50% -10%, rgba(212, 163, 89, 0.16), transparent 60%),
+    radial-gradient(ellipse 80% 45% at 50% -10%, rgba(37, 110, 99, 0.22), transparent 60%),
     radial-gradient(circle at 85% 30%, rgba(37, 110, 99, 0.12), transparent 45%),
-    linear-gradient(180deg, #120e0a 0%, #1a1510 50%, #14100c 100%);
-  color: #f5eedf;
+    linear-gradient(180deg, #0a1f1c 0%, #0d2622 50%, #081816 100%);
+  color: #e4ebe9;
 }
 .bible-gold-rule {
   height: 3px;
@@ -941,12 +1067,30 @@
     0 1px 0 rgba(255, 255, 255, 0.05) inset;
 }
 .bible-column {
-  max-width: 38rem;
+  --bible-zoom: 1;
+  max-width: 42rem;
   margin-inline: auto;
   font-family: var(--jevah-font);
   font-weight: 400;
   letter-spacing: 0.012em;
   word-spacing: 0.02em;
+  font-size: calc(1.2rem * var(--bible-zoom));
+  line-height: calc(1.8 + (var(--bible-zoom) - 1) * 0.18);
+  transition: font-size 0.22s ease, line-height 0.22s ease, opacity 0.2s ease;
+}
+@media (min-width: 640px) {
+  .bible-column {
+    font-size: calc(1.28rem * var(--bible-zoom));
+  }
+}
+.bible-column.is-swapping {
+  opacity: 0.55;
+}
+.bible-verse-skel {
+  height: 1.15em;
+  margin-bottom: 0.85em;
+  border-radius: 0.4rem;
+  background: color-mix(in srgb, #c4a574 18%, transparent);
 }
 .bible-column[data-size="sm"] { font-size: 1.0625rem; line-height: 1.8; }
 .bible-column[data-size="md"] { font-size: 1.1875rem; line-height: 1.85; }
@@ -1000,15 +1144,15 @@
 
 .bible-sup {
   font-family: inherit;
-  font-size: 0.65rem;
-  font-weight: 800;
-  color: #256e63;
-  margin-right: 0.4rem;
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: #8a7d68;
+  margin-right: 0.35rem;
   vertical-align: super;
   user-select: none;
 }
 .dark .bible-sup {
-  color: #52b7a8;
+  color: #8aa39e;
 }
 
 .bible-rail::-webkit-scrollbar {
@@ -1080,56 +1224,103 @@
   gap: 0.5rem;
   padding: 0.65rem 0.85rem calc(0.65rem + env(safe-area-inset-bottom));
   border-top: 1px solid rgba(196, 165, 116, 0.3);
-  background: rgba(251, 246, 236, 0.88);
+  background: rgba(251, 246, 236, 0.92);
   backdrop-filter: blur(20px) saturate(1.4);
   -webkit-backdrop-filter: blur(20px) saturate(1.4);
   box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.08);
   animation: bibleBarIn 0.35s ease both;
 }
 .dark .bible-thumbbar {
-  background: rgba(26, 22, 16, 0.9);
+  background: rgba(10, 31, 28, 0.92);
   border-top-color: rgba(196, 165, 116, 0.2);
   box-shadow: 0 -10px 35px rgba(0, 0, 0, 0.4);
 }
 
-.bible-thumbbar-btn {
+.bible-thumbbar-hop {
   display: inline-flex;
+  min-width: 2.85rem;
   height: 2.85rem;
-  width: 2.85rem;
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  border-radius: 999px;
-  border: 1px solid rgba(196, 165, 116, 0.4);
-  background: rgba(255, 255, 255, 0.8);
-  color: #1f2a24;
-  transition: all 0.2s ease;
-}
-.dark .bible-thumbbar-btn {
-  background: rgba(255, 255, 255, 0.08);
-  color: #f4ead6;
-  border-color: rgba(196, 165, 116, 0.3);
-}
-
-.bible-thumbbar-action {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.3rem;
-  height: 2.6rem;
+  gap: 0.35rem;
   padding: 0 0.85rem;
   border-radius: 999px;
-  background: linear-gradient(135deg, #256e63 0%, #1e5950 100%);
-  color: white;
-  font-size: 0.7rem;
-  font-weight: 800;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  box-shadow: 0 4px 12px rgba(37, 110, 99, 0.3);
+  border: 1px solid rgba(196, 165, 116, 0.4);
+  background: rgba(255, 255, 255, 0.85);
+  color: #1f2a24;
+  font-size: 0.75rem;
+  font-weight: 700;
   transition: all 0.2s ease;
 }
-.bible-thumbbar-action:active {
-  transform: scale(0.96);
+.bible-thumbbar-hop--next {
+  margin-left: auto;
+}
+.dark .bible-thumbbar-hop {
+  background: rgba(255, 255, 255, 0.08);
+  color: #e4ebe9;
+  border-color: rgba(196, 165, 116, 0.3);
+}
+.bible-thumbbar-now {
+  display: inline-flex;
+  min-width: 0;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  height: 2.85rem;
+  padding: 0 1rem;
+  border-radius: 999px;
+  background: #256e63;
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(37, 110, 99, 0.28);
+}
+.bible-chapternav-end {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(196, 165, 116, 0.35);
+  background: rgba(255, 255, 255, 0.65);
+  padding: 0.85rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #1f2a24;
+}
+.dark .bible-chapternav-end {
+  background: rgba(255, 255, 255, 0.05);
+  color: #e4ebe9;
+}
+.bible-edge-btn {
+  display: none;
+}
+@media (min-width: 1024px) {
+  .bible-edge-btn {
+    position: fixed;
+    top: 50%;
+    z-index: 35;
+    display: inline-flex;
+    height: 3rem;
+    width: 3rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    border: 1px solid rgba(196, 165, 116, 0.4);
+    background: rgba(255, 255, 255, 0.9);
+    color: #1f2a24;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    transform: translateY(-50%);
+  }
+  .bible-edge-btn--prev { left: 1rem; }
+  .bible-edge-btn--next { right: 1rem; }
+  .dark .bible-edge-btn {
+    background: rgba(10, 31, 28, 0.9);
+    color: #e4ebe9;
+  }
 }
 
 .bible-chip-btn {
@@ -1221,6 +1412,382 @@
   padding-bottom: 0.5rem;
   -webkit-overflow-scrolling: touch;
 }
+
+.bible-trans-root {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+}
+.bible-trans-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(10, 18, 16, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.bible-trans-panel {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-height: min(92dvh, 40rem);
+  min-height: 0;
+  padding: 0.4rem 0.9rem calc(0.85rem + env(safe-area-inset-bottom, 0px));
+  border-radius: 1.25rem 1.25rem 0 0;
+  background: #fbf6ec;
+  border: 1px solid rgba(196, 165, 116, 0.35);
+  border-bottom: 0;
+  box-shadow: 0 -18px 50px rgba(0, 0, 0, 0.22);
+  animation: bibleSheetUp 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.dark .bible-trans-panel {
+  background: #0f2421;
+  border-color: rgba(196, 165, 116, 0.22);
+  color: #e4ebe9;
+}
+.bible-trans-handle {
+  display: block;
+  width: 2.25rem;
+  height: 0.28rem;
+  margin: 0.2rem auto 0.55rem;
+  border-radius: 99px;
+  background: rgba(154, 123, 60, 0.45);
+  flex-shrink: 0;
+}
+.dark .bible-trans-handle {
+  background: rgba(232, 235, 233, 0.28);
+}
+.bible-trans-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-shrink: 0;
+  padding-bottom: 0.65rem;
+}
+.bible-trans-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  color: #1f2a24;
+}
+.dark .bible-trans-title {
+  color: #e4ebe9;
+}
+.bible-trans-close {
+  display: inline-flex;
+  height: 2.5rem;
+  width: 2.5rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid rgba(196, 165, 116, 0.4);
+  background: rgba(255, 255, 255, 0.75);
+  color: #1f2a24;
+}
+.dark .bible-trans-close {
+  background: rgba(255, 255, 255, 0.08);
+  color: #e4ebe9;
+}
+.bible-trans-search {
+  position: relative;
+  display: block;
+  flex-shrink: 0;
+  margin-bottom: 0.65rem;
+}
+.bible-trans-search-icon {
+  pointer-events: none;
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  width: 1rem;
+  height: 1rem;
+  transform: translateY(-50%);
+  color: #9a7b3c;
+}
+.dark .bible-trans-search-icon {
+  color: #8fd4c8;
+}
+.bible-trans-search input {
+  width: 100%;
+  height: 2.65rem;
+  padding: 0 0.85rem 0 2.35rem;
+  border-radius: 0.85rem;
+  border: 1px solid rgba(196, 165, 116, 0.4);
+  background: rgba(255, 255, 255, 0.8);
+  color: #1f2a24;
+  font-size: 16px;
+  outline: none;
+}
+.dark .bible-trans-search input {
+  background: rgba(255, 255, 255, 0.06);
+  color: #e4ebe9;
+  border-color: rgba(196, 165, 116, 0.22);
+}
+.bible-trans-search input::placeholder {
+  color: #8a7d68;
+}
+.bible-trans-search input:focus {
+  border-color: #256e63;
+  box-shadow: 0 0 0 3px rgba(37, 110, 99, 0.18);
+}
+.bible-trans-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  margin: 0;
+  padding: 0 0 0.15rem;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.bible-trans-empty {
+  padding: 1.25rem 0.5rem;
+  text-align: center;
+  font-size: 0.85rem;
+  color: #6b6256;
+}
+.dark .bible-trans-empty {
+  color: #c8d5d2;
+}
+.bible-trans-row {
+  display: flex;
+  width: 100%;
+  min-height: 3.15rem;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.65rem 0.7rem;
+  border-radius: 0.9rem;
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.62);
+  text-align: left;
+  color: #1f2a24;
+}
+.dark .bible-trans-row {
+  background: rgba(255, 255, 255, 0.05);
+  color: #e4ebe9;
+}
+.bible-trans-row:hover {
+  border-color: rgba(37, 110, 99, 0.35);
+  background: #fff;
+}
+.dark .bible-trans-row:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+.bible-trans-row.is-active {
+  background: #256e63;
+  border-color: #256e63;
+  color: #fff;
+}
+.bible-trans-abbr {
+  display: inline-flex;
+  min-width: 3rem;
+  height: 1.9rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  background: rgba(37, 110, 99, 0.12);
+  color: #256e63;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+.dark .bible-trans-abbr {
+  background: rgba(255, 255, 255, 0.08);
+  color: #8fd4c8;
+}
+.bible-trans-row.is-active .bible-trans-abbr {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
+.bible-trans-copy {
+  min-width: 0;
+  flex: 1;
+}
+.bible-trans-row-name {
+  display: block;
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+.bible-trans-row-voice {
+  display: block;
+  margin-top: 0.12rem;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  color: #6b6256;
+}
+.dark .bible-trans-row-voice {
+  color: #c8d5d2;
+}
+.bible-trans-row.is-active .bible-trans-row-voice {
+  color: rgba(255, 255, 255, 0.82);
+}
+.bible-trans-check {
+  width: 1.15rem;
+  height: 1.15rem;
+  flex-shrink: 0;
+}
+.bible-trans-compare {
+  display: block;
+  flex-shrink: 0;
+  margin-top: 0.55rem;
+  padding: 0.75rem 0.5rem 0.15rem;
+  border-top: 1px solid rgba(196, 165, 116, 0.22);
+  text-align: center;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #256e63;
+}
+.dark .bible-trans-compare {
+  color: #8fd4c8;
+}
+@media (min-width: 768px) {
+  .bible-trans-root {
+    align-items: center;
+    padding: 1.5rem;
+  }
+  .bible-trans-panel {
+    width: min(32rem, calc(100vw - 3rem));
+    max-height: min(78dvh, 38rem);
+    border-radius: 1.15rem;
+    border-bottom: 1px solid rgba(196, 165, 116, 0.35);
+    padding: 1.1rem 1.15rem 1rem;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.28);
+    animation: fadeIn 0.18s ease;
+  }
+  .bible-trans-handle {
+    display: none;
+  }
+  .bible-trans-title {
+    font-size: 1.2rem;
+  }
+  .bible-trans-search input {
+    font-size: 0.9rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bible-trans-backdrop,
+  .bible-trans-panel {
+    animation: none !important;
+  }
+}
+
+.bible-jump {
+  width: 100%;
+  border-radius: 1rem;
+  border: 1px solid rgba(196, 165, 116, 0.35);
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+.dark .bible-jump {
+  background: #0d2622;
+  border-color: rgba(196, 165, 116, 0.22);
+}
+.bible-jump-form {
+  position: relative;
+}
+.bible-jump-icon {
+  pointer-events: none;
+  position: absolute;
+  left: 0.85rem;
+  top: 50%;
+  width: 1rem;
+  height: 1rem;
+  transform: translateY(-50%);
+  color: #9a7b3c;
+}
+.bible-jump-form input {
+  width: 100%;
+  height: 2.75rem;
+  padding: 0 2.4rem 0 2.4rem;
+  border: 0;
+  background: transparent;
+  color: #1f2a24;
+  font-size: 16px;
+  outline: none;
+}
+.dark .bible-jump-form input {
+  color: #e4ebe9;
+}
+.bible-jump-clear {
+  position: absolute;
+  right: 0.55rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  padding: 0.25rem;
+  color: #8a7d68;
+}
+.bible-jump-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: min(50dvh, 18rem);
+  overflow-y: auto;
+  border-top: 1px solid rgba(196, 165, 116, 0.2);
+}
+.bible-jump-list button {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  width: 100%;
+  padding: 0.7rem 0.9rem;
+  text-align: left;
+  color: #1f2a24;
+}
+.dark .bible-jump-list button {
+  color: #e4ebe9;
+}
+.bible-jump-list button:hover {
+  background: rgba(37, 110, 99, 0.08);
+}
+.bible-jump-kicker {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #9a7b3c;
+}
+.dark .bible-jump-kicker {
+  color: #8fd4c8;
+}
+.bible-jump-snippet {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: #6b6256;
+}
+.dark .bible-jump-snippet {
+  color: #c8d5d2;
+}
+.bible-jump-status {
+  padding: 0.75rem 0.9rem;
+  font-size: 0.78rem;
+  color: #6b6256;
+}
+@media (min-width: 640px) {
+  .bible-jump-form input {
+    font-size: 0.9rem;
+  }
+}
+
 @keyframes bibleShimmer {
   0%, 100% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
@@ -1269,6 +1836,10 @@
     animation: none !important;
     opacity: 1 !important;
   }
+  .bible-column.is-swapping {
+    opacity: 1;
+    transition: none;
+  }
 }
 
 /* Creator Studio & Showcase Custom Animations */
@@ -1295,6 +1866,74 @@
 }
 .animate-icon-glow {
   animation: iconGlowPulse 2.5s infinite;
+}
+
+@keyframes studioRise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes studioFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes studioLive {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.45);
+  }
+  70% {
+    opacity: 0.85;
+    transform: scale(1.15);
+    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+  }
+}
+
+@keyframes studioBar {
+  0%,
+  100% {
+    transform: scaleY(0.35);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+.studio-rise {
+  animation: studioRise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.studio-float {
+  animation: studioFloat 6s ease-in-out infinite;
+}
+.studio-live {
+  animation: studioLive 1.8s ease-out infinite;
+}
+.studio-bar {
+  transform-origin: bottom;
+  animation: studioBar 1.1s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .studio-rise,
+  .studio-float,
+  .studio-live,
+  .studio-bar {
+    animation: none !important;
+  }
 }
 
 .tour-fab {
@@ -1417,5 +2056,131 @@
     opacity: 0;
   }
 }
+
+@keyframes quoteFloat {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  30% {
+    transform: translateY(-7px) rotate(0.45deg);
+  }
+  60% {
+    transform: translateY(-2px) rotate(-0.35deg);
+  }
+}
+
+@keyframes quoteMarkDance {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-8deg);
+  }
+  50% {
+    transform: translateY(-5px) rotate(10deg);
+  }
+}
+
+@keyframes quoteStarTwinkle {
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+
+@keyframes quoteOrbDrift {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(36px, -22px) scale(1.08);
+  }
+}
+
+@keyframes quoteHeartBeat {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.18);
+  }
+  60% {
+    transform: scale(0.96);
+  }
+}
+
+.quote-float {
+  animation: quoteFloat 5.2s ease-in-out infinite;
+}
+.quote-mark-dance {
+  animation: quoteMarkDance 2.8s ease-in-out infinite;
+}
+.quote-star {
+  animation: quoteStarTwinkle 1.8s ease-in-out infinite;
+}
+.quote-orb {
+  animation: quoteOrbDrift 14s ease-in-out infinite;
+}
+.quote-heart {
+  animation: quoteHeartBeat 1.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .quote-float,
+  .quote-mark-dance,
+  .quote-star,
+  .quote-orb,
+  .quote-heart {
+    animation: none !important;
+  }
+}
+
+/* Homepage daily word — quiet, not a sales popup */
+.word-insight-veil {
+  border: 0;
+  background: color-mix(in srgb, var(--jevah-bg) 42%, transparent);
+  opacity: 0;
+  transition: opacity 280ms ease;
+}
+.word-insight-veil.is-in {
+  opacity: 1;
+}
+
+.word-insight-card {
+  border-radius: 1.25rem;
+  border: 1px solid var(--jevah-border);
+  background: var(--jevah-elevated);
+  padding: 1.5rem 1.5rem 1.35rem;
+  box-shadow: 0 24px 60px var(--jevah-shadow);
+  opacity: 0;
+  transform: translateY(18px) scale(0.97);
+  transition: opacity 320ms ease, transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.word-insight-card.is-in {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.word-insight-rule {
+  height: 2px;
+  width: 2.75rem;
+  margin-bottom: 1rem;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--jevah-accent), #d4a017, var(--jevah-accent-soft));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .word-insight-veil,
+  .word-insight-card {
+    transition: none;
+  }
+}
+
 
 

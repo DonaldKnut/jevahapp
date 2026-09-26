@@ -1,5 +1,5 @@
 import { NavLink, Outlet, Link, useNavigate, useLocation } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ChartBarIcon,
   UsersIcon,
@@ -180,11 +180,31 @@ export default function AdminShell() {
     onNavigate?: () => void;
     compact?: boolean;
   }) {
+    const navRef = useRef<HTMLElement>(null);
+
+    useEffect(() => {
+      const nav = navRef.current;
+      if (!nav) return;
+      const active = nav.querySelector<HTMLElement>("[aria-current='page']");
+      if (!active) return;
+      const frame = window.requestAnimationFrame(() => {
+        const navBox = nav.getBoundingClientRect();
+        const itemBox = active.getBoundingClientRect();
+        const hidden =
+          itemBox.top < navBox.top + 6 || itemBox.bottom > navBox.bottom - 6;
+        if (hidden) {
+          active.scrollIntoView({ block: "nearest", behavior: "smooth" });
+        }
+      });
+      return () => window.cancelAnimationFrame(frame);
+    }, [location.pathname, compact]);
+
     return (
       <nav
+        ref={navRef}
         className={cn(
-          "admin-nav min-h-0 flex-1 overflow-y-auto py-4",
-          compact ? "space-y-2.5 px-2.5" : "space-y-1.5 px-3"
+          "admin-nav min-h-0 flex-1 overflow-y-auto py-3",
+          compact ? "space-y-2 px-2.5" : "space-y-1 px-3"
         )}
       >
         {navItems.map(({ to, end, label, icon: Icon }) => (
@@ -198,8 +218,8 @@ export default function AdminShell() {
                 cn(
                   "group flex items-center rounded-2xl text-sm font-semibold transition-all duration-200",
                   compact
-                    ? "w-full justify-center px-1.5 py-3"
-                    : "gap-3 px-3.5 py-3",
+                    ? "w-full justify-center px-1.5 py-2.5"
+                    : "gap-3 px-3.5 py-2.5",
                   isActive
                     ? "admin-nav-active bg-jevah-accent text-white shadow-md shadow-jevah-accent/30"
                     : "text-white/70 hover:bg-white/10 hover:text-white"
@@ -405,10 +425,10 @@ export default function AdminShell() {
         </aside>
 
         {/* ── Main Content Area ── */}
-        <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex min-w-0 flex-1 flex-col lg:pl-2">
           {/* Desktop command bar — theme, home, sign out */}
-          <header className="sticky top-0 z-30 hidden border-b border-jevah-border bg-jevah-surface/85 px-5 py-2.5 backdrop-blur-xl lg:flex">
-            <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-3">
+          <header className="sticky top-0 z-30 hidden border-b border-jevah-border bg-jevah-surface px-5 py-2.5 lg:flex">
+            <div className="mx-auto flex w-full max-w-[1680px] items-center justify-between gap-3">
               <Link
                 to="/"
                 className="inline-flex items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs font-bold text-jevah-text-muted transition hover:bg-jevah-card hover:text-jevah-text"
@@ -431,7 +451,7 @@ export default function AdminShell() {
           </header>
 
           {/* Mobile Top Bar */}
-          <header className="sticky top-0 z-30 border-b border-jevah-border bg-jevah-surface/90 px-3 py-2.5 pt-[max(0.625rem,env(safe-area-inset-top))] backdrop-blur-md sm:px-4 lg:hidden">
+          <header className="sticky top-0 z-30 border-b border-jevah-border bg-jevah-surface px-3 py-2.5 pt-[max(0.625rem,env(safe-area-inset-top))] sm:px-4 lg:hidden">
             <div className="flex items-center justify-between gap-2">
               <button
                 type="button"
@@ -522,7 +542,7 @@ export default function AdminShell() {
           )}
 
           {/* Page Content */}
-          <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-5 pb-[max(5.5rem,env(safe-area-inset-bottom))] sm:px-6 sm:py-7 lg:px-8 lg:py-8">
+          <main className="admin-desk mx-auto w-full max-w-[1680px] flex-1 px-4 py-5 pb-[max(5.5rem,env(safe-area-inset-bottom))] sm:px-6 sm:py-7 lg:px-8 lg:py-8 xl:px-10">
             <div className="admin-page-enter" key={location.pathname}>
               <Outlet />
             </div>

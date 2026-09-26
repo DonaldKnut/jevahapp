@@ -12,6 +12,7 @@ import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Sermons from "./pages/Sermons";
 import Music from "./pages/Music";
+import Artists from "./pages/Artists";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import Events from "./pages/Events";
@@ -23,6 +24,8 @@ import Login from "./pages/Login";
 import ScrollToTop from "./components/ScrollToTop";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
+import { PlayerProvider } from "./context/PlayerContext";
+import NowPlayingBar from "./components/music/NowPlayingBar";
 import { FeedbackProvider } from "./components/admin/Feedback";
 import AdminShell from "./pages/admin/AdminShell";
 import Overview from "./pages/admin/Overview";
@@ -42,6 +45,10 @@ import CreatorBenefits from "./pages/creators/CreatorBenefits";
 import CreatorApply from "./pages/creators/CreatorApply";
 import CreatorStudio from "./pages/creators/CreatorStudio";
 import CreatorUpload from "./pages/creators/CreatorUpload";
+import CreatorSignup from "./pages/creators/CreatorSignup";
+import CreatorVerify from "./pages/creators/CreatorVerify";
+import CreatorForgot from "./pages/creators/CreatorForgot";
+import CreatorReset from "./pages/creators/CreatorReset";
 import ArtistPublicProfile from "./pages/creators/ArtistPublicProfile";
 import AnnouncementsPage from "./pages/admin/Announcements";
 import CategoriesPage from "./pages/admin/Categories";
@@ -54,6 +61,7 @@ import BibleLayout from "./pages/bible/BibleLayout";
 import BibleHome from "./pages/bible/BibleHome";
 import BibleReader from "./pages/bible/BibleReader";
 import BibleSearch from "./pages/bible/BibleSearch";
+import BibleCompare from "./pages/bible/BibleCompare";
 import BiblePlans from "./pages/bible/BiblePlans";
 import { useDocumentMeta } from "./hooks/useDocumentMeta";
 import {
@@ -61,6 +69,9 @@ import {
   ORGANIZATION_JSON_LD,
   WEBSITE_JSON_LD,
 } from "./lib/seo";
+
+import JevahPreFooterCTA from "./sections/JevahPreFooterCTA";
+import WordInsight from "./components/WordInsight";
 
 function HomePage() {
   useDocumentMeta({
@@ -79,6 +90,7 @@ function HomePage() {
       <Testimonials />
       <FAQ />
       <ContactUs />
+      <WordInsight />
     </>
   );
 }
@@ -88,6 +100,7 @@ function MarketingLayout() {
     <div className="min-h-screen bg-jevah-bg font-sans text-jevah-text antialiased transition-colors duration-300">
       <Nav />
       <Outlet />
+      <JevahPreFooterCTA />
       <Footer />
     </div>
   );
@@ -98,11 +111,17 @@ function App() {
     <div className="font-sans antialiased">
       <AuthProvider>
         <FeedbackProvider>
+          <PlayerProvider>
           <Router>
           <ScrollToTop />
+          <NowPlayingBar />
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/creators/login" element={<Login />} />
+            <Route path="/creators/signup" element={<CreatorSignup />} />
+            <Route path="/creators/verify" element={<CreatorVerify />} />
+            <Route path="/creators/forgot" element={<CreatorForgot />} />
+            <Route path="/creators/reset" element={<CreatorReset />} />
             <Route path="/email/unsubscribe" element={<EmailUnsubscribe />} />
 
             <Route
@@ -169,6 +188,7 @@ function App() {
               <Route path="/contact" element={<Contact />} />
               <Route path="/sermons" element={<Sermons />} />
               <Route path="/music" element={<Music />} />
+              <Route path="/artists" element={<Artists />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/events" element={<Events />} />
@@ -179,6 +199,7 @@ function App() {
               <Route path="/bible" element={<BibleLayout />}>
                 <Route index element={<BibleHome />} />
                 <Route path="search" element={<BibleSearch />} />
+                <Route path="compare/:book/:chapter" element={<BibleCompare />} />
                 <Route path="plans" element={<BiblePlans />} />
                 <Route path="plans/:planId" element={<BiblePlans />} />
                 <Route path=":book/:chapter" element={<BibleReader />} />
@@ -191,6 +212,7 @@ function App() {
             </Route>
           </Routes>
         </Router>
+          </PlayerProvider>
       </FeedbackProvider>
     </AuthProvider>
     </div>

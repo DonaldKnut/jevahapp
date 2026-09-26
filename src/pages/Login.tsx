@@ -8,10 +8,16 @@ import {
 } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useFeedback } from "../components/admin/Feedback";
-import { ErrorToaster } from "../components/ErrorToaster";
+import {
+  needsEmailVerification,
+  rememberVerifyEmail,
+  safeCreatorFrom,
+} from "../lib/authNext";
 import AuthPortalTabs from "../components/AuthPortalTabs";
 import ThemeToggle from "../components/ThemeToggle";
 import JevahLogo from "../components/JevahLogo";
+import CreatorAccountTooltip from "../components/CreatorAccountTooltip";
+import AuthPromoSlider from "../components/AuthPromoSlider";
 import {
   ShieldCheckIcon,
   SparklesIcon,
@@ -54,7 +60,7 @@ function resolveVariant(
 }
 
 export default function Login() {
-  const { login, isAdmin, isAuthenticated, loading } = useAuth();
+  const { login, isAdmin, isAuthenticated, loading, user } = useAuth();
   const { toast } = useFeedback();
   const navigate = useNavigate();
   const location = useLocation();
@@ -75,7 +81,6 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -109,7 +114,10 @@ export default function Login() {
 
   if (!loading && isAuthenticated) {
     if (isCreator || from.startsWith("/creators")) {
-      return <Navigate to={defaultRedirect} replace />;
+      if (needsEmailVerification(user)) {
+        return <Navigate to="/creators/verify" replace />;
+      }
+      return <Navigate to={safeCreatorFrom(from, user)} replace />;
     }
     if (isAdmin) {
       return <Navigate to={defaultRedirect} replace />;
@@ -118,15 +126,33 @@ export default function Login() {
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
-    setError(null);
     setSubmitting(true);
     const result = await login(email.trim(), password, rememberMe, {
       requireAdmin: !isCreator,
     });
     setSubmitting(false);
     if (!result.ok) {
-      setError(result.error);
+      if (isCreator && result.code === "EMAIL_NOT_VERIFIED") {
+        const nextEmail = result.email || email.trim();
+        rememberVerifyEmail(nextEmail);
+        navigate(
+          `/creators/verify?email=${encodeURIComponent(nextEmail)}`,
+          { replace: true }
+        );
+        return;
+      }
+      if (result.code === "BANNED") {
+        toast.error(
+          "Account suspended",
+          "Contact support@jevahapp.com if you think that is a mistake."
+        );
+        return;
+      }
       toast.error("Sign in failed", result.error);
+      return;
+    }
+    if (isCreator) {
+      navigate(safeCreatorFrom(from, result.user), { replace: true });
       return;
     }
     navigate(defaultRedirect, { replace: true });
@@ -138,20 +164,12 @@ export default function Login() {
     : "bg-jevah-accent shadow-jevah-accent/20 hover:bg-jevah-accent-hover";
 
   return (
-    <>
-      <ErrorToaster error={error} title="Sign in failed" />
-      <div
-        className="auth-root flex h-dvh overflow-hidden font-sans antialiased transition-colors duration-300"
-        style={{ backgroundColor: "var(--jevah-auth-root)" }}
-      >
+    <div
+      className="auth-root flex h-dvh overflow-hidden font-sans antialiased transition-colors duration-300"
+      style={{ backgroundColor: "var(--jevah-auth-root)" }}
+    >
         <aside className="auth-promo relative hidden h-full w-[45%] shrink-0 flex-col justify-between overflow-hidden lg:flex xl:w-[42%]">
-          <img
-            src="https://res.cloudinary.com/dajpllbyu/image/upload/v1785390152/Two_Africans_listening_to_phones_202607300639_woclw7.jpg"
-            alt={isCreator ? "Jevah Creator Studio" : "Jevah Admin"}
-            className={`absolute inset-0 h-full w-full object-cover object-center ${
-              isCreator ? "scale-105 brightness-90 saturate-110" : ""
-            }`}
-          />
+          <AuthPromoSlider />
           <div
             className={`pointer-events-none absolute inset-0 backdrop-brightness-75 ${
               isCreator
@@ -289,6 +307,8 @@ export default function Login() {
                   : "Enter your administrator credentials to access platform controls and management dashboards."}
               </p>
 
+              {isCreator && <CreatorAccountTooltip variant="banner" />}
+
               <form onSubmit={onSubmit} className="mt-7 space-y-5">
                 <div>
                   <label className="mb-1.5 block text-sm font-bold text-jevah-text">
@@ -339,17 +359,27 @@ export default function Login() {
                   </div>
                 </div>
 
-                <label className="flex cursor-pointer items-center gap-2.5">
-                  <input
-                    type="checkbox"
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                    className="h-4 w-4 rounded border-jevah-border text-jevah-accent focus:ring-jevah-accent/20"
-                  />
-                  <span className="text-sm font-medium text-jevah-text-muted">
-                    {isCreator ? "Keep me signed in" : "Remember admin session"}
-                  </span>
-                </label>
+                <div className="flex items-center justify-between gap-3">
+                  <label className="flex cursor-pointer items-center gap-2.5">
+                    <input
+                      type="checkbox"
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
+                      className="h-4 w-4 rounded border-jevah-border text-jevah-accent focus:ring-jevah-accent/20"
+                    />
+                    <span className="text-sm font-medium text-jevah-text-muted">
+                      {isCreator ? "Keep me signed in" : "Remember admin session"}
+                    </span>
+                  </label>
+                  {isCreator ? (
+                    <Link
+                      to="/creators/forgot"
+                      className="text-xs font-bold text-[var(--jevah-auth-creator-accent)] underline-offset-2 hover:underline"
+                    >
+                      Forgot password?
+                    </Link>
+                  ) : null}
+                </div>
 
                 <button
                   type="submit"
@@ -390,19 +420,23 @@ export default function Login() {
                 </p>
               </form>
 
-              <p className="mt-8 text-center text-xs text-jevah-text-muted">
+              <div className="mt-8 text-center text-xs text-jevah-text-muted">
                 {isCreator ? (
-                  <>
-                    New here?{" "}
-                    <Link
-                      to="/creators"
-                      className="font-bold text-[var(--jevah-auth-creator-accent)] underline-offset-2 hover:underline"
-                    >
-                      Learn about Creator Studio
-                    </Link>
-                  </>
+                  <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1.5">
+                    <span>
+                      New here?{" "}
+                      <Link
+                        to="/creators/signup"
+                        className="font-bold text-[var(--jevah-auth-creator-accent)] underline-offset-2 hover:underline"
+                      >
+                        Create an account
+                      </Link>
+                    </span>
+                    <span className="text-jevah-text-muted/40">·</span>
+                    <CreatorAccountTooltip triggerText="Existing listener account?" />
+                  </div>
                 ) : (
-                  <>
+                  <p>
                     Return to{" "}
                     <Link
                       to="/"
@@ -410,13 +444,12 @@ export default function Login() {
                     >
                       main website
                     </Link>
-                  </>
+                  </p>
                 )}
-              </p>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </>
+    </div>
   );
 }

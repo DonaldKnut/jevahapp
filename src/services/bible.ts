@@ -1,7 +1,12 @@
 import { apiRequest, ApiError } from "../lib/api";
 import { listFromUnknown, unwrapData } from "../lib/api/unwrap";
 import { bibleCached } from "../lib/bible/cache";
-import { translationQuery, withTranslation } from "../lib/bible/paths";
+import { scriptureQuery, withTranslation } from "../lib/bible/paths";
+import {
+  isReadableTranslation,
+  normalizeTranslation,
+  sortTranslations,
+} from "../lib/bible/translations";
 import type {
   BibleBook,
   BibleCatalog,
@@ -50,12 +55,19 @@ export async function fetchBibleCatalog(): Promise<BibleCatalog | null> {
         translations?: BibleTranslation[];
       };
       if (!data || typeof data !== "object" || Array.isArray(data)) return null;
-      const translations = Array.isArray(data.translations)
-        ? data.translations
-        : [];
+      const translations = (
+        Array.isArray(data.translations) ? data.translations : []
+      )
+        .map(normalizeTranslation)
+        .filter(isReadableTranslation);
+      const defaultId = (
+        data.defaultId ||
+        translations.find((t) => t.isDefault)?.id ||
+        "web"
+      ).toLowerCase();
       return {
-        defaultId: (data.defaultId || translations.find((t) => t.isDefault)?.id || "web").toLowerCase(),
-        translations,
+        defaultId,
+        translations: sortTranslations(translations, defaultId),
       };
     });
   } catch (err) {
@@ -69,37 +81,30 @@ export async function fetchBibleBooks(): Promise<BibleBook[]> {
     const res = await publicGet("/bible/books");
     const data = unwrapData(res);
     return listFromUnknown<BibleBook>(data, ["books", "items", "data"]).map(
-      (b) => ({
-        ...b,
-        name: b.name,
-        testament: b.testament || "old",
-        chapters: Number(b.chapters || 0),
-        order: Number(b.order || 0),
-      })
+      (b) => {
+        const chapters = Number(b.chapterCount || b.chapters || 0);
+        return {
+          ...b,
+          name: b.name,
+          testament: b.testament || "old",
+          chapters,
+          chapterCount: chapters,
+          order: Number(b.order || 0),
+        };
+      }
     );
   });
-}
-
-export async function fetchChapterMeta(
-  book: string,
-  chapter: number,
-  translation: string | null
-) {
-  const q = translationQuery(translation);
-  const res = await publicGet(
-    `/bible/books/${encodeURIComponent(book)}/chapters/${chapter}${q}`
-  );
-  return unwrapData(res) as { actualVerseCount?: number; chapter?: number };
 }
 
 export async function fetchChapterVerses(
   book: string,
   chapter: number,
-  translation: string | null
+  translation: string | null,
+  corpusVersion?: string | null
 ): Promise<BibleVerse[]> {
-  const key = `verses:${translation || "default"}:${book}:${chapter}`;
+  const key = `verses:${translation || "default"}:${corpusVersion || ""}:${book}:${chapter}`;
   return bibleCached(key, async () => {
-    const q = translationQuery(translation);
+    const q = scriptureQuery(translation, corpusVersion);
     const res = await publicGet(
       `/bible/books/${encodeURIComponent(book)}/chapters/${chapter}/verses${q}`
     );
@@ -110,12 +115,13 @@ export async function fetchChapterVerses(
 }
 
 export async function fetchDailyVerse(
-  translation: string | null
+  translation: string | null,
+  corpusVersion?: string | null
 ): Promise<BibleVerse | null> {
   const day = new Date().toISOString().slice(0, 10);
   const key = `daily:${translation || "default"}:${day}`;
   return bibleCached(key, async () => {
-    const q = translationQuery(translation);
+    const q = scriptureQuery(translation, corpusVersion);
     const res = await publicGet(`/bible/verses/daily${q}`);
     const data = unwrapData(res) as BibleDailyVerse;
     return asVerse(data);
@@ -124,13 +130,15 @@ export async function fetchDailyVerse(
 
 export async function fetchPopularVerses(
   translation: string | null,
-  limit = 8
+  limit = 8,
+  corpusVersion?: string | null
 ): Promise<BibleVerse[]> {
   const key = `popular:${translation || "default"}:${limit}`;
   return bibleCached(key, async () => {
     const path = withTranslation(
       `/bible/verses/popular?limit=${limit}`,
-      translation
+      translation,
+      corpusVersion
     );
     const res = await publicGet(path);
     const data = unwrapData(res);
@@ -158,10 +166,12 @@ export async function searchBible(opts: {
   testament?: string;
   limit?: number;
   offset?: number;
+  corpusVersion?: string | null;
 }): Promise<BibleVerse[]> {
   const q = new URLSearchParams();
   q.set("q", opts.q);
-  if (opts.translation) q.set("translation", opts.translation);
+  if (opts.translation) q.set("translation", opts.translation.toLowerCase());
+  if (opts.corpusVersion) q.set("v", opts.corpusVersion);
   if (opts.book) q.set("book", opts.book);
   if (opts.testament) q.set("testament", opts.testament);
   q.set("limit", String(opts.limit ?? 50));
@@ -198,7 +208,10 @@ export async function fetchDailyFact(): Promise<string | null> {
       if (typeof data === "string") return data;
       return data.text || data.body || data.fact || data.title || null;
     });
-  } catch {
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) {
+      return fetchRandomFact();
+    }
     return null;
   }
 }
@@ -215,9 +228,10 @@ export async function fetchRandomFact(): Promise<string | null> {
 }
 
 export async function fetchRandomVerse(
-  translation: string | null
+  translation: string | null,
+  corpusVersion?: string | null
 ): Promise<BibleVerse | null> {
-  const q = translationQuery(translation);
+  const q = scriptureQuery(translation, corpusVersion);
   const res = await publicGet(`/bible/verses/random${q}`);
   const data = unwrapData(res);
   return asVerse(data);
@@ -229,9 +243,10 @@ function encodeRangeRef(ref: string) {
 
 export async function fetchVerseRange(
   reference: string,
-  translation: string | null
+  translation: string | null,
+  corpusVersion?: string | null
 ): Promise<BibleVerse[]> {
-  const q = translationQuery(translation);
+  const q = scriptureQuery(translation, corpusVersion);
   const res = await publicGet(
     `/bible/verses/range/${encodeRangeRef(reference)}${q}`
   );

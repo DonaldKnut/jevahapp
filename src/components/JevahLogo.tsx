@@ -27,8 +27,8 @@ function JevahLogo({
 
   const plate = plated
     ? darkMark
-      ? "rounded-xl bg-white/10 px-2 py-1 ring-1 ring-white/15 backdrop-blur-md"
-      : "rounded-xl bg-white px-2 py-1 shadow-md ring-1 ring-black/5"
+      ? "rounded-2xl bg-white/10 px-3 py-1.5 ring-1 ring-white/20 backdrop-blur-md shadow-md"
+      : "rounded-2xl bg-white px-3 py-1.5 shadow-md ring-1 ring-black/10"
     : "";
 
   return (
@@ -38,7 +38,9 @@ function JevahLogo({
         alt="JEVAH Logo"
         width={width}
         height={height}
-        className="object-contain transition-opacity duration-300"
+        className={`object-contain transition-all duration-300 ${
+          darkMark ? "brightness-110 drop-shadow-[0_2px_8px_rgba(255,255,255,0.15)]" : ""
+        }`}
       />
     </div>
   );

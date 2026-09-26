@@ -13,22 +13,33 @@ export {
   formatTrackDuration,
   copyrightFreeToTrack,
 } from "./mediaParts/track";
-export { putPresignedFile, runPresignedTrackUpload } from "./mediaParts/upload";
+export {
+  putPresignedFile,
+  runPresignedTrackUpload,
+  uploadFailureMessage,
+} from "./mediaParts/upload";
 export { extractPutSlot, assertImageFile, IMAGE_ACCEPT } from "./mediaParts/imageIntent";
 export {
   formatAge,
   uploaderLabel,
+  isHttp,
+  isHls,
+  isSignedUrl,
+  resolveAdminPlayable,
   mediaPreviewUrl,
   mediaThumbUrl,
   isVideoMedia,
   isAudioMedia,
+  isProcessingPreview,
   signedRefreshDelayMs,
   signedExpiryLabel,
+  type AdminPlayable,
 } from "./mediaParts/preview";
 export {
   TRACK_GENRES,
   TRACK_GENRE_LABELS,
   genreLabel,
+  normalizeGenreTag,
   type TrackGenre,
 } from "./mediaParts/genres";
 export {

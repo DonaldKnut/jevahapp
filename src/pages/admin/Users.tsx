@@ -48,6 +48,8 @@ import {
   ExclamationTriangleIcon,
   ClockIcon,
   CheckBadgeIcon,
+  CalendarDaysIcon,
+  IdentificationIcon,
 } from "@heroicons/react/24/outline";
 
 const ROLES = [
@@ -81,12 +83,22 @@ function mergeInspect(
 }
 
 function formatWhen(iso?: string | null) {
-  if (!iso) return "—";
+  if (!iso) return "Not recorded";
   try {
-    return new Date(iso).toLocaleString();
+    return new Date(iso).toLocaleString(undefined, {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    });
   } catch {
     return iso;
   }
+}
+
+function roleLabel(role: string) {
+  return role.replace(/_/g, " ");
 }
 
 export default function UsersPage() {
@@ -393,7 +405,7 @@ export default function UsersPage() {
           <p className="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">Online Now</p>
           <p className="mt-1 text-2xl font-black text-emerald-600 dark:text-emerald-400">{onlineCount}</p>
         </div>
-        <div className="rounded-2xl border border-jevah-accent/20 bg-jevah-accent/10 p-4 shadow-sm">
+        <div className="rounded-2xl border border-jevah-accent bg-jevah-card p-4 shadow-sm">
           <p className="text-xs font-bold uppercase tracking-wider text-jevah-accent">Selected</p>
           <p className="mt-1 text-2xl font-black text-jevah-accent">{selected.size}</p>
         </div>
@@ -487,7 +499,7 @@ export default function UsersPage() {
         <Panel padding={false} className="overflow-hidden">
           <div className="overflow-x-auto custom-scrollbar">
             <table className="w-full text-left text-sm">
-              <thead className="border-b border-jevah-border/60 bg-jevah-card/60 text-xs font-bold uppercase tracking-wider text-jevah-text-muted">
+              <thead className="border-b border-jevah-border bg-jevah-card text-xs font-bold uppercase tracking-wider text-jevah-text-muted">
                 <tr>
                   <th className="px-4 py-3.5 w-10">
                     <input
@@ -511,7 +523,7 @@ export default function UsersPage() {
                   const name = [u.firstName, u.lastName].filter(Boolean).join(" ") || "Unnamed User";
                   const initials = name.split(" ").slice(0, 2).map((w) => w[0]?.toUpperCase() ?? "").join("");
                   return (
-                    <tr key={u.id} className="transition hover:bg-jevah-card/50">
+                    <tr key={u.id} className="transition hover:bg-jevah-card">
                       <td className="px-4 py-4">
                         <input
                           type="checkbox"
@@ -670,6 +682,7 @@ export default function UsersPage() {
         onClose={() => setBanTarget(null)}
         title="Restrict account"
         subtitle={banTarget?.email}
+        tone="brand"
         busy={busy}
         icon={<NoSymbolIcon className="h-5 w-5" />}
         footer={
@@ -723,6 +736,7 @@ export default function UsersPage() {
         onClose={() => setWarnTarget(null)}
         title="Send a warning"
         subtitle={warnTarget?.email}
+        tone="brand"
         busy={busy}
         icon={<ExclamationTriangleIcon className="h-5 w-5" />}
         footer={
@@ -758,7 +772,7 @@ export default function UsersPage() {
               className={inputClass}
             />
           </Field>
-          <label className="flex items-center gap-2.5 text-xs font-semibold text-jevah-text">
+          <label className="flex items-center gap-2.5 text-xs font-semibold text-[#a3c7c2]">
             <input
               type="checkbox"
               checked={warnEmail}
@@ -775,6 +789,7 @@ export default function UsersPage() {
         onClose={() => setEmailOpen(false)}
         title="Email selected users"
         subtitle={`${selected.size} recipient${selected.size === 1 ? "" : "s"}`}
+        tone="brand"
         busy={busy}
         size="lg"
         icon={<EnvelopeIcon className="h-5 w-5" />}
@@ -831,8 +846,8 @@ export default function UsersPage() {
         title="User profile"
         subtitle="Account, role, and verification"
         busy={busy || detailLoading}
-        size="xl"
-        icon={<ShieldCheckIcon className="h-5 w-5" />}
+        size="lg"
+        icon={<IdentificationIcon className="h-5 w-5" />}
         footer={
           inspectTarget ? (
             <div className="flex flex-wrap gap-2.5">
@@ -906,20 +921,21 @@ function InspectBody({
     .join("");
 
   return (
-    <div className="space-y-5">
-      <div className="relative overflow-hidden rounded-3xl border border-jevah-accent/20 bg-gradient-to-br from-jevah-accent/25 via-jevah-surface to-emerald-500/10 p-5">
-        <div
-          className="pointer-events-none absolute inset-0 opacity-50"
-          aria-hidden
-          style={{
-            background:
-              "radial-gradient(ellipse 70% 50% at 10% 0%, rgba(37,110,99,0.35), transparent 60%)",
-          }}
-        />
-        <div className="relative z-10 flex items-center gap-4">
-          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-jevah-accent to-[#4ECDC4] text-lg font-black text-white shadow-lg ring-2 ring-white/30">
-            {initials || "U"}
-          </div>
+    <div className="space-y-4">
+      <div className="relative overflow-hidden rounded-2xl border border-jevah-border bg-jevah-elevated p-5">
+        <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-jevah-accent via-[#4ECDC4] to-emerald-500" />
+        <div className="flex items-center gap-4 pt-1">
+          {user.avatar ? (
+            <img
+              src={user.avatar}
+              alt=""
+              className="h-16 w-16 shrink-0 rounded-2xl object-cover ring-2 ring-jevah-accent/30"
+            />
+          ) : (
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-jevah-accent to-[#4ECDC4] text-lg font-black text-white shadow-md">
+              {initials || "U"}
+            </div>
+          )}
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <h4 className="truncate text-lg font-black tracking-tight text-jevah-text">
@@ -936,7 +952,7 @@ function InspectBody({
                 </Badge>
               )}
             </div>
-            <p className="mt-0.5 truncate text-sm text-jevah-text-muted">
+            <p className="mt-1 truncate text-sm font-medium text-jevah-text">
               {user.email}
             </p>
             {user.username ? (
@@ -944,77 +960,102 @@ function InspectBody({
                 @{user.username}
               </p>
             ) : null}
-            <div className="mt-2 flex flex-wrap items-center gap-2">
+            <div className="mt-2.5 flex flex-wrap items-center gap-2">
               <Badge tone="brand" size="sm">
-                {String(user.role).replace("_", " ")}
+                {roleLabel(String(user.role))}
               </Badge>
-              <OnlineDot online={user.isOnline} />
+              <span
+                className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] font-bold ring-1 ${
+                  user.isOnline
+                    ? "bg-emerald-500/15 text-emerald-700 ring-emerald-500/30 dark:text-emerald-300"
+                    : "bg-jevah-card text-jevah-text ring-jevah-border"
+                }`}
+              >
+                <span
+                  className={`h-1.5 w-1.5 rounded-full ${
+                    user.isOnline ? "bg-emerald-500" : "bg-jevah-text-muted"
+                  }`}
+                />
+                {user.isOnline ? "Online" : "Offline"}
+              </span>
             </div>
           </div>
         </div>
       </div>
 
       {loading ? (
-        <p className="text-center text-xs font-semibold text-jevah-text-muted">
+        <p className="text-center text-xs font-semibold text-jevah-accent">
           Loading latest profile…
         </p>
       ) : null}
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <div className="rounded-2xl border border-jevah-border bg-jevah-card/50 p-3.5">
-          <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-jevah-text-muted">
-            <ClockIcon className="h-3.5 w-3.5" /> Last seen
+        <div className="rounded-2xl border border-jevah-border bg-jevah-card p-4">
+          <p className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-jevah-accent">
+            <ClockIcon className="h-4 w-4" />
+            Last seen
           </p>
-          <p className="mt-1 text-sm font-bold text-jevah-text">
+          <p className="mt-2 text-sm font-bold text-jevah-text">
             {formatWhen(user.lastSeenAt || user.lastLoginAt)}
           </p>
         </div>
-        <div className="rounded-2xl border border-jevah-border bg-jevah-card/50 p-3.5">
-          <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-jevah-text-muted">
-            <CheckBadgeIcon className="h-3.5 w-3.5" /> Email
+        <div className="rounded-2xl border border-jevah-border bg-jevah-card p-4">
+          <p className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-jevah-accent">
+            <EnvelopeIcon className="h-4 w-4" />
+            Email
           </p>
-          <p className="mt-1 text-sm font-bold text-jevah-text">
-            {user.isEmailVerified ? "Verified" : "Not verified"}
+          <p className="mt-2 flex items-center gap-1.5 text-sm font-bold text-jevah-text">
+            {user.isEmailVerified ? (
+              <>
+                <CheckBadgeIcon className="h-4 w-4 text-jevah-accent" />
+                Verified
+              </>
+            ) : (
+              "Not verified"
+            )}
           </p>
         </div>
-        <div className="rounded-2xl border border-jevah-border bg-jevah-card/50 p-3.5 sm:col-span-2">
-          <p className="text-[10px] font-black uppercase tracking-wider text-jevah-text-muted">
+        <div className="rounded-2xl border border-jevah-border bg-jevah-card p-4 sm:col-span-2">
+          <p className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-jevah-accent">
+            <CalendarDaysIcon className="h-4 w-4" />
             Joined
           </p>
-          <p className="mt-1 text-sm font-bold text-jevah-text">
+          <p className="mt-2 text-sm font-bold text-jevah-text">
             {formatWhen(user.createdAt)}
           </p>
         </div>
-        <div className="rounded-2xl border border-jevah-border bg-jevah-card/50 p-3.5 sm:col-span-2">
-          <p className="mb-2 text-[10px] font-black uppercase tracking-wider text-jevah-text-muted">
-            Verification
-          </p>
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => onToggleVerify("isVerifiedArtist")}
-              className={`rounded-full px-3 py-1.5 text-xs font-bold ring-1 transition ${
-                user.isVerifiedArtist
-                  ? "bg-emerald-500/15 text-emerald-700 ring-emerald-500/30 dark:text-emerald-300"
-                  : "bg-jevah-surface text-jevah-text-muted ring-jevah-border"
-              }`}
-            >
-              Artist: {user.isVerifiedArtist ? "Verified" : "No"}
-            </button>
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => onToggleVerify("isVerifiedCreator")}
-              className={`rounded-full px-3 py-1.5 text-xs font-bold ring-1 transition ${
-                user.isVerifiedCreator
-                  ? "bg-jevah-accent/15 text-jevah-accent ring-jevah-accent/30"
-                  : "bg-jevah-surface text-jevah-text-muted ring-jevah-border"
-              }`}
-            >
-              Creator: {user.isVerifiedCreator ? "Verified" : "No"}
-            </button>
-          </div>
+      </div>
+
+      <div className="rounded-2xl border border-jevah-border bg-jevah-card p-4">
+        <p className="mb-3 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-jevah-accent">
+          <ShieldCheckIcon className="h-4 w-4" />
+          Verification
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => onToggleVerify("isVerifiedArtist")}
+            className={`rounded-full px-3 py-1.5 text-xs font-bold ring-1 transition ${
+              user.isVerifiedArtist
+                ? "bg-jevah-accent/15 text-jevah-accent ring-jevah-accent/30"
+                : "bg-jevah-surface text-jevah-text ring-jevah-border"
+            }`}
+          >
+            Artist: {user.isVerifiedArtist ? "Verified" : "Not verified"}
+          </button>
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => onToggleVerify("isVerifiedCreator")}
+            className={`rounded-full px-3 py-1.5 text-xs font-bold ring-1 transition ${
+              user.isVerifiedCreator
+                ? "bg-jevah-accent/15 text-jevah-accent ring-jevah-accent/30"
+                : "bg-jevah-surface text-jevah-text ring-jevah-border"
+            }`}
+          >
+            Creator: {user.isVerifiedCreator ? "Verified" : "Not verified"}
+          </button>
         </div>
       </div>
 

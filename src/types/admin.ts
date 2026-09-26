@@ -9,6 +9,15 @@ export type UserRole =
   | "church_admin"
   | "artist";
 
+export type AuthNextStep =
+  | "verify_email"
+  | "apply"
+  | "wait_review"
+  | "studio"
+  | "home"
+  | "contact_support"
+  | string;
+
 export interface AdminUser {
   id: string;
   email: string;
@@ -30,6 +39,7 @@ export interface AdminUser {
   isVerifiedArtist?: boolean;
   isEmailVerified?: boolean;
   createdAt?: string;
+  nextStep?: AuthNextStep;
 }
 
 export interface LoginResponse {
@@ -40,6 +50,7 @@ export interface LoginResponse {
   expiresIn?: number;
   user: AdminUser;
   message?: string;
+  nextStep?: AuthNextStep;
 }
 
 export interface DashboardAnalytics {
@@ -119,6 +130,12 @@ export interface AdminMediaCard {
   likeCount: number;
   viewCount: number;
   adminModerationNotes: string | null;
+  assignee?: {
+    id: string;
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+  } | null;
   moderationResult: {
     isApproved: boolean;
     confidence: number | null;
@@ -227,6 +244,10 @@ export interface ApiErrorBody {
   message?: string;
   error?: string;
   success?: boolean;
+  code?: string;
+  fields?: Record<string, string>;
+  email?: string;
+  needsEmailVerification?: boolean;
 }
 
 export interface ApiSuccess<T> {

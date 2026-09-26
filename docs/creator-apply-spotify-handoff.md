@@ -56,15 +56,15 @@ Components:
 |-------|--------|----|
 | `creatorTypes` | ≥ 1 of `artist` \| `minister` \| `podcaster` | Chip / card toggles |
 | `displayName` | trim, 2–80 chars | Text input |
-| `genres` | ≥ 1 from allowed enum | Chip toggles |
+| `genres` | ≥ 1 slug (`gospel` or typed `fuji_gospel`) | Chips + type-to-add |
 
 ### Optional (empty → omitted)
 
 | Field | Rules | UI |
 |-------|--------|----|
-| `bio` | ≤ 500 chars | Textarea + counter |
+| `bio` | HTML, ≤ 500 **plain** chars | TipTap editor (bold, lists, heading, links) |
 | `instagram` / `youtube` / `spotify` | trim, ≤ 200 | Grouped “Social proof” |
-| `avatarUrl` | if set, must be `http(s)://…` | Text |
+| Profile photo | optional File (JPG/PNG/WebP, ≤ 5MB) | Image picker |
 | `applicationNote` | ≤ 1000 chars | Textarea |
 
 HTML `required` attributes are **not** the source of truth. Use `noValidate` + Zod so errors match Spotify-style inline messages.
@@ -90,7 +90,6 @@ Content-Type: application/json
     "youtube": "https://youtube.com/@grace",
     "spotify": "https://open.spotify.com/artist/…"
   },
-  "avatarUrl": "https://…",
   "applicationNote": "We lead youth worship…"
 }
 ```
@@ -121,8 +120,20 @@ On submit failure: highlight fields, focus messaging on the first error, keep th
 - [x] Sticky bottom bar with primary CTA (like Spotify’s always-visible Continue)  
 - [x] Pending banner if `capabilities.showPendingBanner`  
 - [x] Redirect to Studio when already approved (`!canApply && showCreatorHub`)  
-- [ ] Future: image upload instead of avatar URL (Spotify uses file picker)  
+- [x] Image picker for profile photo (not a URL field)  
 - [ ] Future: multi-step wizard (Name → Role → Genre → Socials) if form grows  
+
+### Backend note — apply photo (needed)
+
+Web now picks a file on `/creators/apply`. JSON apply stays the same. After a successful `POST /api/creators/apply`, the client immediately runs the existing Studio avatar flow:
+
+1. `POST /api/creators/me/avatar/upload-intent` `{ contentType, fileName, fileSizeBytes }`
+2. `PUT` the presigned URL
+3. `POST /api/creators/me/avatar/finalize`
+
+Please allow that path for **pending applicants**, not only approved / `status: active` artists. If `/creators/me/*` is gated on approval, the photo silently fails and we ask them to add it in Studio.
+
+Preferred later (optional): accept the file on apply itself (`multipart` or `POST /api/creators/apply/avatar/upload-intent` before the artist row exists) so the Artists queue can show the photo on first review. 
 
 ---
 

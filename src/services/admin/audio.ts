@@ -137,6 +137,18 @@ export async function patchAdminTrack(
   return apiRequest(`/admin/audio/tracks/${id}`, { method: "PATCH", body });
 }
 
+export async function reviewTrackModeration(
+  id: string,
+  body: { status: "approved" | "rejected" | "under_review"; reason?: string }
+) {
+  return unwrapData(
+    await apiRequest(`/admin/audio/tracks/${id}/moderation`, {
+      method: "PATCH",
+      body,
+    })
+  );
+}
+
 export async function deleteAdminTrack(id: string) {
   try {
     return await apiRequest(`/admin/audio/tracks/${id}`, { method: "DELETE" });

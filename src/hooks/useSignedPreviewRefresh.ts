@@ -1,12 +1,11 @@
 import { useCallback, useEffect, useRef } from "react";
 import type { AdminMediaCard } from "../types/admin";
-import { signedRefreshDelayMs } from "../lib/media";
+import { resolveAdminPlayable, signedRefreshDelayMs } from "../lib/media";
 import { refreshMediaPreview } from "../services/adminApi";
 
 /**
- * Keeps signed preview URLs fresh.
- * - Schedules a refresh before expiry
- * - Exposes `onPlaybackError` for player error handlers
+ * Consume-guide §4.3 — mint a fresh preview ~60s before expiry,
+ * and once on player error.
  */
 export function useSignedPreviewRefresh(
   media: AdminMediaCard | null | undefined,
@@ -15,6 +14,7 @@ export function useSignedPreviewRefresh(
   const onUpdatedRef = useRef(onUpdated);
   onUpdatedRef.current = onUpdated;
   const refreshing = useRef(false);
+  const retried = useRef(false);
 
   const refresh = useCallback(async () => {
     const id = media?.id;
@@ -32,7 +32,12 @@ export function useSignedPreviewRefresh(
   }, [media?.id]);
 
   useEffect(() => {
-    const delay = signedRefreshDelayMs(media?.preview);
+    retried.current = false;
+  }, [media?.id, media?.preview?.mediaUrl, media?.preview?.playbackUrl]);
+
+  useEffect(() => {
+    const play = resolveAdminPlayable(media);
+    const delay = signedRefreshDelayMs(media?.preview, play.url);
     if (!media?.id || delay == null) return;
     const timer = window.setTimeout(() => {
       void refresh();
@@ -43,14 +48,15 @@ export function useSignedPreviewRefresh(
     media?.preview?.signed,
     media?.preview?.expiresInSeconds,
     media?.preview?.mediaUrl,
+    media?.preview?.playbackUrl,
     refresh,
   ]);
 
-  const onPlaybackError = useCallback(() => {
-    if (media?.preview?.signed) {
-      void refresh();
-    }
-  }, [media?.preview?.signed, refresh]);
+  const onPlaybackError = useCallback(async () => {
+    if (retried.current) return null;
+    retried.current = true;
+    return refresh();
+  }, [refresh]);
 
   return { refresh, onPlaybackError };
 }

@@ -26,10 +26,12 @@ import {
 import {
   biblePlansHref,
   bibleSearchHref,
+  formatVerseCopy,
   readerHref,
   readResume,
   verseRef,
 } from "../../lib/bible/paths";
+import TranslationChip from "./TranslationChip";
 import type { BibleBook, BibleVerse } from "../../types/bible";
 
 function getBookCategory(name: string): string {
@@ -47,8 +49,15 @@ function getBookCategory(name: string): string {
 }
 
 export default function BibleHome() {
-  const { books, booksLoading, translationId, catalogReady, catalogFailed } =
-    useBible();
+  const {
+    books,
+    booksLoading,
+    translationId,
+    currentTranslation,
+    corpusVersion,
+    catalogReady,
+    catalogFailed,
+  } = useBible();
   const [daily, setDaily] = useState<BibleVerse | null>(null);
   const [popular, setPopular] = useState<BibleVerse[]>([]);
   const [random, setRandom] = useState<BibleVerse | null>(null);
@@ -61,10 +70,12 @@ export default function BibleHome() {
   const resume = readResume();
   const t = catalogFailed ? null : translationId;
 
+  const transAbbr = currentTranslation?.abbreviation || "WEB";
+  const transName = currentTranslation?.name || "World English Bible";
+
   useDocumentMeta({
-    title: "Jevah Holy Bible — World English Bible Reader & Study",
-    description:
-      "Read the Holy Bible on Jevah. Search verses, browse books, explore reading plans, and study Scripture with ease.",
+    title: `Jevah Bible (${transAbbr})`,
+    description: `Read the Holy Bible on Jevah in the ${transName}. Verse of the day, continue reading, and a quiet book grid.`,
     canonicalPath: translationId ? `/bible?translation=${translationId}` : "/bible",
     jsonLd: {
       "@context": "https://schema.org",
@@ -79,10 +90,10 @@ export default function BibleHome() {
   useEffect(() => {
     if (!catalogReady) return;
     let alive = true;
-    void fetchDailyVerse(t).then((v) => {
+    void fetchDailyVerse(t, corpusVersion).then((v) => {
       if (alive) setDaily(v);
     });
-    void fetchPopularVerses(t, 8).then((v) => {
+    void fetchPopularVerses(t, 8, corpusVersion).then((v) => {
       if (alive) setPopular(v);
     });
     void fetchDailyFact().then((f) => {
@@ -103,12 +114,12 @@ export default function BibleHome() {
     return () => {
       alive = false;
     };
-  }, [t, catalogReady]);
+  }, [t, catalogReady, corpusVersion]);
 
   async function surprise() {
     setSurpriseBusy(true);
     try {
-      const v = await fetchRandomVerse(t);
+      const v = await fetchRandomVerse(t, corpusVersion);
       setRandom(v);
     } finally {
       setSurpriseBusy(false);
@@ -122,7 +133,7 @@ export default function BibleHome() {
 
   async function copyVerse(text: string, ref: string) {
     try {
-      await navigator.clipboard.writeText(`"${text}" — ${ref}`);
+      await navigator.clipboard.writeText(formatVerseCopy(ref, transAbbr, text));
       setCopiedDaily(true);
       setTimeout(() => setCopiedDaily(false), 2000);
     } catch {
@@ -158,14 +169,17 @@ export default function BibleHome() {
           <span>The Word for Every Day</span>
         </div>
 
-        <h1 className="mt-4 font-sans text-4xl font-bold tracking-tight text-[#1f2a24] dark:text-[#f4ead6] sm:text-6xl">
-          Jevah Holy Bible
+        <h1 className="mt-4 font-sans text-4xl font-bold tracking-tight text-[#1f2a24] dark:text-[#e4ebe9] sm:text-6xl">
+          Jevah Bible
         </h1>
 
-        <p className="mt-3 text-base leading-relaxed text-[#6b6256] dark:text-[#cbbfa8] sm:text-lg">
-          A tranquil reader crafted for quiet meditation, search, and deep study.
-          Public-domain World English Bible edition.
+        <p className="mt-3 text-base leading-relaxed text-[#6b6256] dark:text-[#c8d5d2] sm:text-lg">
+          One reader. Many public-domain translations. The place stays put when
+          the version changes.
         </p>
+        <div className="mt-4 flex justify-center">
+          <TranslationChip />
+        </div>
 
         {statsLine && (
           <p className="mt-3 text-[11px] font-bold uppercase tracking-[0.25em] text-[#9a7b3c] dark:text-[#e2c286]/80">
@@ -181,9 +195,11 @@ export default function BibleHome() {
             “
           </div>
 
-          <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-[#9a7b3c] dark:text-[#e2c286]">
-            <span className="h-2 w-2 rounded-full bg-[#256e63] animate-ping" />
-            <span>Verse of the Day</span>
+          <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-[#9a7b3c] dark:text-[#8fd4c8]">
+            <span>Verse of the day</span>
+            <span className="rounded-full bg-[#256E63]/10 px-2 py-0.5 text-[10px] tracking-wide text-[#256E63] dark:text-[#8fd4c8]">
+              {transAbbr}
+            </span>
           </div>
 
           <p className="mt-3 font-sans text-2xl font-medium leading-relaxed text-[#1f2a24] dark:text-[#f4ead6] sm:text-3.5xl">
@@ -191,8 +207,9 @@ export default function BibleHome() {
           </p>
 
           <footer className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-[#c4a574]/25 pt-4">
-            <cite className="not-italic font-sans text-base font-bold text-[#9a7b3c] dark:text-[#e2c286]">
-              {verseRef(daily.bookName, daily.chapterNumber, daily.verseNumber)}
+            <cite className="not-italic font-sans text-base font-bold text-[#9a7b3c] dark:text-[#8fd4c8]">
+              {verseRef(daily.bookName, daily.chapterNumber, daily.verseNumber)}{" "}
+              ({transAbbr})
             </cite>
 
             <div className="flex items-center gap-2">
@@ -239,6 +256,7 @@ export default function BibleHome() {
         {resume && (
           <Link
             to={readerHref(resume.book, resume.chapter, {
+              verse: resume.verse,
               translation: translationId,
             })}
             className="group inline-flex items-center gap-2 rounded-full border border-[#256E63]/40 bg-[#256E63]/10 px-4 py-2 text-xs font-extrabold text-[#256E63] shadow-sm transition-all hover:bg-[#256E63] hover:text-white dark:bg-[#256E63]/25 dark:text-emerald-300 dark:hover:bg-[#256E63] dark:hover:text-white"
@@ -333,8 +351,13 @@ export default function BibleHome() {
                   className="group flex flex-col justify-between h-full rounded-2xl border border-[#c4a574]/30 bg-white/60 p-4 transition-all duration-300 hover:-translate-y-1 hover:border-[#256E63] hover:shadow-md dark:bg-white/5 dark:hover:border-emerald-500/50"
                 >
                   <div>
-                    <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-[#9a7b3c] dark:text-[#e2c286]">
-                      <span>{verseRef(v.bookName, v.chapterNumber, v.verseNumber)}</span>
+                    <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-[#9a7b3c] dark:text-[#8fd4c8]">
+                      <span>
+                        {verseRef(v.bookName, v.chapterNumber, v.verseNumber)}{" "}
+                        <span className="font-semibold normal-case tracking-normal">
+                          ({transAbbr})
+                        </span>
+                      </span>
                       <BookmarkIcon className="h-3.5 w-3.5 opacity-0 transition-opacity group-hover:opacity-100 text-[#256e63]" />
                     </div>
                     <p className="mt-2 line-clamp-4 font-sans text-base leading-relaxed text-[#1f2a24] dark:text-[#f4ead6]">

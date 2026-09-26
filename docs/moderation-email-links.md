@@ -5,6 +5,14 @@
 
 ---
 
+## Logo
+
+Same header mark as every other Jevah mail:
+
+`https://res.cloudinary.com/bt01nio6/image/upload/v1790381597/jevahha-removebg-preview.png`
+
+Env: `JEVAH_EMAIL_LOGO_URL`. Shared `_header.ejs` is in `docs/artist-welcome-email-backend-handoff.md` §3b.
+
 ## Required change (do this)
 
 Update the **“Review in Dashboard”** (and any similar) CTA in moderation / content-report emails.

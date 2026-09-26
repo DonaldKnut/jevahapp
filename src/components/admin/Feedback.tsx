@@ -1,7 +1,5 @@
 import {
-  createContext,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useRef,
@@ -17,8 +15,14 @@ import {
   XCircleIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
+import {
+  FeedbackContext,
+  type ConfirmOptions,
+  type PromptOptions,
+  type ToastTone,
+} from "./feedbackContext";
 
-type ToastTone = "success" | "error" | "warning" | "info";
+export { useFeedback } from "./feedbackContext";
 
 type ToastItem = {
   id: string;
@@ -26,39 +30,6 @@ type ToastItem = {
   description?: string;
   tone: ToastTone;
 };
-
-type ConfirmOptions = {
-  title: string;
-  message: string;
-  confirmLabel?: string;
-  cancelLabel?: string;
-  tone?: "danger" | "primary" | "warning";
-};
-
-type PromptOptions = {
-  title: string;
-  message?: string;
-  label?: string;
-  placeholder?: string;
-  defaultValue?: string;
-  confirmLabel?: string;
-  cancelLabel?: string;
-  required?: boolean;
-  tone?: "danger" | "primary" | "warning";
-};
-
-type FeedbackContextValue = {
-  toast: {
-    success: (title: string, description?: string) => void;
-    error: (title: string, description?: string) => void;
-    warning: (title: string, description?: string) => void;
-    info: (title: string, description?: string) => void;
-  };
-  confirm: (options: ConfirmOptions) => Promise<boolean>;
-  prompt: (options: PromptOptions) => Promise<string | null>;
-};
-
-const FeedbackContext = createContext<FeedbackContextValue | null>(null);
 
 function uid() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -73,20 +44,20 @@ const toneIcon = {
 
 const toneStyles = {
   success:
-    "border-emerald-200 bg-emerald-50 text-emerald-900 dark:border-emerald-500/30 dark:bg-emerald-950/90 dark:text-emerald-100",
+    "border-emerald-500/30 bg-emerald-950/85 text-emerald-100 backdrop-blur-xl shadow-2xl shadow-emerald-950/30 ring-1 ring-emerald-400/20 dark:border-emerald-500/40 dark:bg-[#0c1a16]/90 dark:text-emerald-100",
   error:
-    "border-rose-200 bg-rose-50 text-rose-900 dark:border-rose-500/30 dark:bg-rose-950/90 dark:text-rose-100",
+    "border-rose-500/40 bg-rose-950/85 text-rose-100 backdrop-blur-xl shadow-2xl shadow-rose-950/40 ring-1 ring-rose-400/30 dark:border-rose-500/50 dark:bg-[#1f0a0d]/90 dark:text-rose-100",
   warning:
-    "border-amber-200 bg-amber-50 text-amber-950 dark:border-amber-500/30 dark:bg-amber-950/90 dark:text-amber-100",
+    "border-amber-500/30 bg-amber-950/85 text-amber-100 backdrop-blur-xl shadow-2xl shadow-amber-950/30 ring-1 ring-amber-400/20 dark:border-amber-500/40 dark:bg-[#1d150b]/90 dark:text-amber-100",
   info:
-    "border-sky-200 bg-sky-50 text-sky-900 dark:border-sky-500/30 dark:bg-sky-950/90 dark:text-sky-100",
+    "border-sky-500/30 bg-sky-950/85 text-sky-100 backdrop-blur-xl shadow-2xl shadow-sky-950/30 ring-1 ring-sky-400/20 dark:border-sky-500/40 dark:bg-[#0b1724]/90 dark:text-sky-100",
 };
 
 const iconTone = {
-  success: "text-emerald-600 dark:text-emerald-400",
-  error: "text-rose-600 dark:text-rose-400",
-  warning: "text-amber-600 dark:text-amber-400",
-  info: "text-sky-600 dark:text-sky-400",
+  success: "text-emerald-400 dark:text-emerald-400",
+  error: "text-rose-400 dark:text-rose-400",
+  warning: "text-amber-400 dark:text-amber-400",
+  info: "text-sky-400 dark:text-sky-400",
 };
 
 export function FeedbackProvider({ children }: { children: ReactNode }) {
@@ -198,21 +169,25 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
                   <div
                     key={t.id}
                     className={cn(
-                      "pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-2xl border px-4 py-3 shadow-lg shadow-slate-900/10 backdrop-blur-md admin-list-item dark:shadow-black/40",
+                      "pointer-events-auto flex w-full max-w-sm items-start gap-3.5 rounded-2xl border p-4 shadow-2xl backdrop-blur-xl transition-all duration-300 animate-in fade-in slide-in-from-top-3",
                       toneStyles[t.tone]
                     )}
                   >
-                    <Icon className={cn("mt-0.5 h-5 w-5 shrink-0", iconTone[t.tone])} />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold">{t.title}</p>
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/10 ring-1 ring-white/20 backdrop-blur-md">
+                      <Icon className={cn("h-5 w-5", iconTone[t.tone])} />
+                    </div>
+                    <div className="min-w-0 flex-1 pt-0.5">
+                      <p className="text-sm font-extrabold tracking-tight">{t.title}</p>
                       {t.description && (
-                        <p className="mt-0.5 text-sm opacity-80">{t.description}</p>
+                        <p className="mt-1 text-xs leading-relaxed font-medium opacity-90">
+                          {t.description}
+                        </p>
                       )}
                     </div>
                     <button
                       type="button"
                       onClick={() => dismissToast(t.id)}
-                      className="rounded-lg p-1 opacity-60 hover:bg-black/5 hover:opacity-100 dark:hover:bg-white/10"
+                      className="rounded-lg p-1.5 opacity-70 transition hover:bg-white/15 hover:opacity-100"
                       aria-label="Dismiss"
                     >
                       <XMarkIcon className="h-4 w-4" />
@@ -356,10 +331,3 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function useFeedback() {
-  const ctx = useContext(FeedbackContext);
-  if (!ctx) {
-    throw new Error("useFeedback must be used within FeedbackProvider");
-  }
-  return ctx;
-}

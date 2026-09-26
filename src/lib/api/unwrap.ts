@@ -27,6 +27,12 @@ export function listFromUnknown<T>(res: unknown, keys: string[]): T[] {
   for (const key of keys) {
     const val = obj[key];
     if (Array.isArray(val)) return val as T[];
+    if (val && typeof val === "object" && !Array.isArray(val)) {
+      const rec = val as Record<string, unknown>;
+      if (typeof rec.id === "string" || typeof rec._id === "string") {
+        return [val as T];
+      }
+    }
   }
 
   if (Array.isArray(obj.data)) return obj.data as T[];

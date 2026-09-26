@@ -1,5 +1,6 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { needsEmailVerification } from "../lib/authNext";
 
 function loginRedirectPath(
   loginPath: string,
@@ -21,7 +22,7 @@ export default function ProtectedRoute({
   /** Admin console gate. Set false for creator studio (any signed-in user). */
   requireAdmin?: boolean;
 }) {
-  const { isAdmin, isAuthenticated, loading } = useAuth();
+  const { isAdmin, isAuthenticated, loading, user } = useAuth();
   const location = useLocation();
   const returnTo = `${location.pathname}${location.search}${location.hash}`;
 
@@ -49,15 +50,20 @@ export default function ProtectedRoute({
       );
     }
   } else if (!isAuthenticated) {
+    const guestPath = location.pathname.startsWith("/creators/apply")
+      ? "/creators/signup"
+      : "/creators/login";
     return (
       <Navigate
-        to={loginRedirectPath("/creators/login", returnTo, {
+        to={loginRedirectPath(guestPath, returnTo, {
           intent: "creator",
         })}
         replace
         state={{ from: returnTo, intent: "creator" }}
       />
     );
+  } else if (needsEmailVerification(user)) {
+    return <Navigate to="/creators/verify" replace />;
   }
 
   return <>{children}</>;

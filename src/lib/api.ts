@@ -156,9 +156,11 @@ export async function apiRequest<T>(
 
   if (method === "GET" && body === undefined) {
     inflightGets.set(url, run);
-    void run.finally(() => {
-      inflightGets.delete(url);
-    });
+    void run
+      .catch(() => undefined)
+      .finally(() => {
+        inflightGets.delete(url);
+      });
   }
 
   return run;

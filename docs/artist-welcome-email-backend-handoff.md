@@ -118,12 +118,100 @@ FE Overview banner uses `activeArtistsMissingOnboardEmail`.
 
 ---
 
-## 4. Template expectations
+## 3b. Logo in every EJS mail
 
-- Clear CTA to web Studio (`/creators/studio` or deep link you prefer) and/or mobile.  
-- Include optional `message` body when provided.  
-- **No marketing unsubscribe footer** (this is transactional/ops).  
-- Default subject if empty: `You're invited to create on Jevah`.
+Use this Cloudinary URL for the header mark on **all** Jevah emails (creator welcome, verify, reset, marketing, moderation, ops). Do not swap in a local file.
+
+```
+https://res.cloudinary.com/bt01nio6/image/upload/v1790381597/jevahha-removebg-preview.png
+```
+
+Suggested env:
+
+```bash
+JEVAH_EMAIL_LOGO_URL=https://res.cloudinary.com/bt01nio6/image/upload/v1790381597/jevahha-removebg-preview.png
+```
+
+Shared header partial (dark bar — the mark is light + gold):
+
+```ejs
+<%# views/emails/_header.ejs %>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#0b1a1f;">
+  <tr>
+    <td align="center" style="padding:28px 24px 20px;">
+      <img
+        src="<%= typeof logoUrl !== 'undefined' && logoUrl ? logoUrl : 'https://res.cloudinary.com/bt01nio6/image/upload/v1790381597/jevahha-removebg-preview.png' %>"
+        alt="Jevah"
+        width="156"
+        style="display:block;border:0;outline:none;text-decoration:none;max-width:156px;height:auto;"
+      />
+    </td>
+  </tr>
+</table>
+```
+
+Pass `logoUrl` from the mailer locals (or `process.env.JEVAH_EMAIL_LOGO_URL`). Include `_header.ejs` in every template.
+
+---
+
+## 4. Official template (`creator_welcome_v1`)
+
+Use this as the **default** Studio-ready email (activate + Welcome artists).  
+Interpolate `{{firstName}}` from the artist display name / first name (fallback `friend`).  
+If `message` / `onboardMessage` is present, insert it as a short personal note after the “profile is now ready” paragraph.  
+CTA button: **Open Studio** → `/creators/studio`.  
+**No marketing unsubscribe footer.**
+
+Default subject:
+
+```
+Welcome to Jevah, {{firstName}}
+```
+
+FE may also send `onboardSubject` / `subject` already filled for a single activate (e.g. `Welcome to Jevah, Jizzy`), plus `onboardTemplate` / `templateId`: `creator_welcome_v1`.
+
+Body (plain-text equivalent):
+
+```
+Hi {{firstName}},
+
+Welcome to Jevah. We’re glad you’re here.
+
+Whether you’re here to share your music, ministry, podcast, message, or your story, Jevah was built to give your voice a place to reach people who need to hear it.
+
+Your creator profile is now ready. This is your space to publish, connect with your audience, grow your community, and make an impact beyond the moment.
+
+{{optionalNote}}
+
+Here’s what you can do next:
+
+🎙️ Share your work — Upload your music, podcasts, sermons, teachings, or other content.
+
+🌍 Reach more people — Put your voice in front of an audience beyond your immediate circle.
+
+💬 Build your community — Connect with people who listen, watch, follow, and believe in what you do.
+
+🚀 Grow with Jevah — Keep creating, keep showing up, and let your journey unfold.
+
+Your next chapter starts here.
+
+Welcome to Jevah, {{firstName}}.
+
+Create. Connect. Inspire.
+
+The Jevah Team
+```
+
+Activate PATCH extras (ignore unknown fields safely):
+
+```json
+{
+  "sendOnboardEmail": true,
+  "onboardTemplate": "creator_welcome_v1",
+  "onboardSubject": "Welcome to Jevah, Jizzy",
+  "onboardMessage": "Studio is unlocked — upload your first track when you’re ready."
+}
+```
 
 ---
 

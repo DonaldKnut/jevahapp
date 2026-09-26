@@ -36,7 +36,10 @@ export function extractPutSlot(raw: unknown): PresignSlot | null {
 export const IMAGE_ACCEPT = "image/jpeg,image/png,image/webp,image/gif";
 
 export function assertImageFile(file: File, maxBytes: number) {
-  if (!file.type.startsWith("image/")) {
+  const looksLikeImage =
+    file.type.startsWith("image/") ||
+    /\.(jpe?g|png|webp|gif)$/i.test(file.name);
+  if (!looksLikeImage) {
     throw new Error("Choose a JPG, PNG, WebP, or GIF image.");
   }
   if (file.size > maxBytes) {

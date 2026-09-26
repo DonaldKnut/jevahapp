@@ -144,7 +144,7 @@ export default function ReportDetailDrawer({
       >
         <div className="h-1.5 w-full shrink-0 bg-gradient-to-r from-rose-500 via-amber-500 to-jevah-accent" />
 
-        <div className="sticky top-0 z-10 flex items-center gap-3 border-b border-jevah-border bg-jevah-surface/95 px-4 py-4 backdrop-blur-xl sm:px-6">
+        <div className="sticky top-0 z-10 flex items-center gap-3 border-b border-jevah-border bg-jevah-surface px-4 py-4 sm:px-6">
           <button
             type="button"
             className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-jevah-text-muted transition hover:bg-jevah-card sm:hidden"
@@ -193,7 +193,7 @@ export default function ReportDetailDrawer({
                 </div>
               )}
 
-              <div className="rounded-3xl border border-jevah-border bg-jevah-elevated/80 p-5 shadow-sm">
+              <div className="rounded-3xl border border-jevah-border bg-jevah-elevated p-5 shadow-sm">
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <p className="text-base font-extrabold leading-snug text-jevah-text">
                     {detail.media?.title || "Untitled Media"}
@@ -220,7 +220,7 @@ export default function ReportDetailDrawer({
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2">
-                <div className="rounded-2xl border border-jevah-border bg-jevah-elevated/80 p-4 shadow-sm">
+                <div className="rounded-2xl border border-jevah-border bg-jevah-elevated p-4 shadow-sm">
                   <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-wider text-jevah-text-muted">
                     <UserCircleIcon className="h-4 w-4 text-sky-500" />
                     Reporter
@@ -229,7 +229,7 @@ export default function ReportDetailDrawer({
                     {detail.report.reporter?.email || "Anonymous"}
                   </p>
                 </div>
-                <div className="rounded-2xl border border-jevah-border bg-jevah-elevated/80 p-4 shadow-sm">
+                <div className="rounded-2xl border border-jevah-border bg-jevah-elevated p-4 shadow-sm">
                   <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-wider text-jevah-text-muted">
                     <UserCircleIcon className="h-4 w-4 text-jevah-accent" />
                     Uploader
@@ -277,7 +277,7 @@ export default function ReportDetailDrawer({
               </Field>
             </div>
 
-            <div className="sticky bottom-0 space-y-3 border-t border-jevah-border bg-jevah-surface/95 px-4 py-4 backdrop-blur-xl sm:px-5 pb-[max(1rem,env(safe-area-inset-bottom))]">
+            <div className="sticky bottom-0 space-y-3 border-t border-jevah-border bg-jevah-elevated px-4 py-4 sm:px-5 pb-[max(1rem,env(safe-area-inset-bottom))]">
               <p className="text-[10px] font-black uppercase tracking-wider text-jevah-text-muted">
                 Execution Actions
               </p>

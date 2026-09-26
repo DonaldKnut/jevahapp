@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type PointerEvent } from "react";
+import { useLocation } from "react-router-dom";
 import {
   ArrowPathIcon,
   ArrowsPointingOutIcon,
@@ -19,9 +20,14 @@ import {
   trackArtist,
   trackDuration,
   trackPlaybackUrl,
-  type TrackCard,
 } from "../../lib/media";
 import VinylDisc from "./VinylDisc";
+import { usePlayer } from "../../context/PlayerContext";
+
+const MIN_W = 72;
+const MIN_H = 72;
+const DEFAULT_W = 300;
+const DEFAULT_H = 360;
 
 function formatClock(sec: number) {
   if (!Number.isFinite(sec) || sec < 0) return "0:00";
@@ -30,38 +36,102 @@ function formatClock(sec: number) {
   return `${m}:${String(s).padStart(2, "0")}`;
 }
 
-type Props = {
-  track: TrackCard | null;
-  queue?: TrackCard[];
-  onTrackChange?: (track: TrackCard | null) => void;
-  onPlayingChange?: (playing: boolean) => void;
-  onClose?: () => void;
-  /** Lane label under title, e.g. Copyright-free / Artists */
-  shelfLabel?: string;
-};
+function SeekRail({
+  progressPct,
+  seeking: _seeking,
+  onSeeking,
+  onSeek,
+  tall,
+}: {
+  progressPct: number;
+  seeking: boolean;
+  onSeeking: (v: boolean) => void;
+  onSeek: (pct: number) => void;
+  tall?: boolean;
+}) {
+  return (
+    <div
+      className={`relative w-full overflow-hidden rounded-full bg-jevah-card ring-1 ring-jevah-border ${
+        tall ? "h-2" : "h-1.5"
+      }`}
+    >
+      <div
+        className="h-full rounded-full bg-jevah-accent"
+        style={{ width: `${progressPct}%` }}
+      />
+      <input
+        type="range"
+        min={0}
+        max={100}
+        step={0.1}
+        value={progressPct}
+        aria-label="Move through the song"
+        className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+        onMouseDown={() => onSeeking(true)}
+        onTouchStart={() => onSeeking(true)}
+        onMouseUp={(e) => {
+          onSeek(Number(e.currentTarget.value));
+          onSeeking(false);
+        }}
+        onTouchEnd={(e) => {
+          onSeek(Number(e.currentTarget.value));
+          onSeeking(false);
+        }}
+        onChange={(e) => {
+          onSeek(Number(e.target.value));
+        }}
+      />
+    </div>
+  );
+}
 
 /**
- * Docked & Expandable Spotify-like now playing bar with full-screen player modal.
- * Shared across Copyright-free, Artists shelves, and Creator Studio.
+ * One player for the whole site.
+ * Bar = strip at the bottom.
+ * Window = a box you can drag and resize, like a computer window.
+ * Full = large player over the page.
  */
-export default function NowPlayingBar({
-  track,
-  queue = [],
-  onTrackChange,
-  onPlayingChange,
-  onClose,
-  shelfLabel,
-}: Props) {
+export default function NowPlayingBar() {
+  const {
+    track,
+    queue,
+    shelfLabel,
+    size,
+    setTrack: onTrackChange,
+    setPlaying: onPlayingChange,
+    setSize,
+    close: onClose,
+  } = usePlayer();
+  const location = useLocation();
+  const onBible = location.pathname.startsWith("/bible");
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [playing, setPlaying] = useState(false);
   const [current, setCurrent] = useState(0);
   const [duration, setDuration] = useState(0);
   const [seeking, setSeeking] = useState(false);
-  const [expanded, setExpanded] = useState(false);
+  const [winPos, setWinPos] = useState<{ x: number; y: number } | null>(null);
+  const [winSize, setWinSize] = useState({ w: DEFAULT_W, h: DEFAULT_H });
+  const dragging = useRef(false);
+  const resizing = useRef(false);
+  const dragOffset = useRef({ x: 0, y: 0 });
+  const resizeStart = useRef({ x: 0, y: 0, w: DEFAULT_W, h: DEFAULT_H });
   const [volume, setVolume] = useState(1);
   const [muted, setMuted] = useState(false);
   const [isShuffle, setIsShuffle] = useState(false);
   const [isRepeat, setIsRepeat] = useState(false);
+  const [showResizeTip, setShowResizeTip] = useState(true);
+  const [hoverResize, setHoverResize] = useState(false);
+
+  useEffect(() => {
+    if (onBible && track && size === "bar") setSize("window");
+  }, [onBible, track, size, setSize]);
+
+  useEffect(() => {
+    if (size !== "window") return;
+    setShowResizeTip(true);
+    const t = window.setTimeout(() => setShowResizeTip(false), 6000);
+    return () => window.clearTimeout(t);
+  }, [size]);
 
   const url = track ? trackPlaybackUrl(track) : null;
   const metaDur = track ? trackDuration(track) : null;
@@ -130,19 +200,18 @@ export default function NowPlayingBar({
   }
 
   function playAt(index: number) {
-    if (!queue.length || !onTrackChange) return;
+    if (!queue.length) return;
     const next = queue[index];
     if (next) onTrackChange(next);
   }
 
   function playNext() {
-    if (!track || !queue.length || !onTrackChange) {
+    if (!track || !queue.length) {
       setPlaying(false);
       return;
     }
     if (isShuffle) {
-      const randomIdx = Math.floor(Math.random() * queue.length);
-      playAt(randomIdx);
+      playAt(Math.floor(Math.random() * queue.length));
       return;
     }
     const idx = queue.findIndex((t) => (t.id || t._id) === (track.id || track._id));
@@ -154,7 +223,7 @@ export default function NowPlayingBar({
   }
 
   function playPrev() {
-    if (!track || !queue.length || !onTrackChange) return;
+    if (!track || !queue.length) return;
     const el = audioRef.current;
     if (el && el.currentTime > 3) {
       el.currentTime = 0;
@@ -180,7 +249,7 @@ export default function NowPlayingBar({
     setCurrent(t);
   }
 
-  function onSeek(value: number) {
+  function onSeekPct(value: number) {
     const el = audioRef.current;
     if (!el || !displayDur) return;
     const t = (value / 100) * displayDur;
@@ -204,9 +273,75 @@ export default function NowPlayingBar({
     setMuted(nextMuted);
   }
 
+  function windowBox() {
+    const x = winPos?.x ?? Math.max(12, window.innerWidth - winSize.w - 20);
+    const y =
+      winPos?.y ??
+      Math.max(72, window.innerHeight - winSize.h - (onBible ? 160 : 24));
+    return { x, y };
+  }
+
+  function onDragDown(e: PointerEvent<HTMLDivElement>) {
+    if (resizing.current) return;
+    if ((e.target as HTMLElement).closest("button, input, [data-resize]")) return;
+    dragging.current = false;
+    const box = e.currentTarget.getBoundingClientRect();
+    dragOffset.current = { x: e.clientX - box.left, y: e.clientY - box.top };
+    e.currentTarget.setPointerCapture(e.pointerId);
+  }
+
+  function onDragMove(e: PointerEvent<HTMLDivElement>) {
+    if (resizing.current) return;
+    if (!e.currentTarget.hasPointerCapture(e.pointerId)) return;
+    if (Math.abs(e.movementX) + Math.abs(e.movementY) > 2) dragging.current = true;
+    setWinPos({
+      x: Math.max(8, Math.min(window.innerWidth - winSize.w - 8, e.clientX - dragOffset.current.x)),
+      y: Math.max(56, Math.min(window.innerHeight - winSize.h - 8, e.clientY - dragOffset.current.y)),
+    });
+  }
+
+  function onDragUp() {
+    window.setTimeout(() => {
+      dragging.current = false;
+    }, 0);
+  }
+
+  function onResizeDown(e: PointerEvent<HTMLDivElement>) {
+    e.stopPropagation();
+    e.preventDefault();
+    resizing.current = true;
+    setShowResizeTip(false);
+    setHoverResize(false);
+    resizeStart.current = { x: e.clientX, y: e.clientY, w: winSize.w, h: winSize.h };
+    e.currentTarget.setPointerCapture(e.pointerId);
+  }
+
+  function applyResize(clientX: number, clientY: number) {
+    const { x, y } = windowBox();
+    const nextW = resizeStart.current.w + (clientX - resizeStart.current.x);
+    const nextH = resizeStart.current.h + (clientY - resizeStart.current.y);
+    setWinSize({
+      w: Math.max(MIN_W, Math.min(window.innerWidth - x - 8, nextW)),
+      h: Math.max(MIN_H, Math.min(window.innerHeight - y - 8, nextH)),
+    });
+  }
+
+  function onResizeMove(e: PointerEvent<HTMLDivElement>) {
+    if (!resizing.current) return;
+    applyResize(e.clientX, e.clientY);
+  }
+
+  function onResizeUp() {
+    resizing.current = false;
+  }
+
   if (!track || !url) return null;
 
   const progressPct = displayDur > 0 ? (current / displayDur) * 100 : 0;
+  const artist = trackArtist(track);
+  const box = typeof window !== "undefined" ? windowBox() : { x: 12, y: 72 };
+  const compact = winSize.w < 220 || winSize.h < 180;
+  const tiny = winSize.w < 120 || winSize.h < 120;
 
   return (
     <>
@@ -214,242 +349,323 @@ export default function NowPlayingBar({
         <track kind="captions" />
       </audio>
 
-      {/* DOCKED BOTTOM PLAYER BAR */}
-      <div
-        className="pointer-events-none fixed inset-x-0 bottom-0 z-[90] flex justify-center px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-6"
-        role="region"
-        aria-label="Now playing"
-      >
-        <div className="pointer-events-auto w-full max-w-3xl overflow-hidden rounded-2xl border border-jevah-border/80 bg-jevah-surface/95 shadow-[0_-12px_40px_rgba(0,0,0,0.35)] backdrop-blur-2xl transition-all duration-300">
-          {/* Progress Bar Header */}
-          <div className="relative h-1.5 w-full bg-jevah-card/80">
-            <div
-              className="absolute inset-y-0 left-0 bg-gradient-to-r from-jevah-accent via-emerald-500 to-teal-400 transition-[width] duration-150"
-              style={{ width: `${progressPct}%` }}
-            />
-            <input
-              type="range"
-              min={0}
-              max={100}
-              step={0.1}
-              value={progressPct}
-              aria-label="Seek"
-              className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-              onMouseDown={() => setSeeking(true)}
-              onTouchStart={() => setSeeking(true)}
-              onMouseUp={(e) => {
-                onSeek(Number(e.currentTarget.value));
-                setSeeking(false);
-              }}
-              onTouchEnd={(e) => {
-                onSeek(Number(e.currentTarget.value));
-                setSeeking(false);
-              }}
-              onChange={(e) => {
-                const v = Number(e.target.value);
-                if (seeking) {
-                  setCurrent((v / 100) * displayDur);
-                } else {
-                  onSeek(v);
-                }
-              }}
-            />
-          </div>
-
-          <div className="flex items-center gap-3 px-3 py-3 sm:gap-4 sm:px-4">
-            {/* Clickable Vinyl Disc to Expand Full Player */}
+      {size === "window" && (
+        <div
+          className="fixed z-[92] flex touch-none flex-col overflow-visible rounded-2xl border border-jevah-border bg-jevah-surface shadow-[0_20px_50px_rgba(0,0,0,0.32)]"
+          style={{ left: box.x, top: box.y, width: winSize.w, height: winSize.h }}
+          onPointerDown={onDragDown}
+          onPointerMove={onDragMove}
+          onPointerUp={onDragUp}
+          onPointerCancel={onDragUp}
+        >
+          {tiny && (
             <button
               type="button"
-              onClick={() => setExpanded(true)}
-              className="group relative transition hover:scale-105"
-              title="Expand Player View"
+              onClick={() => setSize("full")}
+              className="absolute right-1 top-1 z-10 inline-flex h-6 w-6 items-center justify-center rounded-full bg-jevah-accent text-white"
+              aria-label="Large player"
+              title="Large player"
             >
-              <VinylDisc track={track} playing={playing} size="md" />
+              <ArrowsPointingOutIcon className="h-3 w-3" />
             </button>
-
-            {/* Clickable Track Details to Expand Full Player */}
+          )}
+          {!tiny && (
             <div
-              onClick={() => setExpanded(true)}
-              className="min-w-0 flex-1 cursor-pointer"
+              className={`flex shrink-0 items-center justify-between gap-1 border-b border-jevah-border bg-jevah-card/70 ${
+                compact ? "px-1.5 py-1" : "px-3 py-2"
+              }`}
             >
-              <p className="truncate text-sm font-black text-jevah-text sm:text-base hover:text-jevah-accent transition">
-                {track.title}
-              </p>
-              <p className="truncate text-xs font-medium text-jevah-text-muted">
-                {trackArtist(track)}
-                {track.release?.title ? ` · ${track.release.title}` : ""}
-                {shelfLabel ? ` · ${shelfLabel}` : ""}
-              </p>
-              <p
-                className={`mt-0.5 tabular-nums text-xs font-semibold ${
-                  seeking ? "text-jevah-accent" : "text-jevah-text"
-                }`}
-              >
-                {formatClock(current)}
-                <span className="mx-1 text-jevah-text-muted">/</span>
-                {displayDur
-                  ? formatClock(displayDur)
-                  : formatTrackDuration(metaDur)}
-              </p>
-            </div>
-
-            {/* Control Actions */}
-            <div className="flex items-center gap-1 sm:gap-2">
-              <button
-                type="button"
-                aria-label="Previous"
-                onClick={playPrev}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full text-jevah-text-muted transition hover:bg-jevah-card hover:text-jevah-text"
-              >
-                <BackwardIcon className="h-4.5 w-4.5" />
-              </button>
-              <button
-                type="button"
-                aria-label={playing ? "Pause" : "Play"}
-                onClick={toggle}
-                className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-jevah-accent to-emerald-600 text-white shadow-lg shadow-jevah-accent/30 transition hover:scale-105 active:scale-95"
-              >
-                {playing ? (
-                  <PauseIcon className="h-5 w-5" />
-                ) : (
-                  <PlayIcon className="h-5 w-5 translate-x-0.5" />
-                )}
-              </button>
-              <button
-                type="button"
-                aria-label="Next"
-                onClick={playNext}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-full text-jevah-text-muted transition hover:bg-jevah-card hover:text-jevah-text"
-              >
-                <ForwardIcon className="h-4.5 w-4.5" />
-              </button>
-              <button
-                type="button"
-                aria-label="Expand Full Player"
-                onClick={() => setExpanded(true)}
-                className="hidden sm:inline-flex h-8 w-8 items-center justify-center rounded-full text-jevah-text-muted hover:bg-jevah-card hover:text-jevah-text"
-                title="Expand Full Player"
-              >
-                <ArrowsPointingOutIcon className="h-4 w-4" />
-              </button>
-              {onClose && (
+              {!compact && (
+                <p className="min-w-0 truncate text-xs font-bold text-jevah-text">
+                  Now playing
+                </p>
+              )}
+              <div className={`flex shrink-0 items-center gap-1 ${compact ? "ml-auto" : ""}`}>
                 <button
                   type="button"
-                  aria-label="Close player"
+                  onClick={() => setSize("full")}
+                  className={`rounded-full bg-jevah-accent font-bold text-white ${
+                    compact ? "px-2 py-0.5 text-[10px]" : "px-2.5 py-1 text-[11px]"
+                  }`}
+                >
+                  Large
+                </button>
+                {!compact && (
+                  <button
+                    type="button"
+                    onClick={() => setSize("bar")}
+                    className="rounded-full px-2.5 py-1 text-[11px] font-bold text-jevah-text hover:bg-jevah-elevated"
+                  >
+                    Bottom bar
+                  </button>
+                )}
+                <button
+                  type="button"
                   onClick={onClose}
-                  className="ml-0.5 inline-flex h-8 w-8 items-center justify-center rounded-full text-jevah-text-muted hover:bg-jevah-card hover:text-jevah-text"
+                  className="inline-flex h-7 w-7 items-center justify-center rounded-full text-jevah-text-muted hover:bg-jevah-elevated hover:text-jevah-text"
+                  aria-label="Stop and close"
                 >
                   <XMarkIcon className="h-4 w-4" />
                 </button>
-              )}
+              </div>
             </div>
-          </div>
-        </div>
-      </div>
+          )}
 
-      {/* FULL-SCREEN / LARGE MODAL AUDIO PLAYER DRAWER */}
-      {expanded && (
-        <div className="fixed inset-0 z-[100] flex flex-col justify-between overflow-y-auto bg-jevah-bg p-6 text-jevah-text sm:p-10">
-          {/* Top Sheet Header */}
-          <div className="flex items-center justify-between gap-3">
+          <div
+            className={`flex min-h-0 flex-1 flex-col items-center justify-center overflow-hidden ${
+              tiny ? "gap-0 p-1" : compact ? "gap-1.5 px-2 py-1.5" : "gap-3 px-4 py-3"
+            }`}
+          >
             <button
               type="button"
-              onClick={() => setExpanded(false)}
-              className="inline-flex items-center gap-1.5 rounded-full border border-jevah-border bg-jevah-card px-4 py-2 text-xs font-semibold text-jevah-text transition hover:bg-jevah-elevated"
+              onClick={() => {
+                if (dragging.current) return;
+                toggle();
+              }}
+              className="relative"
+              aria-label={playing ? "Pause" : "Play"}
             >
-              <ChevronDownIcon className="h-4 w-4" />
-              <span>Minimize</span>
+              <VinylDisc
+                track={track}
+                playing={playing}
+                size={
+                  winSize.w >= 360 && winSize.h >= 420
+                    ? "lg"
+                    : tiny
+                      ? "sm"
+                      : compact
+                        ? "sm"
+                        : "md"
+                }
+                className={tiny ? "!h-10 !w-10" : undefined}
+              />
+              <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/25 text-white">
+                {playing ? (
+                  <PauseIcon className={tiny ? "h-3.5 w-3.5" : "h-5 w-5"} />
+                ) : (
+                  <PlayIcon className={tiny ? "h-3.5 w-3.5 translate-x-px" : "h-5 w-5 translate-x-px"} />
+                )}
+              </span>
             </button>
-
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-jevah-accent/30 bg-jevah-accent/10 px-3.5 py-1 text-[11px] font-semibold uppercase tracking-widest text-jevah-accent">
-              {shelfLabel || "Gospel audio"}
-            </span>
-
-            {onClose && (
-              <button
-                type="button"
-                onClick={() => {
-                  setExpanded(false);
-                  onClose();
-                }}
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-jevah-border bg-jevah-card text-jevah-text transition hover:bg-jevah-elevated"
-              >
-                <XMarkIcon className="h-5 w-5" />
-              </button>
+            {!tiny && !compact && (
+              <div className="w-full min-w-0 text-center">
+                <p className="truncate text-sm font-bold text-jevah-text">{track.title}</p>
+                <p className="truncate text-xs text-jevah-text-muted">{artist}</p>
+              </div>
+            )}
+            {compact && !tiny && winSize.h >= 148 && (
+              <p className="w-full truncate text-center text-[11px] font-bold text-jevah-text">
+                {track.title}
+              </p>
+            )}
+            {winSize.h >= 280 && winSize.w >= 220 && (
+              <div className="w-full space-y-1">
+                <SeekRail
+                  progressPct={progressPct}
+                  seeking={seeking}
+                  onSeeking={setSeeking}
+                  onSeek={onSeekPct}
+                />
+                <div className="flex justify-between text-[10px] font-semibold tabular-nums text-jevah-text-muted">
+                  <span>{formatClock(current)}</span>
+                  <span>
+                    {displayDur ? formatClock(displayDur) : formatTrackDuration(metaDur)}
+                  </span>
+                </div>
+              </div>
+            )}
+            {winSize.h >= 320 && winSize.w >= 240 && (
+              <p className="text-center text-[10px] leading-snug text-jevah-text-muted">
+                Drag the top to move. Pull the corner to make this bigger or smaller.
+              </p>
             )}
           </div>
 
-          {/* Center Vinyl & Artwork Spotlight */}
-          <div className="my-auto flex flex-col items-center justify-center py-8 text-center">
-            <div className="mb-6 h-1.5 w-12 rounded-full bg-jevah-border sm:hidden" />
+          <div
+            data-resize
+            className="absolute bottom-0 right-0 flex h-10 w-10 cursor-nwse-resize items-end justify-end p-1.5"
+            onPointerDown={onResizeDown}
+            onPointerMove={onResizeMove}
+            onPointerUp={onResizeUp}
+            onPointerCancel={onResizeUp}
+            onPointerEnter={() => setHoverResize(true)}
+            onPointerLeave={() => setHoverResize(false)}
+            title="Drag this corner to make the window smaller or larger"
+            aria-label="Drag this corner to make the window smaller or larger"
+            role="slider"
+            aria-valuetext={`${Math.round(winSize.w)} by ${Math.round(winSize.h)}`}
+          >
+            {!tiny && (showResizeTip || hoverResize) && (
+              <div
+                role="tooltip"
+                className="pointer-events-none absolute bottom-9 right-1 z-10 w-[11.5rem] rounded-lg bg-jevah-text px-2.5 py-2 text-left text-[11px] font-semibold leading-snug text-jevah-surface shadow-lg"
+              >
+                Drag this corner to make the window smaller or larger.
+                <span className="absolute -bottom-1 right-3 h-2 w-2 rotate-45 bg-jevah-text" />
+              </div>
+            )}
+            <span className="h-3.5 w-3.5 border-b-2 border-r-2 border-jevah-accent" />
+          </div>
+        </div>
+      )}
 
-            <div className="group relative my-4">
+      {size === "bar" && (
+        <div
+          className="pointer-events-none fixed inset-x-0 bottom-0 z-[90] flex justify-center px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-6"
+          role="region"
+          aria-label="Now playing"
+        >
+          <div className="pointer-events-auto w-full max-w-3xl overflow-hidden rounded-2xl border border-jevah-border bg-jevah-elevated text-jevah-text shadow-[0_-8px_32px_rgba(0,0,0,0.28)]">
+            <SeekRail
+              progressPct={progressPct}
+              seeking={seeking}
+              onSeeking={setSeeking}
+              onSeek={onSeekPct}
+            />
+
+            <div className="flex items-center gap-3 px-3 py-3 sm:gap-4 sm:px-4">
+              <button
+                type="button"
+                onClick={() => setSize("full")}
+                className="shrink-0"
+                title="Open the large player"
+              >
+                <VinylDisc track={track} playing={playing} size="md" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setSize("full")}
+                className="min-w-0 flex-1 text-left"
+              >
+                <p className="truncate text-sm font-black text-jevah-text sm:text-base">
+                  {track.title}
+                </p>
+                <p className="truncate text-xs font-semibold text-jevah-text">
+                  {artist}
+                  {track.release?.title ? ` · ${track.release.title}` : ""}
+                  {shelfLabel ? ` · ${shelfLabel}` : ""}
+                </p>
+                <p className="mt-0.5 tabular-nums text-xs font-bold text-jevah-text">
+                  {formatClock(current)}
+                  <span className="mx-1 text-jevah-text/60">/</span>
+                  {displayDur ? formatClock(displayDur) : formatTrackDuration(metaDur)}
+                </p>
+              </button>
+
+              <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+                <button
+                  type="button"
+                  aria-label="Previous song"
+                  onClick={playPrev}
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-full text-jevah-text hover:bg-jevah-card"
+                >
+                  <BackwardIcon className="h-5 w-5" />
+                </button>
+                <button
+                  type="button"
+                  aria-label={playing ? "Pause" : "Play"}
+                  onClick={toggle}
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-jevah-accent text-white shadow-lg shadow-jevah-accent/30"
+                >
+                  {playing ? (
+                    <PauseIcon className="h-5 w-5" />
+                  ) : (
+                    <PlayIcon className="h-5 w-5 translate-x-0.5" />
+                  )}
+                </button>
+                <button
+                  type="button"
+                  aria-label="Next song"
+                  onClick={playNext}
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-full text-jevah-text hover:bg-jevah-card"
+                >
+                  <ForwardIcon className="h-5 w-5" />
+                </button>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-end gap-2 border-t border-jevah-border bg-jevah-card px-3 py-2">
+              <button
+                type="button"
+                onClick={() => setSize("window")}
+                className="rounded-full border border-jevah-border bg-jevah-elevated px-3 py-1.5 text-[11px] font-bold text-jevah-text hover:bg-jevah-surface"
+              >
+                Small window
+              </button>
+              <button
+                type="button"
+                onClick={() => setSize("full")}
+                className="inline-flex items-center gap-1 rounded-full bg-jevah-accent px-3 py-1.5 text-[11px] font-bold text-white"
+              >
+                <ArrowsPointingOutIcon className="h-3.5 w-3.5" />
+                Large player
+              </button>
+              <button
+                type="button"
+                onClick={onClose}
+                className="rounded-full border border-jevah-border bg-jevah-elevated px-3 py-1.5 text-[11px] font-bold text-jevah-text hover:bg-jevah-surface"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {size === "full" && (
+        <div className="fixed inset-0 z-[100] flex flex-col justify-between overflow-y-auto bg-jevah-bg p-6 text-jevah-text sm:p-10">
+          <div className="flex items-center justify-between gap-3">
+            <button
+              type="button"
+              onClick={() => setSize("window")}
+              className="inline-flex items-center gap-1.5 rounded-full border border-jevah-border bg-jevah-card px-4 py-2 text-xs font-semibold text-jevah-text hover:bg-jevah-elevated"
+            >
+              <ChevronDownIcon className="h-4 w-4" />
+              Small window
+            </button>
+
+            <span className="inline-flex items-center rounded-full border border-jevah-accent/30 bg-jevah-accent/10 px-3.5 py-1 text-[11px] font-semibold uppercase tracking-widest text-jevah-accent">
+              {shelfLabel || "Now playing"}
+            </span>
+
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-jevah-border bg-jevah-card text-jevah-text hover:bg-jevah-elevated"
+              aria-label="Stop and close"
+            >
+              <XMarkIcon className="h-5 w-5" />
+            </button>
+          </div>
+
+          <div className="my-auto flex flex-col items-center justify-center py-8 text-center">
+            <div className="relative my-4">
               <div className="absolute inset-0 scale-110 rounded-full bg-jevah-accent/25 blur-3xl" />
               <VinylDisc track={track} playing={playing} size="xl" />
             </div>
-
-            <h2 className="mt-6 max-w-xl truncate font-sans text-2xl font-semibold tracking-tight text-jevah-text sm:text-4xl">
+            <h2 className="mt-6 max-w-xl truncate font-sans text-2xl font-semibold tracking-tight sm:text-4xl">
               {track.title}
             </h2>
-            <p className="mt-2 text-sm font-medium text-jevah-text sm:text-base">
-              {trackArtist(track)}
+            <p className="mt-2 text-sm font-medium sm:text-base">
+              {artist}
               {track.release?.title ? ` · ${track.release.title}` : ""}
             </p>
           </div>
 
-          {/* Bottom Timeline Scrubber & Complete Player Suite */}
           <div className="mx-auto w-full max-w-2xl space-y-6 pb-4">
             <div className="space-y-2">
-              <div className="relative pt-7">
-                {seeking && (
-                  <span
-                    className="pointer-events-none absolute top-0 z-10 -translate-x-1/2 rounded-md bg-jevah-text px-2 py-0.5 text-[11px] font-semibold tabular-nums text-jevah-surface shadow-md"
-                    style={{ left: `${Math.min(96, Math.max(4, progressPct))}%` }}
-                  >
-                    {formatClock(current)}
-                  </span>
-                )}
-                <div className="relative h-2 w-full overflow-hidden rounded-full bg-jevah-card ring-1 ring-jevah-border">
-                  <div
-                    className="h-full rounded-full bg-jevah-accent transition-all duration-100"
-                    style={{ width: `${progressPct}%` }}
-                  />
-                  <input
-                    type="range"
-                    min={0}
-                    max={100}
-                    step={0.1}
-                    value={progressPct}
-                    aria-label="Seek Timeline"
-                    className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-                    onMouseDown={() => setSeeking(true)}
-                    onTouchStart={() => setSeeking(true)}
-                    onMouseUp={(e) => {
-                      onSeek(Number(e.currentTarget.value));
-                      setSeeking(false);
-                    }}
-                    onTouchEnd={(e) => {
-                      onSeek(Number(e.currentTarget.value));
-                      setSeeking(false);
-                    }}
-                    onChange={(e) => {
-                      const v = Number(e.target.value);
-                      if (seeking) {
-                        setCurrent((v / 100) * displayDur);
-                      } else {
-                        onSeek(v);
-                      }
-                    }}
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between text-xs font-semibold tabular-nums text-jevah-text">
+              <SeekRail
+                progressPct={progressPct}
+                seeking={seeking}
+                onSeeking={setSeeking}
+                onSeek={onSeekPct}
+                tall
+              />
+              <div className="flex items-center justify-between text-xs font-semibold tabular-nums">
                 <span>{formatClock(current)}</span>
                 <span>
-                  {displayDur
-                    ? formatClock(displayDur)
-                    : formatTrackDuration(metaDur)}
+                  {displayDur ? formatClock(displayDur) : formatTrackDuration(metaDur)}
                 </span>
               </div>
             </div>
@@ -458,41 +674,38 @@ export default function NowPlayingBar({
               <button
                 type="button"
                 onClick={() => setIsShuffle(!isShuffle)}
-                className={`flex h-10 w-10 items-center justify-center rounded-full transition ${
+                className={`flex h-10 w-10 items-center justify-center rounded-full ${
                   isShuffle
                     ? "bg-jevah-accent/15 text-jevah-accent ring-1 ring-jevah-accent/40"
                     : "text-jevah-text hover:bg-jevah-card"
                 }`}
-                title="Toggle Shuffle"
+                title="Shuffle songs"
               >
                 <ArrowsRightLeftIcon className="h-5 w-5" />
               </button>
-
               <button
                 type="button"
                 onClick={rewind10}
-                className="flex h-11 w-11 items-center justify-center rounded-full border border-jevah-border bg-jevah-card text-jevah-text transition hover:bg-jevah-elevated active:scale-95"
-                title="Rewind 10 Seconds"
+                className="flex h-11 w-11 items-center justify-center rounded-full border border-jevah-border bg-jevah-card text-jevah-text hover:bg-jevah-elevated"
+                title="Go back 10 seconds"
               >
                 <span className="flex items-center text-[11px] font-semibold">
                   <ArrowUturnLeftIcon className="mr-0.5 h-4 w-4" />
                   10s
                 </span>
               </button>
-
               <button
                 type="button"
                 onClick={playPrev}
-                className="flex h-12 w-12 items-center justify-center rounded-full bg-jevah-card text-jevah-text transition hover:bg-jevah-elevated active:scale-95"
-                title="Previous Track"
+                className="flex h-12 w-12 items-center justify-center rounded-full bg-jevah-card text-jevah-text hover:bg-jevah-elevated"
+                title="Previous song"
               >
                 <BackwardIcon className="h-6 w-6" />
               </button>
-
               <button
                 type="button"
                 onClick={toggle}
-                className="flex h-16 w-16 items-center justify-center rounded-full bg-jevah-accent text-white shadow-lg shadow-jevah-accent/30 ring-4 ring-jevah-accent/20 transition hover:scale-105 active:scale-95"
+                className="flex h-16 w-16 items-center justify-center rounded-full bg-jevah-accent text-white shadow-lg shadow-jevah-accent/30 ring-4 ring-jevah-accent/20"
                 title={playing ? "Pause" : "Play"}
               >
                 {playing ? (
@@ -501,37 +714,34 @@ export default function NowPlayingBar({
                   <PlayIcon className="h-8 w-8 translate-x-0.5" />
                 )}
               </button>
-
               <button
                 type="button"
                 onClick={playNext}
-                className="flex h-12 w-12 items-center justify-center rounded-full bg-jevah-card text-jevah-text transition hover:bg-jevah-elevated active:scale-95"
-                title="Next Track"
+                className="flex h-12 w-12 items-center justify-center rounded-full bg-jevah-card text-jevah-text hover:bg-jevah-elevated"
+                title="Next song"
               >
                 <ForwardIcon className="h-6 w-6" />
               </button>
-
               <button
                 type="button"
                 onClick={fastForward10}
-                className="flex h-11 w-11 items-center justify-center rounded-full border border-jevah-border bg-jevah-card text-jevah-text transition hover:bg-jevah-elevated active:scale-95"
-                title="Fast Forward 10 Seconds"
+                className="flex h-11 w-11 items-center justify-center rounded-full border border-jevah-border bg-jevah-card text-jevah-text hover:bg-jevah-elevated"
+                title="Skip ahead 10 seconds"
               >
                 <span className="flex items-center text-[11px] font-semibold">
                   10s
                   <ArrowUturnRightIcon className="ml-0.5 h-4 w-4" />
                 </span>
               </button>
-
               <button
                 type="button"
                 onClick={() => setIsRepeat(!isRepeat)}
-                className={`flex h-10 w-10 items-center justify-center rounded-full transition ${
+                className={`flex h-10 w-10 items-center justify-center rounded-full ${
                   isRepeat
                     ? "bg-jevah-accent/15 text-jevah-accent ring-1 ring-jevah-accent/40"
                     : "text-jevah-text hover:bg-jevah-card"
                 }`}
-                title="Toggle Repeat"
+                title="Repeat this song"
               >
                 <ArrowPathIcon className="h-5 w-5" />
               </button>
@@ -541,7 +751,8 @@ export default function NowPlayingBar({
               <button
                 type="button"
                 onClick={toggleMute}
-                className="text-jevah-text transition hover:text-jevah-accent"
+                className="text-jevah-text hover:text-jevah-accent"
+                title={muted ? "Turn sound on" : "Mute"}
               >
                 {muted || volume === 0 ? (
                   <SpeakerXMarkIcon className="h-5 w-5 text-rose-500" />
@@ -559,7 +770,7 @@ export default function NowPlayingBar({
                 aria-label="Volume"
                 className="h-1.5 w-36 cursor-pointer rounded-lg bg-jevah-card accent-jevah-accent"
               />
-              <span className="w-8 text-xs font-semibold tabular-nums text-jevah-text">
+              <span className="w-8 text-xs font-semibold tabular-nums">
                 {muted ? "0%" : `${Math.round(volume * 100)}%`}
               </span>
             </div>
@@ -569,4 +780,3 @@ export default function NowPlayingBar({
     </>
   );
 }
-

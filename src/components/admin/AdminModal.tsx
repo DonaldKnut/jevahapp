@@ -23,6 +23,8 @@ type AdminModalProps = {
   busy?: boolean;
   /** Solid white panel — readable over dark dashboards */
   paper?: boolean;
+  /** Theme tone — "brand" uses Jevah's signature dark/gold gradient background */
+  tone?: "default" | "brand" | "paper";
 };
 
 /**
@@ -40,10 +42,14 @@ export default function AdminModal({
   size = "md",
   busy = false,
   paper = false,
+  tone,
 }: AdminModalProps) {
   const titleId = useId();
   const [mounted, setMounted] = useState(open);
   const [visible, setVisible] = useState(open);
+
+  const isBrand = tone === "brand";
+  const isPaper = paper || tone === "paper";
 
   useEffect(() => {
     if (open) {
@@ -104,9 +110,11 @@ export default function AdminModal({
         aria-labelledby={titleId}
         className={cn(
           "relative z-10 flex max-h-[min(92dvh,900px)] w-full flex-col overflow-hidden rounded-t-3xl border shadow-[0_25px_70px_rgba(0,0,0,0.35)] transition-all duration-300 ease-out sm:rounded-3xl",
-          paper
+          isPaper
             ? "border-slate-200 bg-white text-slate-900"
-            : "border-jevah-border/80 bg-jevah-surface/95 text-jevah-text backdrop-blur-2xl",
+            : isBrand
+              ? "border-amber-400/40 bg-gradient-to-b from-[#0a1f24] via-[#071518] to-[#04090c] text-white backdrop-blur-2xl shadow-[0_32px_90px_rgba(0,0,0,0.65)]"
+              : "border-jevah-border bg-jevah-surface text-jevah-text",
           size === "xl" || size === "full"
             ? size === "full"
               ? "max-w-none sm:max-w-6xl"
@@ -120,15 +128,35 @@ export default function AdminModal({
         )}
       >
         {/* Top glowing brand accent gradient */}
-        <div className="h-1 w-full bg-gradient-to-r from-jevah-accent via-[#4ECDC4] to-emerald-500" />
+        <div
+          className={cn(
+            "h-1 w-full",
+            isBrand
+              ? "bg-gradient-to-r from-amber-400 via-emerald-400 to-teal-400"
+              : "bg-gradient-to-r from-jevah-accent via-[#4ECDC4] to-emerald-500"
+          )}
+        />
 
-        <div className={cn(
-          "flex shrink-0 items-start justify-between gap-3 border-b px-5 py-4 sm:px-6",
-          paper ? "border-slate-200 bg-white" : "border-jevah-border/60"
-        )}>
+        <div
+          className={cn(
+            "flex shrink-0 items-start justify-between gap-3 border-b px-5 py-4 sm:px-6",
+            isPaper
+              ? "border-slate-200 bg-white"
+              : isBrand
+                ? "border-white/15 bg-black/20"
+                : "border-jevah-border bg-jevah-surface"
+          )}
+        >
           <div className="flex min-w-0 items-start gap-3.5">
             {icon && (
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-jevah-accent/20 to-teal-500/10 text-jevah-accent ring-1 ring-jevah-accent/25 shadow-sm">
+              <div
+                className={cn(
+                  "flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl shadow-sm",
+                  isBrand
+                    ? "bg-amber-400/15 text-amber-300 ring-1 ring-amber-400/30 shadow-amber-400/10"
+                    : "bg-gradient-to-br from-jevah-accent/20 to-teal-500/10 text-jevah-accent ring-1 ring-jevah-accent/25"
+                )}
+              >
                 {icon}
               </div>
             )}
@@ -136,8 +164,8 @@ export default function AdminModal({
               <h3
                 id={titleId}
                 className={cn(
-                  "text-lg font-bold tracking-tight",
-                  paper ? "text-slate-900" : "text-jevah-text"
+                  "text-lg font-black tracking-tight",
+                  isPaper ? "text-slate-900" : isBrand ? "text-white" : "text-jevah-text"
                 )}
               >
                 {title}
@@ -145,8 +173,12 @@ export default function AdminModal({
               {subtitle && (
                 <p
                   className={cn(
-                    "mt-0.5 text-xs font-medium leading-relaxed",
-                    paper ? "text-slate-500" : "text-jevah-text-muted"
+                    "mt-0.5 text-xs font-semibold leading-relaxed",
+                    isPaper
+                      ? "text-slate-500"
+                      : isBrand
+                        ? "text-amber-200/90"
+                        : "text-jevah-text-muted"
                   )}
                 >
                   {subtitle}
@@ -160,9 +192,11 @@ export default function AdminModal({
             disabled={busy}
             className={cn(
               "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-all duration-200 hover:rotate-90 active:scale-95 disabled:opacity-40",
-              paper
+              isPaper
                 ? "text-slate-500 hover:bg-slate-100 hover:text-slate-900"
-                : "text-jevah-text-muted hover:bg-jevah-card hover:text-jevah-text"
+                : isBrand
+                  ? "text-white/70 hover:bg-white/15 hover:text-white"
+                  : "text-jevah-text-muted hover:bg-jevah-card hover:text-jevah-text"
             )}
             aria-label="Close"
           >
@@ -170,10 +204,14 @@ export default function AdminModal({
           </button>
         </div>
 
-        <div className={cn(
-          "custom-scrollbar min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-6",
-          paper && "bg-white"
-        )}>
+        <div
+          className={cn(
+            "custom-scrollbar min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-6",
+            isPaper && "bg-white",
+            isBrand && "bg-[#061114]",
+            !isPaper && !isBrand && "bg-jevah-surface"
+          )}
+        >
           {children}
         </div>
 
@@ -181,9 +219,11 @@ export default function AdminModal({
           <div
             className={cn(
               "shrink-0 border-t px-5 py-4 sm:px-6 pb-[max(1.25rem,env(safe-area-inset-bottom))] sm:pb-4",
-              paper
+              isPaper
                 ? "border-slate-200 bg-white"
-                : "border-jevah-border/60 bg-jevah-surface/95 backdrop-blur-md"
+                : isBrand
+                  ? "border-white/15 bg-[#071114]"
+                  : "border-jevah-border bg-jevah-elevated"
             )}
           >
             {footer}
@@ -194,3 +234,4 @@ export default function AdminModal({
     document.body
   );
 }
+

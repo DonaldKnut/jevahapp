@@ -178,7 +178,7 @@ export default function NotificationsPage() {
               key={nid(n)}
               className={`admin-list-item group flex items-start justify-between gap-4 rounded-3xl border px-5 py-4 transition hover:shadow-md ${
                 !n.read
-                  ? "border-jevah-accent/30 bg-jevah-accent/5 shadow-sm"
+                  ? "border-jevah-accent bg-jevah-card shadow-sm"
                   : "border-jevah-border/60 bg-jevah-surface"
               }`}
               style={{ animationDelay: `${Math.min(i, 10) * 40}ms` }}

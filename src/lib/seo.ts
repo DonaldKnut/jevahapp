@@ -77,6 +77,12 @@ export const MARKETING_SEO_PAGES: SeoPage[] = [
       "Listen to gospel music, worship, choir, and Afro-gospel on Jevah. Discover Christian artists and copyright-free faith tracks.",
   },
   {
+    path: "/artists",
+    title: "Gospel artists — Jevah",
+    description:
+      "Meet verified gospel artists, worship leaders, and choirs on Jevah. Open a public page and listen.",
+  },
+  {
     path: "/bible",
     title: "Jevah Bible — Read the World English Bible online",
     description:

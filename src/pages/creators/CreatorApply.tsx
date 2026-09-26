@@ -3,16 +3,17 @@ import { Link, useNavigate } from "react-router-dom";
 import {
   applyAsCreator,
   fetchCreatorMe,
+  uploadCreatorImage,
   type CreatorMe,
 } from "../../services/creatorsApi";
-import { ApiError } from "../../lib/api";
 import { useFeedback } from "../../components/admin/Feedback";
-import { ErrorToaster } from "../../components/ErrorToaster";
+import { getErrorMessage, toastApiError } from "../../lib/errors";
+import { assertImageFile, COVER_MAX_BYTES, normalizeGenreTag } from "../../lib/media";
 import ApplyPromoAside from "./components/ApplyPromoAside";
 import ApplyFormFields from "./components/ApplyFormFields";
+import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 import {
   firstApplyErrorKey,
-  GENRE_OPTIONS,
   parseCreatorApply,
   type CreatorApplyFieldErrors,
   type CreatorApplyInput,
@@ -26,7 +27,6 @@ const emptyForm = (): CreatorApplyInput => ({
   instagram: "",
   youtube: "",
   spotify: "",
-  avatarUrl: "",
   applicationNote: "",
 });
 
@@ -36,9 +36,10 @@ export default function CreatorApply() {
   const [me, setMe] = useState<CreatorMe | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [values, setValues] = useState<CreatorApplyInput>(emptyForm);
   const [fieldErrors, setFieldErrors] = useState<CreatorApplyFieldErrors>({});
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
   useEffect(() => {
     let alive = true;
@@ -53,6 +54,9 @@ export default function CreatorApply() {
             displayName: data.artist?.displayName || data.artist?.name || "",
           }));
         }
+        if (data.artist?.avatarUrl) {
+          setAvatarPreview(data.artist.avatarUrl);
+        }
         if (!data.capabilities.canApply && data.capabilities.showCreatorHub) {
           navigate("/creators/studio", { replace: true });
         }
@@ -66,6 +70,36 @@ export default function CreatorApply() {
       alive = false;
     };
   }, [navigate]);
+
+  function onPickAvatar(file: File) {
+    try {
+      assertImageFile(file, COVER_MAX_BYTES);
+    } catch (err) {
+      const message = getErrorMessage(err, "Choose a JPG, PNG, or WebP under 5MB.");
+      setFieldErrors((prev) => ({ ...prev, avatarUrl: message }));
+      toast.error("Photo", message);
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const url = typeof reader.result === "string" ? reader.result : "";
+      if (!url) return;
+      setAvatarFile(file);
+      setAvatarPreview(url);
+      setFieldErrors((prev) => {
+        if (!prev.avatarUrl) return prev;
+        const next = { ...prev };
+        delete next.avatarUrl;
+        return next;
+      });
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function onClearAvatar() {
+    setAvatarFile(null);
+    setAvatarPreview(me?.artist?.avatarUrl || null);
+  }
 
   function onChange(
     key: keyof CreatorApplyInput,
@@ -95,19 +129,45 @@ export default function CreatorApply() {
     });
   }
 
-  function onToggleGenre(g: (typeof GENRE_OPTIONS)[number]) {
-    setValues((prev) => {
-      const next = prev.genres.includes(g)
-        ? prev.genres.filter((x) => x !== g)
-        : [...prev.genres, g];
-      return { ...prev, genres: next };
-    });
+  function clearGenreError() {
     setFieldErrors((prev) => {
       if (!prev.genres) return prev;
       const next = { ...prev };
       delete next.genres;
       return next;
     });
+  }
+
+  function onToggleGenre(g: string) {
+    setValues((prev) => {
+      const next = prev.genres.includes(g)
+        ? prev.genres.filter((x) => x !== g)
+        : [...prev.genres, g];
+      return { ...prev, genres: next };
+    });
+    clearGenreError();
+  }
+
+  function onAddCustomGenre(raw: string): boolean {
+    const slug = normalizeGenreTag(raw);
+    if (!slug) {
+      setFieldErrors((prev) => ({
+        ...prev,
+        genres: "Use 2–40 letters or numbers.",
+      }));
+      return false;
+    }
+    if (values.genres.includes(slug)) {
+      clearGenreError();
+      return true;
+    }
+    if (values.genres.length >= 8) {
+      setFieldErrors((prev) => ({ ...prev, genres: "Keep it to 8 genres." }));
+      return false;
+    }
+    setValues((prev) => ({ ...prev, genres: [...prev.genres, slug] }));
+    clearGenreError();
+    return true;
   }
 
   function focusFirstError(errs: CreatorApplyFieldErrors) {
@@ -131,15 +191,14 @@ export default function CreatorApply() {
     if (!parsed.ok) {
       setFieldErrors(parsed.errors);
       const firstKey = firstApplyErrorKey(parsed.errors);
-      const first = (firstKey && parsed.errors[firstKey]) || "Fix the highlighted fields.";
-      setError(first);
+      const first =
+        (firstKey && parsed.errors[firstKey]) || "Fix the highlighted fields.";
       toast.error("Check your application", first);
       focusFirstError(parsed.errors);
       return;
     }
 
     setBusy(true);
-    setError(null);
     setFieldErrors({});
     try {
       const v = parsed.data;
@@ -155,16 +214,22 @@ export default function CreatorApply() {
         creatorTypes: v.creatorTypes,
         socials: Object.keys(socials).length ? socials : undefined,
         applicationNote: v.applicationNote,
-        avatarUrl: v.avatarUrl,
       });
+      if (avatarFile) {
+        try {
+          await uploadCreatorImage("avatar", avatarFile);
+        } catch {
+          toast.warning(
+            "Photo pending",
+            "Application is in. Add the photo from Studio if it did not attach."
+          );
+        }
+      }
       setMe(result);
       toast.success("Application submitted", result.capabilities.statusMessage);
       navigate("/creators/studio", { replace: true });
     } catch (err) {
-      const msg =
-        err instanceof ApiError ? err.message : "Could not submit application.";
-      setError(msg);
-      toast.error("Apply failed", msg);
+      toastApiError(toast, "Apply failed", err, "Could not submit application.");
     } finally {
       setBusy(false);
     }
@@ -179,87 +244,89 @@ export default function CreatorApply() {
   }
 
   return (
-    <>
-      <ErrorToaster error={error} title="Application error" />
-      <div
-        className="auth-root flex h-dvh overflow-hidden font-sans antialiased transition-colors duration-300"
-        style={{ backgroundColor: "var(--jevah-auth-root)" }}
-      >
-        <ApplyPromoAside />
+    <div
+      className="auth-root flex h-dvh overflow-hidden font-sans antialiased"
+      style={{ backgroundColor: "var(--jevah-auth-root)" }}
+    >
+      <ApplyPromoAside />
 
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-            <div className="mx-auto w-full max-w-xl px-5 pb-28 pt-10 sm:px-8 sm:pt-12 lg:px-10 lg:pt-14">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-jevah-accent">
-                Apply
-              </p>
-              <h1 className="mt-2 text-3xl font-bold tracking-tight text-jevah-text">
-                Become a creator
-              </h1>
-              <p className="mt-2 text-sm leading-relaxed text-jevah-text-muted">
-                Tell us who you are. Required fields mirror Spotify for Artists
-                access — name, role, and genre. Everything else is optional.
-              </p>
+      <div className="relative flex min-h-0 min-w-0 flex-1 flex-col bg-[#060e18] bg-gradient-to-br from-[#0b1a24] via-[#0d1c27] to-[#060e18] text-slate-100">
+        <div
+          className="pointer-events-none absolute inset-0 opacity-60"
+          style={{
+            background:
+              "radial-gradient(ellipse 70% 50% at 20% 80%, rgba(245,158,11,0.14), transparent 55%), radial-gradient(ellipse 60% 50% at 85% 15%, rgba(37,110,99,0.2), transparent 55%)",
+          }}
+          aria-hidden
+        />
 
-              {me?.capabilities.showPendingBanner && (
-                <div className="mt-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
-                  {me.capabilities.statusMessage}
-                </div>
-              )}
+        <div className="relative z-10 min-h-0 flex-1 overflow-y-auto overscroll-contain">
+          <div className="mx-auto w-full max-w-xl px-5 pb-10 pt-9 sm:px-8 sm:pt-12 lg:px-10">
+            <div className="flex items-center justify-between gap-3">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-400/25 bg-amber-500/10 px-3 py-0.5 text-[11px] font-semibold uppercase tracking-widest text-amber-200">
+                Application
+              </span>
+              <Link
+                to="/creators"
+                className="inline-flex items-center gap-1 text-xs font-semibold text-amber-300/90 transition hover:text-amber-200 hover:underline"
+              >
+                <ArrowLeftIcon className="h-3.5 w-3.5 stroke-[2.5]" />
+                Creators
+              </Link>
+            </div>
 
-              {/* Mobile-only promo strip (desktop uses left panel) */}
-              <div className="mt-6 rounded-2xl border border-amber-500/25 bg-gradient-to-br from-[#1A1208] to-[#0B1A1F] p-4 text-white lg:hidden">
-                <p className="text-sm font-bold">Jevah for Creators</p>
-                <p className="mt-1 text-xs leading-relaxed text-slate-300">
-                  Apply once → admin review → upload to the gospel shelf.
-                </p>
+            <h1 className="mt-3 text-3xl font-bold tracking-tight text-white sm:text-[2.15rem]">
+              Become a creator
+            </h1>
+            <p className="mt-2 max-w-md text-sm leading-relaxed text-slate-400">
+              Name, role, and genre are required. Everything else can wait until
+              Studio.
+            </p>
+
+            {me?.capabilities.showPendingBanner ? (
+              <div className="mt-5 rounded-xl border border-amber-400/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-100/90">
+                {me.capabilities.statusMessage}
               </div>
+            ) : null}
 
-              <form
-                id="creator-apply-form"
-                onSubmit={(e) => void onSubmit(e)}
-                className="mt-8"
-                noValidate
-              >
-                <ApplyFormFields
-                  values={values}
-                  errors={fieldErrors}
-                  busy={busy}
-                  onChange={onChange}
-                  onToggleType={onToggleType}
-                  onToggleGenre={onToggleGenre}
-                />
-              </form>
-
-              <p className="mt-8 text-center text-sm text-jevah-text-muted lg:text-left">
-                <Link
-                  to="/creators"
-                  className="text-jevah-accent hover:underline"
-                >
-                  Back to Creators
-                </Link>
-              </p>
-            </div>
+            <form
+              id="creator-apply-form"
+              onSubmit={(e) => void onSubmit(e)}
+              className="mt-7"
+              noValidate
+            >
+              <ApplyFormFields
+                values={values}
+                errors={fieldErrors}
+                busy={busy}
+                onChange={onChange}
+                onToggleType={onToggleType}
+                onToggleGenre={onToggleGenre}
+                onAddCustomGenre={onAddCustomGenre}
+                avatarPreview={avatarPreview}
+                onPickAvatar={onPickAvatar}
+                onClearAvatar={onClearAvatar}
+              />
+            </form>
           </div>
+        </div>
 
-          <div className="shrink-0 border-t border-jevah-border/80 bg-jevah-surface/95 px-5 py-4 backdrop-blur-md sm:px-8 lg:px-10">
-            <div className="mx-auto flex max-w-xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-xs text-jevah-text-muted">
-                Admins review in the Artists queue. You&apos;ll land in Studio
-                after submit.
-              </p>
-              <button
-                type="submit"
-                form="creator-apply-form"
-                disabled={busy}
-                className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-jevah-accent px-8 text-sm font-semibold text-white transition hover:bg-jevah-accent-hover disabled:opacity-60 sm:w-auto"
-              >
-                {busy ? "Submitting…" : "Submit application"}
-              </button>
-            </div>
+        <div className="relative z-10 shrink-0 border-t border-white/10 bg-[#070e16]/90 px-5 py-3.5 backdrop-blur-xl sm:px-8 lg:px-10">
+          <div className="mx-auto flex max-w-xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-xs text-slate-500">
+              Reviewed in the Artists queue. Studio opens after you submit.
+            </p>
+            <button
+              type="submit"
+              form="creator-apply-form"
+              disabled={busy}
+              className="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-amber-400 px-7 text-sm font-semibold text-slate-950 transition hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+            >
+              {busy ? "Submitting…" : "Submit application"}
+            </button>
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }

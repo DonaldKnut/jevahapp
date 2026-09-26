@@ -4,6 +4,7 @@ import {
   QueueListIcon,
   SparklesIcon,
 } from "@heroicons/react/24/outline";
+import AuthPromoSlider from "../../../components/AuthPromoSlider";
 
 const STEPS = [
   {
@@ -26,11 +27,7 @@ const STEPS = [
 export default function ApplyPromoAside() {
   return (
     <aside className="auth-promo relative hidden h-full w-[42%] shrink-0 flex-col overflow-hidden lg:flex xl:w-[40%]">
-      <img
-        src="https://res.cloudinary.com/dajpllbyu/image/upload/v1785390152/Two_Africans_listening_to_phones_202607300639_woclw7.jpg"
-        alt=""
-        className="absolute inset-0 h-full w-full scale-105 object-cover object-center brightness-90 saturate-110"
-      />
+      <AuthPromoSlider />
       <div
         className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#1A1208] via-[#3D2A12]/80 to-[#0B1A1F]/55"
         aria-hidden

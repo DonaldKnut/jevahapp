@@ -18,7 +18,13 @@ import {
   inputClass,
 } from "../../components/admin/ui";
 import AdminModal from "../../components/admin/AdminModal";
+import CreatorWelcomeEmailPreview from "../../components/admin/CreatorWelcomeEmailPreview";
 import { useFeedback } from "../../components/admin/Feedback";
+import {
+  CREATOR_WELCOME_TEMPLATE_ID,
+  creatorFirstName,
+  creatorWelcomeSubject,
+} from "../../lib/creatorWelcomeEmail";
 import { useDebouncedValue } from "../../hooks/useDebouncedValue";
 import { matchesSearch } from "../../lib/searchMatch";
 import {
@@ -165,6 +171,7 @@ export default function ArtistsPage() {
 
   async function confirmActivate() {
     if (!activateTarget) return;
+    const firstName = creatorFirstName(activateTarget);
     await setFlags(
       activateTarget,
       {
@@ -172,6 +179,8 @@ export default function ArtistsPage() {
         isActive: true,
         isVerified: true,
         sendOnboardEmail,
+        onboardTemplate: CREATOR_WELCOME_TEMPLATE_ID,
+        onboardSubject: creatorWelcomeSubject(firstName),
         onboardMessage: onboardMessage.trim() || undefined,
       },
       sendOnboardEmail
@@ -217,7 +226,7 @@ export default function ArtistsPage() {
           <p className="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">Active Creators</p>
           <p className="mt-1 text-2xl font-black text-emerald-600 dark:text-emerald-400">{activeCount}</p>
         </div>
-        <div className="rounded-2xl border border-jevah-accent/20 bg-jevah-accent/10 p-4 shadow-sm col-span-2 lg:col-span-1">
+        <div className="col-span-2 rounded-2xl border border-jevah-accent bg-jevah-card p-4 shadow-sm lg:col-span-1">
           <p className="text-xs font-bold uppercase tracking-wider text-jevah-accent">Verified Badge Artists</p>
           <p className="mt-1 text-2xl font-black text-jevah-accent">{verifiedCount}</p>
         </div>
@@ -442,7 +451,7 @@ export default function ArtistsPage() {
         <form
           id="artist-stub-form"
           onSubmit={(e) => void onCreate(e)}
-          className="relative space-y-4 overflow-hidden rounded-2xl border border-jevah-accent/25 bg-gradient-to-br from-jevah-accent/20 via-jevah-surface to-emerald-500/10 p-4 shadow-inner sm:p-5"
+          className="relative space-y-4 overflow-hidden rounded-2xl border border-jevah-border bg-jevah-elevated p-4 sm:p-5"
         >
           <div
             className="pointer-events-none absolute inset-0 opacity-40"
@@ -452,7 +461,7 @@ export default function ArtistsPage() {
                 "radial-gradient(ellipse 80% 60% at 0% 0%, rgba(37,110,99,0.28), transparent 55%), radial-gradient(ellipse 50% 40% at 100% 100%, rgba(78,205,196,0.18), transparent 50%)",
             }}
           />
-          <div className="relative z-10 flex items-start gap-3 rounded-2xl border border-white/40 bg-jevah-surface/80 p-4 shadow-sm backdrop-blur-md dark:border-white/10">
+          <div className="relative z-10 flex items-start gap-3 rounded-2xl border border-jevah-border bg-jevah-card p-4 shadow-sm">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-jevah-accent/20 text-jevah-accent ring-1 ring-jevah-accent/30">
               <SparklesIcon className="h-5 w-5" />
             </div>
@@ -537,15 +546,24 @@ export default function ArtistsPage() {
             </span>
           </label>
           {sendOnboardEmail && (
-            <Field label="Optional note in the email">
-              <textarea
-                rows={3}
-                value={onboardMessage}
-                onChange={(e) => setOnboardMessage(e.target.value)}
-                className={inputClass}
-                placeholder="Congrats — you're live. Upload your first track in Studio."
+            <>
+              <Field
+                label="Optional note in the email"
+                helperText="Shown as a short personal line inside the welcome. Leave blank to send the template as-is."
+              >
+                <textarea
+                  rows={3}
+                  value={onboardMessage}
+                  onChange={(e) => setOnboardMessage(e.target.value)}
+                  className={inputClass}
+                  placeholder="Studio is unlocked — upload your first track when you’re ready."
+                />
+              </Field>
+              <CreatorWelcomeEmailPreview
+                firstName={creatorFirstName(activateTarget ?? undefined)}
+                optionalNote={onboardMessage}
               />
-            </Field>
+            </>
           )}
           {!sendOnboardEmail && (
             <p className="text-xs text-amber-700 dark:text-amber-300">

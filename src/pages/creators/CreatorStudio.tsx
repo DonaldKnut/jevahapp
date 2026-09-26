@@ -18,7 +18,7 @@ import { ApiError } from "../../lib/api";
 import { TRACK_GENRES, genreLabel } from "../../lib/media";
 import { useAuth } from "../../context/AuthContext";
 import { useFeedback } from "../../components/admin/Feedback";
-import { ErrorToaster } from "../../components/ErrorToaster";
+import { toastApiError } from "../../lib/errors";
 import { inputClass } from "../../components/ui/forms";
 import CreatorHubByStep from "./components/CreatorHubByStep";
 import CreatorAnalyticsDashboard from "./components/CreatorAnalyticsDashboard";
@@ -33,7 +33,7 @@ import StudioSidebar, {
 import MarketingEmailPrefsCard from "../../components/MarketingEmailPrefsCard";
 import ThemeToggle from "../../components/ThemeToggle";
 import AdminModal from "../../components/admin/AdminModal";
-import NowPlayingBar from "../../components/music/NowPlayingBar";
+import { usePlayer } from "../../context/PlayerContext";
 import JevahLogo from "../../components/JevahLogo";
 import {
   PencilSquareIcon,
@@ -72,7 +72,6 @@ export default function CreatorStudio() {
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
   const [rangeDays, setRangeDays] = useState(28);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [editTrack, setEditTrack] = useState<TrackCard | null>(null);
   const [editTitle, setEditTitle] = useState("");
@@ -82,8 +81,9 @@ export default function CreatorStudio() {
   const [editCoverFile, setEditCoverFile] = useState<File | null>(null);
   const [editCoverPreview, setEditCoverPreview] = useState<string | null>(null);
   const [imageBusy, setImageBusy] = useState<"avatar" | "banner" | null>(null);
-  const [playing, setPlaying] = useState<TrackCard | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const player = usePlayer();
+  const playing = player.track;
+  const isPlaying = player.isPlaying;
   const tourUserId = user?.id || user?.email;
   const { open: tourOpen, finish: finishTour, replay: replayTour } =
     useProductTour("creator", tourUserId, !loading && Boolean(me));
@@ -97,7 +97,6 @@ export default function CreatorStudio() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    setError(null);
     try {
       const data = await fetchCreatorMe();
       let next = data;
@@ -152,14 +151,17 @@ export default function CreatorStudio() {
         });
         setAnalytics(null);
       } else {
-        setError(
-          err instanceof ApiError ? err.message : "Failed to load creator hub."
+        toastApiError(
+          toast,
+          "Studio error",
+          err,
+          "Failed to load creator hub."
         );
       }
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [toast]);
 
   useEffect(() => {
     void load();
@@ -198,7 +200,7 @@ export default function CreatorStudio() {
     try {
       await deleteCreatorTrack(id);
       toast.success("Track deleted");
-      if (playing && trackId(playing) === id) setPlaying(null);
+      if (playing && trackId(playing) === id) player.close();
       await load();
     } catch (err) {
       toast.error(
@@ -384,146 +386,147 @@ export default function CreatorStudio() {
         <main
           className={`min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain studio-custom-scrollbar ${playing ? "pb-32" : "pb-12"}`}
         >
-          <ErrorToaster error={error} title="Studio error" />
-
-          {view === "home" && (
-            <>
-              <StudioHero
-                name={name}
-                initials={initials}
-                artist={me.artist}
-                status={me.status}
-                bio={
-                  me.artist?.bio ||
-                  "Your music, stream analytics, discography, and public creator brand — all in one desk."
-                }
-                trackCount={tracks.length}
-                totalPlays={totalPlays}
-                monthlyListeners={analytics?.uniqueListeners || totalPlays}
-                canUpload={me.capabilities.canUploadTracks}
-                canEdit={me.capabilities.canEditProfile}
-                publicPath={me.capabilities.publicProfilePath}
-                onEdit={() => setView("profile")}
-              />
-              <div className="mx-auto max-w-7xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
-                <CreatorHubByStep
-                  me={me}
-                  tracks={tracks}
-                  onUpload={() => navigate("/creators/studio/upload")}
+          <div key={view} className="animate-in fade-in slide-in-from-bottom-3 duration-300 ease-out">
+            {view === "home" && (
+              <>
+                <StudioHero
+                  name={name}
+                  initials={initials}
+                  artist={me.artist}
+                  status={me.status}
+                  bio={
+                    me.artist?.bio ||
+                    "Your music, stream analytics, discography, and public creator brand — all in one desk."
+                  }
+                  trackCount={tracks.length}
+                  totalPlays={totalPlays}
+                  monthlyListeners={analytics?.uniqueListeners || totalPlays}
+                  canUpload={me.capabilities.canUploadTracks}
+                  canEdit={me.capabilities.canEditProfile}
+                  publicPath={me.capabilities.publicProfilePath}
+                  onEdit={() => setView("profile")}
                 />
-                {hubReady && recent.length > 0 && (
+                <div className="mx-auto max-w-7xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
+                  <CreatorHubByStep
+                    me={me}
+                    tracks={tracks}
+                    onUpload={() => navigate("/creators/studio/upload")}
+                  />
+                  {hubReady && recent.length > 0 && (
+                    <StudioCatalog
+                      tracks={recent}
+                      heading="Recent Uploads"
+                      subheading="Latest uploaded audio tracks — switch to Catalog for full library"
+                      compact
+                      activeId={playing ? trackId(playing) : null}
+                      playing={isPlaying}
+                      onPlay={(t) =>
+                        player.start(t, {
+                          queue: tracks,
+                          shelfLabel: "Studio preview",
+                        })
+                      }
+                      onEdit={openEdit}
+                      onDelete={(t) => void onDelete(t)}
+                    />
+                  )}
+                  {hubReady && (
+                    <CreatorAnalyticsDashboard
+                      analytics={analytics}
+                      loading={analyticsLoading}
+                      rangeDays={rangeDays}
+                      onRangeDays={setRangeDays}
+                    />
+                  )}
+                </div>
+              </>
+            )}
+
+            {view === "catalog" && (
+              <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
+                {tracks.length === 0 ? (
+                  <CreatorHubByStep
+                    me={me}
+                    tracks={tracks}
+                    onUpload={() => navigate("/creators/studio/upload")}
+                  />
+                ) : (
                   <StudioCatalog
-                    tracks={recent}
-                    heading="Recent Uploads"
-                    subheading="Latest uploaded audio tracks — switch to Catalog for full library"
-                    compact
+                    tracks={tracks}
                     activeId={playing ? trackId(playing) : null}
                     playing={isPlaying}
-                    onPlay={setPlaying}
+                    onPlay={(t) =>
+                      player.start(t, {
+                        queue: tracks,
+                        shelfLabel: "Studio preview",
+                      })
+                    }
                     onEdit={openEdit}
                     onDelete={(t) => void onDelete(t)}
                   />
                 )}
-                {hubReady && (
+              </div>
+            )}
+
+            {view === "releases" && (
+              <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+                {me.capabilities.canUploadTracks || me.status === "active" ? (
+                  <StudioReleases />
+                ) : (
+                  <CreatorHubByStep
+                    me={me}
+                    tracks={tracks}
+                    onUpload={() => navigate("/creators/studio/upload")}
+                  />
+                )}
+              </div>
+            )}
+
+            {view === "insights" && (
+              <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+                {hubReady ? (
                   <CreatorAnalyticsDashboard
                     analytics={analytics}
                     loading={analyticsLoading}
                     rangeDays={rangeDays}
                     onRangeDays={setRangeDays}
                   />
+                ) : (
+                  <CreatorHubByStep
+                    me={me}
+                    tracks={tracks}
+                    onUpload={() => navigate("/creators/studio/upload")}
+                  />
                 )}
               </div>
-            </>
-          )}
+            )}
 
-          {view === "catalog" && (
-            <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
-              {tracks.length === 0 ? (
-                <CreatorHubByStep
-                  me={me}
-                  tracks={tracks}
-                  onUpload={() => navigate("/creators/studio/upload")}
-                />
-              ) : (
-                <StudioCatalog
-                  tracks={tracks}
-                  activeId={playing ? trackId(playing) : null}
-                  playing={isPlaying}
-                  onPlay={setPlaying}
-                  onEdit={openEdit}
-                  onDelete={(t) => void onDelete(t)}
-                />
-              )}
-            </div>
-          )}
-
-          {view === "releases" && (
-            <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-              {me.capabilities.canUploadTracks || me.status === "active" ? (
-                <StudioReleases />
-              ) : (
-                <CreatorHubByStep
-                  me={me}
-                  tracks={tracks}
-                  onUpload={() => navigate("/creators/studio/upload")}
-                />
-              )}
-            </div>
-          )}
-
-          {view === "insights" && (
-            <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-              {hubReady ? (
-                <CreatorAnalyticsDashboard
-                  analytics={analytics}
-                  loading={analyticsLoading}
-                  rangeDays={rangeDays}
-                  onRangeDays={setRangeDays}
-                />
-              ) : (
-                <CreatorHubByStep
-                  me={me}
-                  tracks={tracks}
-                  onUpload={() => navigate("/creators/studio/upload")}
-                />
-              )}
-            </div>
-          )}
-
-          {view === "profile" && (
-            <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
-              {me.capabilities.canEditProfile ? (
-                <StudioProfileForm
-                  artist={me.artist}
-                  busy={busy}
-                  imageBusy={imageBusy}
-                  onSave={onSaveProfile}
-                  onUploadAvatar={(file) => onUploadArtistImage("avatar", file)}
-                  onUploadBanner={(file) => onUploadArtistImage("banner", file)}
-                />
-              ) : (
-                <CreatorHubByStep
-                  me={me}
-                  tracks={tracks}
-                  onUpload={() => navigate("/creators/studio/upload")}
-                />
-              )}
-              <div className="max-w-3xl">
-                <MarketingEmailPrefsCard />
+            {view === "profile" && (
+              <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
+                {me.capabilities.canEditProfile ? (
+                  <StudioProfileForm
+                    artist={me.artist}
+                    busy={busy}
+                    imageBusy={imageBusy}
+                    onSave={onSaveProfile}
+                    onUploadAvatar={(file) => onUploadArtistImage("avatar", file)}
+                    onUploadBanner={(file) => onUploadArtistImage("banner", file)}
+                  />
+                ) : (
+                  <CreatorHubByStep
+                    me={me}
+                    tracks={tracks}
+                    onUpload={() => navigate("/creators/studio/upload")}
+                  />
+                )}
+                <div className="max-w-3xl">
+                  <MarketingEmailPrefsCard />
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </main>
       </div>
-
-      <NowPlayingBar
-        track={playing}
-        queue={tracks}
-        onTrackChange={setPlaying}
-        onPlayingChange={setIsPlaying}
-        onClose={() => setPlaying(null)}
-        shelfLabel="Studio preview"
-      />
 
       {editTrack && (
         <AdminModal

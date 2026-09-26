@@ -20,7 +20,10 @@ function Hero() {
             className={`mb-6 text-5xl font-bold text-jevah-text md:text-6xl lg:text-7xl ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
             style={{ animationDelay: "0.2s" }}
           >
-            Experience Faith. Connect with Purpose.
+            Experience Faith.{" "}
+            <span className="bg-gradient-to-r from-[var(--jevah-accent)] via-amber-500 to-[var(--jevah-accent-soft)] bg-clip-text text-transparent">
+              Connect with Purpose.
+            </span>
           </h1>
           <p
             className={`mx-auto mb-8 max-w-3xl text-lg text-jevah-text-muted md:text-xl ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}

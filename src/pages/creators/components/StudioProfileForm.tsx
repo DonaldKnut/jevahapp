@@ -9,6 +9,9 @@ import {
   InformationCircleIcon,
 } from "@heroicons/react/24/outline";
 import ImagePicker from "./ImagePicker";
+import ApplyBioEditor, { BIO_MAX_CHARS } from "./ApplyBioEditor";
+import BioRichText from "./BioRichText";
+import { htmlToPlain } from "../../../lib/htmlText";
 
 const SOCIAL_KEYS = [
   { id: "instagram", label: "Instagram", placeholder: "https://instagram.com/yourhandle" },
@@ -145,24 +148,23 @@ export default function StudioProfileForm({
           </label>
 
           {/* Bio */}
-          <label className="block">
-            <div className="flex items-center justify-between mb-2">
+          <div>
+            <div className="mb-2 flex items-center justify-between">
               <span className="block text-xs font-black uppercase tracking-wider text-jevah-text-muted">
                 Artist Bio & Story
               </span>
               <span className="text-[11px] font-bold text-jevah-text-muted">
-                {bio.length}/500 characters
+                {htmlToPlain(bio).length}/{BIO_MAX_CHARS}
               </span>
             </div>
-            <textarea
-              rows={4}
-              maxLength={500}
+            <ApplyBioEditor
+              tone="studio"
               value={bio}
-              onChange={(e) => setBio(e.target.value)}
-              className={inputClass}
-              placeholder="Share your calling, music ministry story, home church, or inspriation..."
+              onChange={setBio}
+              disabled={busy}
+              placeholder="Share your calling, music ministry story, home church, or inspiration..."
             />
-          </label>
+          </div>
 
           {/* Genres Chips Selector */}
           <div>
@@ -256,9 +258,16 @@ export default function StudioProfileForm({
               </div>
             </div>
 
-            <p className="mt-3 text-xs leading-relaxed text-white/70 line-clamp-3">
-              {bio || "Your bio will be displayed here for listeners exploring your music."}
-            </p>
+            {bio ? (
+              <BioRichText
+                html={bio}
+                className="mt-3 line-clamp-3 text-xs leading-relaxed text-white/70"
+              />
+            ) : (
+              <p className="mt-3 text-xs leading-relaxed text-white/70">
+                Your bio will be displayed here for listeners exploring your music.
+              </p>
+            )}
 
             {genres.length > 0 && (
               <div className="mt-3 flex flex-wrap gap-1.5">

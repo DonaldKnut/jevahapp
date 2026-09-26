@@ -4,15 +4,12 @@ import {
   SparklesIcon,
   CheckCircleIcon,
 } from "@heroicons/react/24/outline";
+import AuthPromoSlider from "../../../components/AuthPromoSlider";
 
 export default function UploadPromoAside() {
   return (
     <aside className="auth-promo relative hidden min-h-[640px] overflow-hidden rounded-3xl border border-amber-500/30 bg-gradient-to-br from-[#1A1208] via-[#2A1D0E] to-[#0B1A1F] shadow-[0_12px_40px_rgba(0,0,0,0.35)] lg:col-span-5 lg:flex lg:flex-col lg:justify-between p-8">
-      <img
-        src="https://res.cloudinary.com/dajpllbyu/image/upload/v1785390152/Two_Africans_listening_to_phones_202607300639_woclw7.jpg"
-        alt=""
-        className="absolute inset-0 h-full w-full scale-105 object-cover object-center brightness-75 saturate-110"
-      />
+      <AuthPromoSlider />
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0B1A1F] via-[#1A1208]/85 to-transparent" />
       <div
         className="pointer-events-none absolute inset-0 opacity-50"

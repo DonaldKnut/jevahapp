@@ -672,8 +672,8 @@ export default function AudioLibraryPage() {
               }}
               className={`rounded-3xl border-2 border-dashed p-7 text-center transition-all duration-200 ${
                 dragOver
-                  ? "border-jevah-accent bg-jevah-accent/15 scale-[1.01]"
-                  : "border-jevah-border bg-jevah-surface/90 hover:border-jevah-accent/40 hover:bg-jevah-card/60 shadow-sm"
+                  ? "scale-[1.01] border-jevah-accent bg-jevah-card"
+                  : "border-jevah-border bg-jevah-surface hover:border-jevah-accent hover:bg-jevah-card shadow-sm"
               }`}
             >
               <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-jevah-accent/20 to-teal-500/10 text-jevah-accent ring-1 ring-jevah-accent/25 shadow-sm">
@@ -722,7 +722,7 @@ export default function AudioLibraryPage() {
                 }}
               />
               {(audioFile || coverFile) && (
-                <div className="mt-4 space-y-1 text-left text-xs font-semibold text-jevah-accent bg-jevah-accent/10 p-3 rounded-xl">
+                <div className="mt-4 space-y-1 rounded-xl bg-jevah-card p-3 text-left text-xs font-semibold text-jevah-accent">
                   {audioFile && <p>Audio File: {audioFile.name}</p>}
                   {coverFile && <p>Cover Art: {coverFile.name}</p>}
                 </div>

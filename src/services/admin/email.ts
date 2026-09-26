@@ -67,6 +67,7 @@ export async function sendArtistOnboardEmail(body: {
   emails?: string[];
   subject?: string;
   message?: string;
+  templateId?: string;
   dryRun?: boolean;
   limit?: number;
 }) {

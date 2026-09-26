@@ -5,11 +5,15 @@ export type BibleTranslation = {
   abbreviation: string;
   name: string;
   language?: string;
+  languageName?: string;
   license?: BibleLicense;
   offline?: boolean;
   packBytes?: number | null;
   verseCount?: number;
+  count?: number;
   isDefault?: boolean;
+  corpusVersion?: string | null;
+  code?: string;
 };
 
 export type BibleCatalog = {
@@ -21,6 +25,7 @@ export type BibleBook = {
   name: string;
   testament: "old" | "new" | string;
   chapters?: number;
+  chapterCount?: number;
   order?: number;
   abbreviation?: string;
 };

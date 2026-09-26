@@ -1,7 +1,7 @@
 const store = new Map<string, { at: number; data: unknown }>();
 const TTL_MS = 6 * 60 * 60 * 1000;
 
-export function bibleCacheGet<T>(key: string): T | null {
+function bibleCacheGet<T>(key: string): T | null {
   const hit = store.get(key);
   if (!hit) return null;
   if (Date.now() - hit.at > TTL_MS) {
@@ -11,7 +11,7 @@ export function bibleCacheGet<T>(key: string): T | null {
   return hit.data as T;
 }
 
-export function bibleCacheSet(key: string, data: unknown) {
+function bibleCacheSet(key: string, data: unknown) {
   store.set(key, { at: Date.now(), data });
 }
 

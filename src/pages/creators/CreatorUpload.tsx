@@ -7,6 +7,7 @@ import {
   type CreatorMe,
 } from "../../services/creatorsApi";
 import { ApiError } from "../../lib/api";
+import { uploadFailureMessage } from "../../lib/media";
 import { useAuth } from "../../context/AuthContext";
 import { useFeedback } from "../../components/admin/Feedback";
 import { usePresignedTrackUpload } from "../../hooks/usePresignedTrackUpload";
@@ -230,9 +231,7 @@ export default function CreatorUpload() {
         const msg =
           err instanceof ApiError
             ? err.message
-            : err instanceof Error
-              ? err.message
-              : "Upload failed";
+            : uploadFailureMessage(err);
 
         updateItem(item.id, {
           status: "failed",

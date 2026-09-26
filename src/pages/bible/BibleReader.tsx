@@ -1,14 +1,15 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import {
-  ArrowPathIcon,
   BookOpenIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   ClipboardDocumentIcon,
   MagnifyingGlassIcon,
+  MinusIcon,
+  PlusIcon,
   ShareIcon,
-  SparklesIcon,
+  Squares2X2Icon,
 } from "@heroicons/react/24/outline";
 import { useBible } from "./BibleContext";
 import { useDocumentMeta } from "../../hooks/useDocumentMeta";
@@ -19,14 +20,20 @@ import {
   fetchVerseRange,
 } from "../../services/bible";
 import {
+  bookChapterCount,
+  compareHref,
+  formatVerseCopy,
   rangeRef,
   readerHref,
+  BIBLE_ZOOMS,
+  bumpBibleZoom,
   readFontSize,
   verseRef,
   writeFontSize,
   writeResume,
   type BibleFontSize,
 } from "../../lib/bible/paths";
+import { isUnknownTranslationError } from "../../lib/bible/translations";
 import type {
   BibleBook,
   BibleCommentary,
@@ -36,6 +43,7 @@ import type {
 import { ApiError } from "../../lib/api";
 import BookPickerSheet from "./components/BookPickerSheet";
 import VerseStudyPanel from "./components/VerseStudyPanel";
+import TranslationChip from "./TranslationChip";
 
 function neighbor(
   books: BibleBook[],
@@ -46,16 +54,37 @@ function neighbor(
   const idx = books.findIndex(
     (b) => b.name.toLowerCase() === book.toLowerCase()
   );
-  if (idx < 0) return null;
+  if (idx < 0) {
+    const nextCh = chapter + dir;
+    return nextCh >= 1 ? { book, chapter: nextCh } : null;
+  }
   const current = books[idx];
-  const max = current.chapters || 1;
+  const max = bookChapterCount(current);
   const nextCh = chapter + dir;
-  if (nextCh >= 1 && nextCh <= max) return { book: current.name, chapter: nextCh };
+  if (max > 0) {
+    if (nextCh >= 1 && nextCh <= max) {
+      return { book: current.name, chapter: nextCh };
+    }
+  } else if (nextCh >= 1) {
+    return { book: current.name, chapter: nextCh };
+  }
   const ni = idx + dir;
   if (ni < 0 || ni >= books.length) return null;
   const nb = books[ni];
-  const nMax = nb.chapters || 1;
+  const nMax = bookChapterCount(nb) || 1;
   return { book: nb.name, chapter: dir === 1 ? 1 : nMax };
+}
+
+function hopLabel(
+  currentBook: string,
+  dest: { book: string; chapter: number }
+) {
+  if (dest.book === currentBook) return `Ch ${dest.chapter}`;
+  return `${dest.book} ${dest.chapter}`;
+}
+
+function prefersReducedMotion() {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
 async function copyText(value: string) {
@@ -72,14 +101,22 @@ export default function BibleReader() {
     useParams();
   const [params] = useSearchParams();
   const navigate = useNavigate();
-  const { books, translationId, translations, catalogReady, catalogFailed } =
-    useBible();
+  const {
+    books,
+    translationId,
+    currentTranslation,
+    corpusVersion,
+    catalogReady,
+    catalogFailed,
+    fallbackTranslation,
+  } = useBible();
   const chapter = Math.max(1, Number(chapterRaw) || 1);
   const highlight = Number(verseParam || params.get("verse") || 0) || 0;
   const bookName = decodeURIComponent(book);
   const [verses, setVerses] = useState<BibleVerse[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [swapping, setSwapping] = useState(false);
   const [picker, setPicker] = useState<"book" | "chapter" | null>(null);
   const [rangeMode, setRangeMode] = useState(false);
   const [rangeEnd, setRangeEnd] = useState(0);
@@ -90,16 +127,18 @@ export default function BibleReader() {
   const [toast, setToast] = useState<string | null>(null);
   const [fontSize, setFontSize] = useState<BibleFontSize>(() => readFontSize());
   const [railFilter, setRailFilter] = useState("");
+  const placeRef = useRef({ book: "", chapter: 0, translation: "" as string | null });
 
   const meta = books.find(
     (b) => b.name.toLowerCase() === bookName.toLowerCase()
   );
   const canonicalBook = meta?.name || bookName;
-  const transName =
-    translations.find((t) => t.id === translationId)?.name ||
-    "World English Bible";
-  const transAbbr =
-    translations.find((t) => t.id === translationId)?.abbreviation || "WEB";
+  const transName = currentTranslation?.name || "World English Bible";
+  const transAbbr = currentTranslation?.abbreviation || "WEB";
+  const renderedAbbr = (
+    verses[0]?.translation ||
+    transAbbr
+  ).toUpperCase();
 
   const prev = useMemo(
     () => neighbor(books, canonicalBook, chapter, -1),
@@ -116,8 +155,8 @@ export default function BibleReader() {
   const rangeStop = Math.max(fromVerse, toVerse) || toVerse;
 
   useDocumentMeta({
-    title: `${canonicalBook} ${chapter}${highlight ? `:${highlight}` : ""} — Jevah Holy Bible`,
-    description: `Read ${canonicalBook} chapter ${chapter} in the ${transName} on Jevah. Search, study commentary, and share verses.`,
+    title: `${canonicalBook} ${chapter}${highlight ? `:${highlight}` : ""} (${transAbbr}) · Jevah`,
+    description: `Read ${canonicalBook} chapter ${chapter} in the ${transName} on Jevah.`,
     canonicalPath: readerHref(canonicalBook, chapter, {
       verse: highlight || undefined,
       translation: translationId,
@@ -134,43 +173,129 @@ export default function BibleReader() {
   useEffect(() => {
     if (!catalogReady) return;
     let alive = true;
-    setLoading(true);
-    setError(null);
     const t = catalogFailed ? null : translationId;
-    void fetchChapterVerses(canonicalBook, chapter, t)
+    const placeChanged =
+      placeRef.current.book !== canonicalBook ||
+      placeRef.current.chapter !== chapter;
+    const transChanged = placeRef.current.translation !== t;
+    placeRef.current = { book: canonicalBook, chapter, translation: t };
+
+    if (placeChanged) {
+      setLoading(true);
+      setError(null);
+    } else if (transChanged) {
+      setSwapping(true);
+      setError(null);
+    }
+
+    void fetchChapterVerses(canonicalBook, chapter, t, corpusVersion)
       .then((list) => {
         if (!alive) return;
         setVerses(list);
+        setError(null);
         writeResume({
           book: canonicalBook,
           chapter,
+          verse: highlight || undefined,
           translation: translationId,
         });
       })
       .catch((err) => {
         if (!alive) return;
-        setVerses([]);
+        if (isUnknownTranslationError(err)) {
+          fallbackTranslation();
+          return;
+        }
+        if (!verses.length) {
+          setVerses([]);
+        }
         setError(
           err instanceof ApiError
             ? err.status === 404
-              ? "This book or chapter was not found. Note: Psalms is spelled with an 's'."
+              ? "This book or chapter was not found. Note: Psalms is spelled with an ‘s’."
               : err.message
-            : "Could not unroll this chapter."
+            : "Could not load this chapter."
         );
       })
       .finally(() => {
-        if (alive) setLoading(false);
+        if (!alive) return;
+        setLoading(false);
+        setSwapping(false);
       });
     return () => {
       alive = false;
     };
-  }, [canonicalBook, chapter, translationId, catalogReady, catalogFailed]);
+    // verses.length is only used to decide whether to clear on error
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    canonicalBook,
+    chapter,
+    translationId,
+    corpusVersion,
+    catalogReady,
+    catalogFailed,
+    fallbackTranslation,
+  ]);
+
+  useEffect(() => {
+    if (!next || loading || catalogFailed) return;
+    const t = translationId;
+    const idle = window.setTimeout(() => {
+      void fetchChapterVerses(next.book, next.chapter, t, corpusVersion).catch(
+        () => undefined
+      );
+    }, 900);
+    return () => window.clearTimeout(idle);
+  }, [next, translationId, corpusVersion, loading, catalogFailed]);
 
   useEffect(() => {
     if (!highlight || loading) return;
     const el = document.getElementById(`v-${highlight}`);
-    el?.scrollIntoView({ behavior: "smooth", block: "center" });
-  }, [highlight, loading, verses.length]);
+    if (!el) return;
+    el.setAttribute("tabindex", "-1");
+    el.focus({ preventScroll: true });
+    const rect = el.getBoundingClientRect();
+    const inView = rect.top >= 96 && rect.bottom <= window.innerHeight - 96;
+    if (!inView) {
+      el.scrollIntoView({
+        behavior: prefersReducedMotion() ? "auto" : "smooth",
+        block: "center",
+      });
+    }
+  }, [highlight, loading, verses, translationId]);
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      const tag = (e.target as HTMLElement | null)?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+      if (e.key === "ArrowLeft" && prev) {
+        e.preventDefault();
+        navigate(
+          readerHref(prev.book, prev.chapter, { translation: translationId })
+        );
+      }
+      if (e.key === "ArrowRight" && next) {
+        e.preventDefault();
+        navigate(
+          readerHref(next.book, next.chapter, { translation: translationId })
+        );
+      }
+      if ((e.key === "-" || e.key === "_") && !e.metaKey && !e.ctrlKey) {
+        e.preventDefault();
+        const nextSize = bumpBibleZoom(fontSize, -1);
+        setFontSize(nextSize);
+        writeFontSize(nextSize);
+      }
+      if ((e.key === "=" || e.key === "+") && !e.metaKey && !e.ctrlKey) {
+        e.preventDefault();
+        const nextSize = bumpBibleZoom(fontSize, 1);
+        setFontSize(nextSize);
+        writeFontSize(nextSize);
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [prev, next, navigate, translationId, fontSize]);
 
   useEffect(() => {
     setRangeMode(false);
@@ -204,39 +329,53 @@ export default function BibleReader() {
   }
 
   async function share() {
-    const url = `${window.location.origin}${readerHref(canonicalBook, chapter, {
+    const path = readerHref(canonicalBook, chapter, {
       verse: highlight || undefined,
       translation: translationId,
-    })}`;
+    });
+    const url = `${window.location.origin}${path}`;
+    const selected = verses.find((v) => v.verseNumber === highlight);
+    const text = selected
+      ? formatVerseCopy(
+          verseRef(canonicalBook, chapter, highlight),
+          renderedAbbr,
+          selected.text
+        )
+      : `${canonicalBook} ${chapter} (${renderedAbbr})`;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `${canonicalBook} ${chapter} (${renderedAbbr})`,
+          text,
+          url,
+        });
+        return;
+      } catch {
+        /* cancelled */
+      }
+    }
     const ok = await copyText(url);
-    setToast(ok ? "Chapter link copied to clipboard" : "Could not copy link");
+    setToast(ok ? "Link copied" : "Could not copy link");
   }
 
   async function copyPassage(from: number, to: number) {
     const t = catalogFailed ? null : translationId;
     const ref = rangeRef(canonicalBook, chapter, from, to);
+    const local = verses
+      .filter((v) => v.verseNumber >= from && v.verseNumber <= to)
+      .map((v) => v.text)
+      .join("\n");
     try {
-      const list = await fetchVerseRange(ref, t);
+      const list = await fetchVerseRange(ref, t, corpusVersion);
       const body =
         list.length > 0
-          ? list
-              .map((v) =>
-                v.verseNumber ? `${v.verseNumber} ${v.text}` : v.text
-              )
-              .join("\n")
-          : verses
-              .filter((v) => v.verseNumber >= from && v.verseNumber <= to)
-              .map((v) => `${v.verseNumber} ${v.text}`)
-              .join("\n");
-      const ok = await copyText(`${ref} (${transAbbr})\n\n${body}`);
-      setToast(ok ? `Copied ${ref}` : "Could not copy");
+          ? list.map((v) => v.text).join("\n")
+          : local;
+      const ok = await copyText(formatVerseCopy(ref, renderedAbbr, body));
+      setToast(ok ? `Copied ${ref} (${renderedAbbr})` : "Could not copy");
     } catch {
-      const body = verses
-        .filter((v) => v.verseNumber >= from && v.verseNumber <= to)
-        .map((v) => `${v.verseNumber} ${v.text}`)
-        .join("\n");
-      const ok = await copyText(`${ref} (${transAbbr})\n\n${body}`);
-      setToast(ok ? `Copied ${ref}` : "Could not copy");
+      const ok = await copyText(formatVerseCopy(ref, renderedAbbr, local));
+      setToast(ok ? `Copied ${ref} (${renderedAbbr})` : "Could not copy");
     }
   }
 
@@ -257,12 +396,14 @@ export default function BibleReader() {
   }
 
   function bumpFont(dir: -1 | 1) {
-    const order: BibleFontSize[] = ["sm", "md", "lg"];
-    const i = Math.min(2, Math.max(0, order.indexOf(fontSize) + dir));
-    const nextSize = order[i];
+    const nextSize = bumpBibleZoom(fontSize, dir);
     setFontSize(nextSize);
     writeFontSize(nextSize);
   }
+
+  const zoomStyle = {
+    "--bible-zoom": String(fontSize / 100),
+  } as CSSProperties;
 
   const needle = railFilter.trim().toLowerCase();
   const ot = books.filter(
@@ -271,29 +412,32 @@ export default function BibleReader() {
   const nt = books.filter(
     (b) => b.testament === "new" && (!needle || b.name.toLowerCase().includes(needle))
   );
-  const chapterCount = meta?.chapters || Math.max(chapter, verses.length ? 1 : 0);
+  const chapterCount =
+    (meta && bookChapterCount(meta)) || Math.max(chapter, verses.length ? 1 : 0);
   const verseInRange = (n: number) =>
     highlight > 0 && n >= rangeStart && n <= rangeStop && rangeStop > 0;
+  const showColumn = verses.length > 0;
+  const firstPaint = loading && !showColumn;
 
   return (
     <>
-      <div className="bible-reader mx-auto grid max-w-6xl gap-6 px-3 pb-28 pt-4 sm:px-6 sm:pb-16 sm:pt-6 lg:grid-cols-[220px_1fr] lg:gap-8">
-        <aside className="bible-page-enter hidden lg:block sticky top-36 h-[calc(100vh-10rem)] overflow-hidden rounded-2xl border border-[#c4a574]/30 bg-white/40 p-3 backdrop-blur-md dark:bg-white/5">
+      <div className="bible-reader mx-auto grid max-w-6xl gap-6 px-3 pb-40 pt-4 sm:px-6 sm:pb-40 sm:pt-6 lg:grid-cols-[220px_1fr] lg:gap-8">
+        <aside className="bible-page-enter sticky top-36 hidden h-[calc(100vh-10rem)] overflow-hidden rounded-2xl border border-[#c4a574]/30 bg-white/40 p-3 backdrop-blur-md dark:bg-white/5 lg:block">
           <div className="relative mb-2">
             <MagnifyingGlassIcon className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#9a7b3c]" />
             <input
               value={railFilter}
               onChange={(e) => setRailFilter(e.target.value)}
               placeholder="Find book…"
-              className="h-8 w-full rounded-lg border border-[#c4a574]/30 bg-white/70 pl-8 pr-2 text-xs outline-none focus:border-[#256E63] dark:bg-[#241e17] dark:text-[#f4ead6]"
+              className="h-8 w-full rounded-lg border border-[#c4a574]/30 bg-white/70 pl-8 pr-2 text-xs outline-none focus:border-[#256E63] dark:bg-[#0d2622] dark:text-[#e4ebe9]"
             />
           </div>
 
           <nav className="bible-rail h-[calc(100%-3rem)] overflow-y-auto pr-1 text-xs">
             {ot.length > 0 && (
               <div className="mb-3">
-                <p className="mb-1 text-[10px] font-extrabold uppercase tracking-widest text-[#9a7b3c] dark:text-[#e2c286]">
-                  Old Testament ({ot.length})
+                <p className="mb-1 text-[10px] font-extrabold uppercase tracking-widest text-[#9a7b3c] dark:text-[#8fd4c8]">
+                  Old Testament
                 </p>
                 {ot.map((b) => (
                   <Link
@@ -302,7 +446,7 @@ export default function BibleReader() {
                     className={`block rounded-lg px-2.5 py-1.5 font-sans text-sm transition-all ${
                       b.name === canonicalBook
                         ? "bg-[#256E63] font-bold text-white shadow-sm"
-                        : "text-[#1f2a24] hover:bg-black/5 dark:text-[#f4ead6] dark:hover:bg-white/10"
+                        : "text-[#1f2a24] hover:bg-black/5 dark:text-[#e4ebe9] dark:hover:bg-white/10"
                     }`}
                   >
                     {b.name}
@@ -310,11 +454,10 @@ export default function BibleReader() {
                 ))}
               </div>
             )}
-
             {nt.length > 0 && (
               <div>
-                <p className="mb-1 text-[10px] font-extrabold uppercase tracking-widest text-[#9a7b3c] dark:text-[#e2c286]">
-                  New Testament ({nt.length})
+                <p className="mb-1 text-[10px] font-extrabold uppercase tracking-widest text-[#9a7b3c] dark:text-[#8fd4c8]">
+                  New Testament
                 </p>
                 {nt.map((b) => (
                   <Link
@@ -323,7 +466,7 @@ export default function BibleReader() {
                     className={`block rounded-lg px-2.5 py-1.5 font-sans text-sm transition-all ${
                       b.name === canonicalBook
                         ? "bg-[#256E63] font-bold text-white shadow-sm"
-                        : "text-[#1f2a24] hover:bg-black/5 dark:text-[#f4ead6] dark:hover:bg-white/10"
+                        : "text-[#1f2a24] hover:bg-black/5 dark:text-[#e4ebe9] dark:hover:bg-white/10"
                     }`}
                   >
                     {b.name}
@@ -335,60 +478,42 @@ export default function BibleReader() {
         </aside>
 
         <article className="bible-page-enter min-w-0">
-          <header className="flex flex-wrap items-end justify-between gap-3 border-b border-[#c4a574]/30 pb-4">
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <span className="rounded-full bg-[#c4a574]/15 px-2.5 py-0.5 font-sans text-[10px] font-bold uppercase tracking-widest text-[#9a7b3c] dark:text-[#e2c286]">
-                  {meta?.testament === "new" ? "New Testament" : "Old Testament"}
-                </span>
-                <span className="text-xs font-semibold text-[#8a7d68]">{transAbbr}</span>
-              </div>
-              <h1 className="mt-1 font-sans text-4xl font-bold tracking-tight text-[#1f2a24] dark:text-[#f4ead6] sm:text-5xl">
-                {canonicalBook}{" "}
-                <span className="text-[#9a7b3c] dark:text-[#e2c286]">{chapter}</span>
-              </h1>
+          <header className="flex flex-wrap items-center justify-between gap-2 border-b border-[#c4a574]/30 pb-4">
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setPicker("book")}
+                className="bible-picker-chip"
+              >
+                <span className="truncate">{canonicalBook}</span>
+                <span className="text-[#9a7b3c]">▾</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setPicker("chapter")}
+                className="bible-picker-chip shrink-0"
+              >
+                {chapter} ▾
+              </button>
+              <TranslationChip />
             </div>
 
-            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-              <div className="inline-flex overflow-hidden rounded-full border border-[#c4a574]/40 bg-white/60 backdrop-blur-md dark:bg-white/5">
-                <button
-                  type="button"
-                  onClick={() => bumpFont(-1)}
-                  className={`h-9 px-2.5 text-xs font-bold transition-colors ${
-                    fontSize === "sm" ? "bg-[#256e63] text-white" : "text-[#6b5a3a] hover:bg-[#256e63]/10 dark:text-[#e2c286]"
-                  }`}
-                  aria-label="Smaller text"
-                >
-                  A−
-                </button>
-                <button
-                  type="button"
-                  onClick={() => bumpFont(1)}
-                  className={`h-9 border-l border-[#c4a574]/30 px-2.5 text-sm font-bold transition-colors ${
-                    fontSize === "lg" ? "bg-[#256e63] text-white" : "text-[#6b5a3a] hover:bg-[#256e63]/10 dark:text-[#e2c286]"
-                  }`}
-                  aria-label="Larger text"
-                >
-                  A+
-                </button>
-              </div>
-
+            <div className="flex flex-wrap items-center gap-1.5">
               <button
                 type="button"
                 onClick={() => void share()}
-                className="inline-flex h-9 items-center gap-1.5 rounded-full border border-[#c4a574]/40 bg-white/60 px-3.5 text-xs font-bold text-[#6b5a3a] backdrop-blur-md hover:bg-white dark:bg-white/5 dark:text-[#e2c286]"
+                className="inline-flex h-9 items-center gap-1.5 rounded-full border border-[#c4a574]/40 bg-white/60 px-3.5 text-xs font-bold text-[#6b5a3a] backdrop-blur-md hover:bg-white dark:bg-white/5 dark:text-[#c8d5d2]"
               >
                 <ShareIcon className="h-4 w-4" />
                 <span className="hidden sm:inline">Share</span>
               </button>
-
               {prev && (
                 <Link
                   to={readerHref(prev.book, prev.chapter, {
                     translation: translationId,
                   })}
-                  className="hidden h-9 w-9 items-center justify-center rounded-full border border-[#c4a574]/40 bg-white/60 text-[#1f2a24] backdrop-blur-md hover:border-[#256e63] dark:bg-white/5 dark:text-[#f4ead6] sm:inline-flex"
-                  aria-label="Previous chapter"
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#c4a574]/40 bg-white/60 text-[#1f2a24] backdrop-blur-md hover:border-[#256e63] dark:bg-white/5 dark:text-[#e4ebe9]"
+                  aria-label={`Previous: ${hopLabel(canonicalBook, prev)}`}
                 >
                   <ChevronLeftIcon className="h-5 w-5" />
                 </Link>
@@ -398,8 +523,8 @@ export default function BibleReader() {
                   to={readerHref(next.book, next.chapter, {
                     translation: translationId,
                   })}
-                  className="hidden h-9 w-9 items-center justify-center rounded-full border border-[#c4a574]/40 bg-white/60 text-[#1f2a24] backdrop-blur-md hover:border-[#256e63] dark:bg-white/5 dark:text-[#f4ead6] sm:inline-flex"
-                  aria-label="Next chapter"
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[#c4a574]/40 bg-white/60 text-[#1f2a24] backdrop-blur-md hover:border-[#256e63] dark:bg-white/5 dark:text-[#e4ebe9]"
+                  aria-label={`Next: ${hopLabel(canonicalBook, next)}`}
                 >
                   <ChevronRightIcon className="h-5 w-5" />
                 </Link>
@@ -407,45 +532,9 @@ export default function BibleReader() {
             </div>
           </header>
 
-          <div className="mt-3 flex items-center gap-2 lg:hidden">
-            <button
-              type="button"
-              onClick={() => setPicker("book")}
-              className="bible-picker-chip min-w-0 flex-1"
-            >
-              <span className="truncate">{canonicalBook}</span>
-              <span className="text-[#9a7b3c]">▾</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setPicker("chapter")}
-              className="bible-picker-chip shrink-0"
-            >
-              Ch {chapter} ▾
-            </button>
-          </div>
-
-          {chapterCount > 1 && (
-            <div className="mt-4 hidden flex-wrap gap-1.5 sm:flex">
-              {Array.from({ length: chapterCount }, (_, i) => i + 1).map((n) => (
-                <Link
-                  key={n}
-                  to={readerHref(canonicalBook, n, { translation: translationId })}
-                  className={`flex h-8 min-w-8 items-center justify-center rounded-lg px-2 text-xs font-bold transition-all ${
-                    n === chapter
-                      ? "bg-[#256E63] text-white shadow-sm"
-                      : "bg-white/50 text-[#6b5a3a] hover:bg-[#256E63]/15 dark:bg-white/5 dark:text-[#cbbfa8]"
-                  }`}
-                >
-                  {n}
-                </Link>
-              ))}
-            </div>
-          )}
-
           {rangeMode && (
             <div className="mt-4 flex items-center justify-between rounded-xl border border-[#256E63]/30 bg-[#256E63]/10 px-4 py-2.5 text-xs font-semibold text-[#256E63] dark:bg-[#256E63]/25 dark:text-emerald-300">
-              <span>Tap the ending verse to select and copy the full passage range.</span>
+              <span>Tap the last verse to copy the range.</span>
               <button
                 type="button"
                 onClick={() => setRangeMode(false)}
@@ -456,34 +545,37 @@ export default function BibleReader() {
             </div>
           )}
 
-          {loading ? (
-            <div className="mt-16 text-center">
-              <ArrowPathIcon className="mx-auto h-8 w-8 animate-spin text-[#9a7b3c]" />
-              <p className="mt-3 font-sans text-lg text-[#8a7d68]">Unrolling chapter scroll…</p>
+          {firstPaint ? (
+            <div className="bible-column bible-column--skeleton mt-10" style={zoomStyle}>
+              {Array.from({ length: 8 }, (_, i) => (
+                <p key={i} className="bible-verse-skel" />
+              ))}
             </div>
-          ) : error ? (
+          ) : error && !showColumn ? (
             <div className="mt-12 rounded-2xl border border-rose-500/30 bg-rose-500/5 p-6 text-center text-sm text-rose-800 dark:text-rose-200">
               <p className="font-semibold">{error}</p>
               <Link
                 to={readerHref("Genesis", 1, { translation: translationId })}
                 className="mt-3 inline-block font-bold text-[#256E63] underline"
               >
-                Return to Genesis 1
+                Open Genesis 1
               </Link>
             </div>
           ) : (
-            <div className="bible-column mt-8 sm:mt-10" data-size={fontSize}>
-              {verses.map((v, i) => {
+            <div
+              className={`bible-column mt-8 sm:mt-10 ${swapping ? "is-swapping" : ""}`}
+              style={zoomStyle}
+            >
+              {verses.map((v) => {
                 const active = verseInRange(v.verseNumber);
                 const isSelected = highlight === v.verseNumber;
                 return (
                   <p
                     key={v.verseNumber}
                     id={`v-${v.verseNumber}`}
-                    className={`bible-verse group ${i === 0 ? "bible-verse-first" : ""} ${
+                    className={`bible-verse group ${
                       active || isSelected ? "bible-verse--active" : ""
                     }`}
-                    style={{ animationDelay: `${Math.min(i, 24) * 16}ms` }}
                     onClick={() => selectVerse(v.verseNumber)}
                   >
                     <sup className="bible-sup">{v.verseNumber}</sup>
@@ -494,35 +586,33 @@ export default function BibleReader() {
             </div>
           )}
 
-          <p className="mt-12 text-center font-sans text-xs text-[#8a7d68]">
-            {transName} Edition
-            {highlight
-              ? ` · ${rangeStart && rangeStop && rangeStop !== rangeStart
-                  ? rangeRef(canonicalBook, chapter, rangeStart, rangeStop)
-                  : verseRef(canonicalBook, chapter, highlight)}`
-              : ""}
-          </p>
-
-          {highlight > 0 && (
-            <div className="mt-6 hidden flex-wrap items-center justify-center gap-2.5 lg:flex">
+          {highlight > 0 && showColumn && (
+            <div className="mt-8 hidden flex-wrap items-center justify-center gap-2 lg:flex">
               <button
                 type="button"
                 className="bible-chip-btn inline-flex items-center gap-1.5"
                 onClick={() => void copyPassage(rangeStart, rangeStop || rangeStart)}
               >
                 <ClipboardDocumentIcon className="h-4 w-4" />
-                <span>Copy Verse</span>
+                Copy
               </button>
               <button
                 type="button"
                 className="bible-chip-btn inline-flex items-center gap-1.5"
                 onClick={() => {
                   setRangeMode(true);
-                  setToast("Click ending verse to complete range selection");
+                  setToast("Tap the last verse");
                 }}
               >
-                <SparklesIcon className="h-4 w-4" />
-                <span>Select Multi-Verse Range</span>
+                Range
+              </button>
+              <button
+                type="button"
+                className="bible-chip-btn inline-flex items-center gap-1.5"
+                onClick={() => void share()}
+              >
+                <ShareIcon className="h-4 w-4" />
+                Share
               </button>
               <button
                 type="button"
@@ -530,80 +620,177 @@ export default function BibleReader() {
                 onClick={openStudy}
               >
                 <BookOpenIcon className="h-4 w-4" />
-                <span>Commentary & Study</span>
+                Study
               </button>
+              <Link
+                to={compareHref(canonicalBook, chapter, {
+                  verse: highlight || undefined,
+                  left: "web",
+                  right: translationId === "web" ? "kjv" : translationId,
+                })}
+                className="bible-chip-btn inline-flex items-center gap-1.5"
+              >
+                <Squares2X2Icon className="h-4 w-4" />
+                Compare
+              </Link>
+            </div>
+          )}
+
+          <nav className="mt-10 flex items-stretch gap-2">
+            {prev ? (
+              <Link
+                to={readerHref(prev.book, prev.chapter, {
+                  translation: translationId,
+                })}
+                className="bible-chapternav-end"
+              >
+                <ChevronLeftIcon className="h-5 w-5 shrink-0" />
+                <span className="min-w-0 truncate">
+                  <span className="block text-[10px] font-bold uppercase tracking-wider opacity-70">
+                    Previous
+                  </span>
+                  {hopLabel(canonicalBook, prev)}
+                </span>
+              </Link>
+            ) : (
+              <span />
+            )}
+            {next ? (
+              <Link
+                to={readerHref(next.book, next.chapter, {
+                  translation: translationId,
+                })}
+                className="bible-chapternav-end text-right"
+              >
+                <span className="min-w-0 truncate">
+                  <span className="block text-[10px] font-bold uppercase tracking-wider opacity-70">
+                    Next
+                  </span>
+                  {hopLabel(canonicalBook, next)}
+                </span>
+                <ChevronRightIcon className="h-5 w-5 shrink-0" />
+              </Link>
+            ) : (
+              <span />
+            )}
+          </nav>
+
+          {chapterCount > 1 && (
+            <div className="mt-6 flex flex-wrap justify-center gap-1.5 pb-4">
+              {Array.from({ length: chapterCount }, (_, i) => i + 1).map((n) => (
+                <Link
+                  key={n}
+                  to={readerHref(canonicalBook, n, { translation: translationId })}
+                  className={`flex h-8 min-w-8 items-center justify-center rounded-lg px-2 text-xs font-bold transition-all ${
+                    n === chapter
+                      ? "bg-[#256E63] text-white shadow-sm"
+                      : "bg-white/50 text-[#6b5a3a] hover:bg-[#256E63]/15 dark:bg-white/5 dark:text-[#c8d5d2]"
+                  }`}
+                >
+                  {n}
+                </Link>
+              ))}
             </div>
           )}
         </article>
       </div>
 
-      <nav className="bible-thumbbar lg:hidden">
+      {prev && (
+        <Link
+          to={readerHref(prev.book, prev.chapter, { translation: translationId })}
+          className="bible-edge-btn bible-edge-btn--prev"
+          aria-label={`Previous: ${hopLabel(canonicalBook, prev)}`}
+        >
+          <ChevronLeftIcon className="h-6 w-6" />
+        </Link>
+      )}
+      {next && (
+        <Link
+          to={readerHref(next.book, next.chapter, { translation: translationId })}
+          className="bible-edge-btn bible-edge-btn--next"
+          aria-label={`Next: ${hopLabel(canonicalBook, next)}`}
+        >
+          <ChevronRightIcon className="h-6 w-6" />
+        </Link>
+      )}
+
+      <div
+        className="fixed bottom-[calc(4.85rem+env(safe-area-inset-bottom,0px))] left-1/2 z-[45] -translate-x-1/2"
+        role="group"
+        aria-label="Scripture zoom"
+      >
+        <div className="inline-flex items-center overflow-hidden rounded-full border border-[#c4a574]/45 bg-[#fdfbf7]/95 shadow-lg shadow-black/15 backdrop-blur-xl dark:border-white/15 dark:bg-[#0a1f1c]/95">
+          <button
+            type="button"
+            onClick={() => bumpFont(-1)}
+            disabled={fontSize === BIBLE_ZOOMS[0]}
+            className="inline-flex h-11 w-11 items-center justify-center text-[#6b5a3a] transition-colors hover:bg-[#256e63]/10 disabled:opacity-35 dark:text-[#c8d5d2]"
+            aria-label="Zoom out scripture"
+          >
+            <MinusIcon className="h-5 w-5" />
+          </button>
+          <span className="min-w-[3rem] text-center text-xs font-bold tabular-nums text-[#6b5a3a] dark:text-[#c8d5d2]">
+            {fontSize}%
+          </span>
+          <button
+            type="button"
+            onClick={() => bumpFont(1)}
+            disabled={fontSize === BIBLE_ZOOMS[BIBLE_ZOOMS.length - 1]}
+            className="inline-flex h-11 w-11 items-center justify-center text-[#6b5a3a] transition-colors hover:bg-[#256e63]/10 disabled:opacity-35 dark:text-[#c8d5d2]"
+            aria-label="Zoom in scripture"
+          >
+            <PlusIcon className="h-5 w-5" />
+          </button>
+        </div>
+      </div>
+
+      <nav className="bible-thumbbar" aria-label="Chapter navigation">
         {prev ? (
           <Link
             to={readerHref(prev.book, prev.chapter, {
               translation: translationId,
             })}
-            className="bible-thumbbar-btn"
-            aria-label="Previous chapter"
+            className="bible-thumbbar-hop"
+            aria-label={`Previous: ${hopLabel(canonicalBook, prev)}`}
           >
-            <ChevronLeftIcon className="h-5 w-5" />
+            <ChevronLeftIcon className="h-5 w-5 shrink-0" />
+            <span className="hidden min-w-0 truncate sm:inline">
+              {hopLabel(canonicalBook, prev)}
+            </span>
           </Link>
         ) : (
-          <span className="bible-thumbbar-btn opacity-30">
+          <span className="bible-thumbbar-hop opacity-30">
             <ChevronLeftIcon className="h-5 w-5" />
           </span>
         )}
 
-        {highlight ? (
-          <div className="flex min-w-0 flex-1 items-center justify-center gap-1">
-            <button
-              type="button"
-              className="bible-thumbbar-action"
-              onClick={() => void copyPassage(rangeStart, rangeStop || rangeStart)}
-            >
-              <ClipboardDocumentIcon className="h-3.5 w-3.5" />
-              <span>Copy</span>
-            </button>
-            <button
-              type="button"
-              className="bible-thumbbar-action"
-              onClick={() => {
-                setRangeMode(true);
-                setToast("Tap ending verse");
-              }}
-            >
-              <span>Range</span>
-            </button>
-            <button
-              type="button"
-              className="bible-thumbbar-action"
-              onClick={openStudy}
-            >
-              <span>Study</span>
-            </button>
-          </div>
-        ) : (
-          <button
-            type="button"
-            className="min-w-0 flex-1 truncate text-center font-sans text-sm font-bold tracking-wide text-[#1f2a24] dark:text-[#f4ead6]"
-            onClick={() => setPicker("book")}
-          >
-            {canonicalBook} <span className="text-[#9a7b3c]">{chapter}</span> ▾
-          </button>
-        )}
+        <button
+          type="button"
+          className="bible-thumbbar-now"
+          onClick={() => setPicker("chapter")}
+          aria-label="Choose chapter"
+        >
+          <span className="truncate">
+            {canonicalBook} {chapter}
+          </span>
+          <span aria-hidden>▾</span>
+        </button>
 
         {next ? (
           <Link
             to={readerHref(next.book, next.chapter, {
               translation: translationId,
             })}
-            className="bible-thumbbar-btn"
-            aria-label="Next chapter"
+            className="bible-thumbbar-hop bible-thumbbar-hop--next"
+            aria-label={`Next: ${hopLabel(canonicalBook, next)}`}
           >
-            <ChevronRightIcon className="h-5 w-5" />
+            <span className="hidden min-w-0 truncate sm:inline">
+              {hopLabel(canonicalBook, next)}
+            </span>
+            <ChevronRightIcon className="h-5 w-5 shrink-0" />
           </Link>
         ) : (
-          <span className="bible-thumbbar-btn opacity-30">
+          <span className="bible-thumbbar-hop opacity-30">
             <ChevronRightIcon className="h-5 w-5" />
           </span>
         )}

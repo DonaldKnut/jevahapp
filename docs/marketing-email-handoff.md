@@ -15,6 +15,20 @@ Implements the 2026-08-03 marketing email handoff against `jevahapp-backend` (Re
 | Marketing prefs | Admin Settings + Creator Studio → `GET/PATCH /me/marketing-email` |
 | Public unsubscribe | `/email/unsubscribe?token=…` → `GET/POST /email/unsubscribe` (no auth) |
 
+## Logo (all emails)
+
+Header mark for marketing, artist onboard, ops, and transactional EJS:
+
+```
+https://res.cloudinary.com/bt01nio6/image/upload/v1790381597/jevahha-removebg-preview.png
+```
+
+```bash
+JEVAH_EMAIL_LOGO_URL=https://res.cloudinary.com/bt01nio6/image/upload/v1790381597/jevahha-removebg-preview.png
+```
+
+See `docs/artist-welcome-email-backend-handoff.md` §3b for the shared `_header.ejs` snippet.
+
 ## Backend env (confirm)
 
 ```bash
