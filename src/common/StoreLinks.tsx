@@ -7,20 +7,20 @@ interface StoreLinksProps {
 }
 
 const badgeClass =
-  "h-10 w-auto max-w-[46%] transition-transform duration-300 xs:h-12 md:h-14 dark:rounded-xl dark:bg-white/95 dark:p-1 dark:shadow-md";
+  "h-12 w-auto max-w-none shrink-0 object-contain sm:h-14 md:h-[3.75rem] dark:rounded-xl dark:bg-white/95 dark:p-1 dark:shadow-md";
 
 const badgeClassSm =
-  "h-10 w-auto transition-transform duration-300 dark:rounded-lg dark:bg-white/95 dark:p-1 dark:shadow-md";
+  "h-11 w-auto max-w-none shrink-0 object-contain sm:h-12 dark:rounded-lg dark:bg-white/95 dark:p-1 dark:shadow-md";
 
 function StoreLinks({ type }: StoreLinksProps) {
   if (type === BtnTypes.Standard) {
     return (
-      <div className="flex flex-wrap items-center justify-center gap-2 xs:gap-4">
+      <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-5">
         <a
           href="https://www.apple.com/app-store"
           target="_blank"
           rel="noopener noreferrer"
-          className="transition-transform duration-300 hover:scale-105"
+          className="inline-flex shrink-0 transition-transform duration-300 hover:scale-105"
         >
           <img
             src={AppStore}
@@ -32,7 +32,7 @@ function StoreLinks({ type }: StoreLinksProps) {
           href="https://play.google.com"
           target="_blank"
           rel="noopener noreferrer"
-          className="transition-transform duration-300 hover:scale-105"
+          className="inline-flex shrink-0 transition-transform duration-300 hover:scale-105"
         >
           <img
             src={PlayStore}
