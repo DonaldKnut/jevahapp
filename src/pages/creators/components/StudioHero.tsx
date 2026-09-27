@@ -130,13 +130,13 @@ export default function StudioHero({
         }}
       />
 
-      <div className="relative z-10 mx-auto max-w-7xl px-4 pb-8 pt-8 sm:px-6 sm:pb-12 sm:pt-10 lg:px-8 lg:pb-14">
+      <div className="relative z-10 mx-auto max-w-7xl px-3 pb-6 pt-6 xs:px-4 xs:pb-8 xs:pt-8 sm:px-6 sm:pb-12 sm:pt-10 lg:px-8 lg:pb-14">
         <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:gap-10">
           
           {/* Avatar Container with Glowing Halo & Verified Badge */}
           <div className="relative mx-auto shrink-0 sm:mx-0">
             <div className="absolute -inset-1.5 rounded-[2.2rem] bg-gradient-to-br from-amber-400/60 via-emerald-400/40 to-teal-500/20 opacity-80 blur-md animate-pulse" />
-            <div className="relative h-32 w-32 overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#1b5e54] via-[#0d2f2b] to-[#061114] shadow-[0_24px_60px_rgba(0,0,0,0.7)] ring-2 ring-white/20 sm:h-44 sm:w-44 lg:h-48 lg:w-48">
+            <div className="relative h-24 w-24 overflow-hidden rounded-[1.6rem] bg-gradient-to-br from-[#1b5e54] via-[#0d2f2b] to-[#061114] shadow-[0_24px_60px_rgba(0,0,0,0.7)] ring-2 ring-white/20 xs:h-32 xs:w-32 sm:h-44 sm:w-44 lg:h-48 lg:w-48">
               {avatar ? (
                 <img
                   src={avatar}
@@ -183,7 +183,7 @@ export default function StudioHero({
               {greeting}, Minister
             </p>
 
-            <h1 className="mt-1 font-sans text-4xl font-black leading-[1.05] tracking-tight text-white sm:text-5xl lg:text-6xl drop-shadow-md">
+            <h1 className="mt-1 font-sans text-[1.7rem] font-black leading-[1.05] tracking-tight text-white xs:text-4xl sm:text-5xl lg:text-6xl drop-shadow-md">
               {name}
             </h1>
 

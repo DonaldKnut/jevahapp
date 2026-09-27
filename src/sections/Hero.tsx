@@ -10,14 +10,14 @@ function Hero() {
     <section
       ref={ref}
       id="download"
-      className="relative bg-gradient-to-br from-[var(--jevah-hero-from)] via-[var(--jevah-hero-via)] to-[var(--jevah-hero-to)] px-8 pb-0 pt-[15vh] transition-colors duration-300 lg:px-12"
+      className="relative bg-gradient-to-br from-[var(--jevah-hero-from)] via-[var(--jevah-hero-via)] to-[var(--jevah-hero-to)] px-4 pb-0 pt-24 transition-colors duration-300 xs:px-6 sm:px-8 sm:pt-[15vh] lg:px-12"
     >
       <div className="mx-auto max-w-7xl">
         <div
           className={`mb-12 mt-8 text-center ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
         >
           <h1
-            className={`mb-6 text-5xl font-bold text-jevah-text md:text-6xl lg:text-7xl ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
+            className={`mb-4 text-[1.7rem] font-bold leading-tight text-jevah-text xs:mb-6 xs:text-4xl sm:text-5xl md:text-6xl lg:text-7xl ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
             style={{ animationDelay: "0.2s" }}
           >
             Experience Faith.{" "}
@@ -26,7 +26,7 @@ function Hero() {
             </span>
           </h1>
           <p
-            className={`mx-auto mb-8 max-w-3xl text-lg text-jevah-text-muted md:text-xl ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
+            className={`mx-auto mb-6 max-w-3xl text-sm leading-relaxed text-jevah-text-muted xs:mb-8 xs:text-base md:text-xl ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
             style={{ animationDelay: "0.4s" }}
           >
             The Jevah App is your all-in-one Christian platform bringing gospel

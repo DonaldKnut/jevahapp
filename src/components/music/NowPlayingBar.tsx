@@ -511,7 +511,7 @@ export default function NowPlayingBar() {
 
       {size === "bar" && (
         <div
-          className="pointer-events-none fixed inset-x-0 bottom-0 z-[90] flex justify-center px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-6"
+          className="pointer-events-none fixed inset-x-0 bottom-0 z-[90] flex justify-center px-2 pb-[max(0.6rem,env(safe-area-inset-bottom))] xs:px-3 sm:px-6"
           role="region"
           aria-label="Now playing"
         >
@@ -523,14 +523,14 @@ export default function NowPlayingBar() {
               onSeek={onSeekPct}
             />
 
-            <div className="flex items-center gap-3 px-3 py-3 sm:gap-4 sm:px-4">
+            <div className="flex items-center gap-2 px-2 py-2 xs:gap-3 xs:px-3 xs:py-3 sm:gap-4 sm:px-4">
               <button
                 type="button"
                 onClick={() => setSize("full")}
                 className="shrink-0"
                 title="Open the large player"
               >
-                <VinylDisc track={track} playing={playing} size="md" />
+                <VinylDisc track={track} playing={playing} size="sm" />
               </button>
 
               <button
@@ -553,12 +553,12 @@ export default function NowPlayingBar() {
                 </p>
               </button>
 
-              <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+              <div className="flex shrink-0 items-center gap-0.5 xs:gap-1 sm:gap-2">
                 <button
                   type="button"
                   aria-label="Previous song"
                   onClick={playPrev}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-full text-jevah-text hover:bg-jevah-card"
+                  className="hidden h-9 w-9 items-center justify-center rounded-full text-jevah-text hover:bg-jevah-card min-[380px]:inline-flex"
                 >
                   <BackwardIcon className="h-5 w-5" />
                 </button>
@@ -566,7 +566,7 @@ export default function NowPlayingBar() {
                   type="button"
                   aria-label={playing ? "Pause" : "Play"}
                   onClick={toggle}
-                  className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-jevah-accent text-white shadow-lg shadow-jevah-accent/30"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-jevah-accent text-white shadow-lg shadow-jevah-accent/30 xs:h-11 xs:w-11"
                 >
                   {playing ? (
                     <PauseIcon className="h-5 w-5" />
@@ -578,7 +578,7 @@ export default function NowPlayingBar() {
                   type="button"
                   aria-label="Next song"
                   onClick={playNext}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-full text-jevah-text hover:bg-jevah-card"
+                  className="hidden h-9 w-9 items-center justify-center rounded-full text-jevah-text hover:bg-jevah-card min-[380px]:inline-flex"
                 >
                   <ForwardIcon className="h-5 w-5" />
                 </button>
@@ -614,8 +614,8 @@ export default function NowPlayingBar() {
       )}
 
       {size === "full" && (
-        <div className="fixed inset-0 z-[100] flex flex-col justify-between overflow-y-auto bg-jevah-bg p-6 text-jevah-text sm:p-10">
-          <div className="flex items-center justify-between gap-3">
+        <div className="fixed inset-0 z-[100] flex flex-col justify-between overflow-y-auto bg-jevah-bg p-3 text-jevah-text xs:p-6 sm:p-10">
+          <div className="flex flex-wrap items-center justify-between gap-2 xs:gap-3">
             <button
               type="button"
               onClick={() => setSize("window")}

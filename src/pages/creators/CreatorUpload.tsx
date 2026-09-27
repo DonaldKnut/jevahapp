@@ -21,7 +21,17 @@ import {
 import UploadPromoAside from "./components/UploadPromoAside";
 import UploadDropZone from "./components/UploadDropZone";
 import UploadSubmitPanel from "./components/UploadSubmitPanel";
+import UploadRightsGate from "./components/UploadRightsGate";
 import TrackQueueCard, { type TrackQueueItem } from "./components/TrackQueueCard";
+import {
+  EMPTY_ATTESTATION,
+  attestationApiMessage,
+  attestationBlockReason,
+  attestationReady,
+  intentRightsBody,
+  resolveUploadPolicy,
+  type RightsAttestation,
+} from "../../lib/uploadPolicy";
 
 export default function CreatorUpload() {
   const { user } = useAuth();
@@ -40,6 +50,12 @@ export default function CreatorUpload() {
   const [masterCoverPreview, setMasterCoverPreview] = useState<string | null>(null);
   const [isUploadingBatch, setIsUploadingBatch] = useState(false);
   const [, setActiveTrackIndex] = useState<number>(-1);
+  const [attestation, setAttestation] =
+    useState<RightsAttestation>(EMPTY_ATTESTATION);
+  const [attestError, setAttestError] = useState<string | null>(null);
+
+  const uploadPolicy = resolveUploadPolicy(me?.uploadPolicy);
+  const rightsReady = attestationReady(attestation);
 
   const uploadApi = useMemo(
     () => ({
@@ -170,6 +186,13 @@ export default function CreatorUpload() {
     e.preventDefault();
     if (!queue.length || isUploadingBatch) return;
 
+    const blocked = attestationBlockReason(attestation);
+    if (blocked) {
+      setAttestError(blocked);
+      return;
+    }
+    setAttestError(null);
+
     const pendingTracks = queue.filter((t) => t.status !== "completed");
     if (!pendingTracks.length) {
       toast.info("All songs in queue have already been uploaded");
@@ -212,7 +235,10 @@ export default function CreatorUpload() {
           audioFile: item.audioFile,
           coverFile: item.coverFile,
           publish,
-          extraIntent: releaseId ? { releaseId } : undefined,
+          extraIntent: {
+            ...(releaseId ? { releaseId } : {}),
+            ...intentRightsBody(attestation),
+          },
           onProgressPct: (pct, label) => {
             updateItem(item.id, {
               progressPct: pct,
@@ -224,14 +250,19 @@ export default function CreatorUpload() {
         updateItem(item.id, {
           status: "completed",
           progressPct: 100,
-          statusMessage: publish ? "Uploaded & Published ✓" : "Saved as Draft ✓",
+          statusMessage: publish
+            ? "Uploaded — in review"
+            : "Saved as draft",
         });
         successCount++;
       } catch (err) {
+        const attestMsg = attestationApiMessage(err);
+        if (attestMsg) setAttestError(attestMsg);
         const msg =
-          err instanceof ApiError
+          attestMsg ||
+          (err instanceof ApiError
             ? err.message
-            : uploadFailureMessage(err);
+            : uploadFailureMessage(err));
 
         updateItem(item.id, {
           status: "failed",
@@ -246,7 +277,9 @@ export default function CreatorUpload() {
 
     if (successCount === queue.length) {
       toast.success(
-        publish ? "All songs published to catalog!" : "All songs saved as drafts!"
+        publish
+          ? "Songs uploaded — in review. They will not appear on the public Artists shelf until a reviewer listens."
+          : "All songs saved as drafts."
       );
       setTimeout(() => navigate("/creators/studio", { replace: true }), 1200);
     } else {
@@ -374,6 +407,17 @@ export default function CreatorUpload() {
                 </div>
               )}
 
+              <UploadRightsGate
+                policy={uploadPolicy}
+                value={attestation}
+                onChange={(next) => {
+                  setAttestation(next);
+                  setAttestError(null);
+                }}
+                error={attestError}
+                disabled={isUploadingBatch}
+              />
+
               <UploadSubmitPanel
                 publish={publish}
                 setPublish={setPublish}
@@ -381,7 +425,7 @@ export default function CreatorUpload() {
                 overallPct={overallPct}
                 completedCount={completedCount}
                 totalCount={totalCount}
-                canSubmit={queue.length > 0}
+                canSubmit={queue.length > 0 && rightsReady}
               />
             </form>
           </div>

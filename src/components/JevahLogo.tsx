@@ -38,7 +38,7 @@ function JevahLogo({
         alt="JEVAH Logo"
         width={width}
         height={height}
-        className={`object-contain transition-all duration-300 ${
+        className={`h-auto max-w-full object-contain transition-all duration-300 ${
           darkMark ? "brightness-110 drop-shadow-[0_2px_8px_rgba(255,255,255,0.15)]" : ""
         }`}
       />

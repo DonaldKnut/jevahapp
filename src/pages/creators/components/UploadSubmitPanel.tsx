@@ -24,10 +24,11 @@ export default function UploadSubmitPanel({
       <label className="flex cursor-pointer items-center gap-4 rounded-2xl border border-jevah-border/60 bg-jevah-card/40 p-4 transition hover:bg-jevah-card/70">
         <div className="flex-1">
           <p className="text-sm font-extrabold text-jevah-text">
-            Publish songs immediately
+            Request public release
           </p>
           <p className="mt-0.5 text-xs text-jevah-text-muted">
-            Make uploaded songs publicly visible on your Artist profile right away.
+            After you upload, a reviewer must listen. Songs stay off the public
+            Artists shelf until they are approved.
           </p>
         </div>
         <div
@@ -90,8 +91,8 @@ export default function UploadSubmitPanel({
               <CloudArrowUpIcon className="h-5 w-5" />
               <span>
                 {publish
-                  ? `Upload & Publish ${totalCount > 1 ? `${totalCount} Songs` : "Song"}`
-                  : `Upload ${totalCount > 1 ? `${totalCount} Songs` : "Song"} as Draft`}
+                  ? `Upload & send ${totalCount > 1 ? `${totalCount} songs` : "song"} for review`
+                  : `Save ${totalCount > 1 ? `${totalCount} songs` : "song"} as draft`}
               </span>
             </>
           )}

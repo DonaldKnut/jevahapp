@@ -231,7 +231,7 @@ export default function Music() {
         <div className="pointer-events-none absolute left-1/2 top-0 h-[28rem] w-[min(90vw,48rem)] -translate-x-1/2 rounded-full bg-jevah-accent/10 blur-3xl" />
 
         <div
-          className={`relative mx-auto px-4 sm:px-6 ${
+          className={`relative mx-auto px-3 xs:px-4 sm:px-6 ${
             view === "list" ? "max-w-3xl" : "max-w-6xl"
           }`}
         >
@@ -240,7 +240,7 @@ export default function Music() {
               <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-jevah-accent">
                 Listening room
               </p>
-              <h1 className="mt-2 text-3xl font-semibold tracking-tight text-jevah-text sm:text-5xl">
+              <h1 className="mt-2 text-2xl font-semibold tracking-tight text-jevah-text xs:text-3xl sm:text-5xl">
                 Music
               </h1>
               <p className="mt-3 text-sm leading-relaxed text-jevah-text-muted">

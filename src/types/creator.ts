@@ -36,10 +36,21 @@ export type ArtistCard = {
   status?: string;
 };
 
+export type RightsType = "original" | "licensed" | "public_domain";
+
+export type UploadPolicy = {
+  rightsCopy: string;
+  gospelCopy: string;
+  policyVersion?: string;
+  updatedAt?: string;
+};
+
 export type CreatorMe = {
   artist: ArtistCard | null;
   capabilities: CreatorCapabilities;
   status: "pending" | "active" | "suspended" | null;
   canUpload: boolean;
   nextStep: CreatorNextStep;
+  /** From GET /creators/me — always render this copy on upload, do not hardcode forever. */
+  uploadPolicy?: UploadPolicy | null;
 };

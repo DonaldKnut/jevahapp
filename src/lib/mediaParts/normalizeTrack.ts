@@ -37,6 +37,7 @@ export function normalizeTrackCard(raw: unknown): TrackCard {
 
   const thumbnailUrl =
     row.thumbnailUrl ||
+    row.coverUrl ||
     nestedString(artwork, ["url", "coverUrl", "thumbnailUrl"]) ||
     nestedString(releaseRaw, ["coverUrl"]) ||
     null;

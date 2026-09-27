@@ -10,6 +10,7 @@ import {
   normalizeTrackCard,
   normalizeTrackList,
 } from "../../lib/mediaParts/normalizeTrack";
+import type { RightsType } from "../../types/creator";
 import type { TrackCard, TrackUploadIntent } from "../../types/media";
 
 export async function listMyCreatorTracks(params?: {
@@ -40,6 +41,10 @@ export async function createCreatorUploadIntent(body: {
   coverFileSizeBytes?: number;
   releaseId?: string;
   trackNumber?: number;
+  rightsAttested?: boolean;
+  gospelAttested?: boolean;
+  rightsType?: RightsType;
+  licenseNote?: string | null;
 }): Promise<TrackUploadIntent> {
   return unwrapData(
     await apiRequest<{ data?: TrackUploadIntent }>(

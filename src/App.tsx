@@ -36,6 +36,7 @@ import ComposeEmailPage from "./pages/admin/ComposeEmail";
 import ActivityPage from "./pages/admin/Activity";
 import ChurchesPage from "./pages/admin/Churches";
 import AudioLibraryPage from "./pages/admin/AudioLibrary";
+import ArtistReviewPage from "./pages/admin/ArtistReview";
 import ArtistsPage from "./pages/admin/Artists";
 import SettingsPage from "./pages/admin/Settings";
 import SystemHealthPage from "./pages/admin/SystemHealth";
@@ -138,6 +139,7 @@ function App() {
               <Route path="moderation" element={<ModerationPage />} />
               <Route path="churches" element={<ChurchesPage />} />
               <Route path="audio" element={<AudioLibraryPage />} />
+              <Route path="audio/artist-review" element={<ArtistReviewPage />} />
               <Route path="artists" element={<ArtistsPage />} />
               <Route path="email" element={<ComposeEmailPage />} />
               <Route

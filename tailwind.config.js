@@ -29,6 +29,9 @@ export default {
       ],
     },
     extend: {
+      screens: {
+        xs: "360px",
+      },
       colors: {
         jevah: {
           bg: "var(--jevah-bg)",

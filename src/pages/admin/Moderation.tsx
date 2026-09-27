@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { createPortal } from "react-dom";
 import {
   banUser,
@@ -637,6 +638,13 @@ export default function ModerationPage() {
         back={{ to: "/admin", label: "Overview" }}
         actions={
           <div className="flex items-center gap-2">
+            <Link
+              to="/admin/audio/artist-review"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-jevah-surface px-3 py-2 text-xs font-extrabold text-jevah-text ring-1 ring-jevah-border transition hover:bg-jevah-card"
+            >
+              <MusicalNoteIcon className="h-4 w-4" />
+              Creator songs
+            </Link>
             <Button
               variant="outline"
               size="sm"

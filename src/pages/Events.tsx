@@ -92,13 +92,13 @@ function Events() {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-blue-100 via-teal-50 to-green-100 py-20 px-8 pt-[20vh] lg:px-12">
+      <section className="relative bg-gradient-to-br from-blue-100 via-teal-50 to-green-100 px-4 py-16 pt-24 xs:px-6 sm:px-8 sm:py-20 sm:pt-[20vh] lg:px-12">
         <div className="mx-auto max-w-7xl">
           <div
             className={`text-center ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
           >
             <h1
-              className={`mb-6 text-5xl font-bold text-gray-900 md:text-6xl lg:text-7xl ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
+              className={`mb-4 text-[1.7rem] font-bold leading-tight text-gray-900 xs:mb-6 xs:text-4xl md:text-6xl lg:text-7xl ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
               style={{ animationDelay: "0.2s" }}
             >
               Upcoming Events

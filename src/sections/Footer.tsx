@@ -40,7 +40,7 @@ function Footer() {
 
   return (
     <footer
-      className="py-12 px-8 transition-colors duration-300 lg:px-12"
+      className="px-4 py-10 transition-colors duration-300 xs:px-6 sm:px-8 lg:px-12"
       style={{ backgroundColor: "var(--jevah-footer)" }}
     >
       <div className="mx-auto max-w-7xl">

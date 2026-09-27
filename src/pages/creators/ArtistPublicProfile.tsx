@@ -172,7 +172,7 @@ export default function ArtistPublicProfile() {
         <div className="absolute inset-0 bg-[#060e18]/55" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#060e18] via-[#060e18]/80 to-[#060e18]/35" />
 
-        <div className="relative z-10 mx-auto max-w-6xl px-4 pb-10 pt-6 sm:px-6 sm:pb-14 sm:pt-8">
+        <div className="relative z-10 mx-auto max-w-6xl px-3 pb-8 pt-5 xs:px-4 xs:pb-10 xs:pt-6 sm:px-6 sm:pb-14 sm:pt-8">
           <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/70">
             <Link to="/music" className="hover:text-white">
               Gospel Music
@@ -204,7 +204,7 @@ export default function ArtistPublicProfile() {
           ) : (
             <div className="mt-8 flex flex-col gap-8 sm:mt-10 lg:flex-row lg:items-end">
               <div className="relative mx-auto shrink-0 sm:mx-0">
-                <div className="h-36 w-36 overflow-hidden rounded-[1.6rem] bg-[#0f3832] shadow-[0_24px_50px_rgba(0,0,0,0.55)] ring-2 ring-white/25 sm:h-44 sm:w-44">
+                <div className="h-28 w-28 overflow-hidden rounded-[1.4rem] bg-[#0f3832] shadow-[0_24px_50px_rgba(0,0,0,0.55)] ring-2 ring-white/25 xs:h-36 xs:w-36 sm:h-44 sm:w-44">
                   {artist?.avatarUrl ? (
                     <img
                       src={artist.avatarUrl}
@@ -243,7 +243,7 @@ export default function ArtistPublicProfile() {
                   )}
                 </div>
 
-                <h1 className="mt-3 font-sans text-4xl font-black tracking-tight text-white sm:text-5xl lg:text-6xl">
+                <h1 className="mt-3 font-sans text-[1.85rem] font-black tracking-tight text-white xs:text-4xl sm:text-5xl lg:text-6xl">
                   {name}
                 </h1>
 
@@ -348,7 +348,7 @@ export default function ArtistPublicProfile() {
       </section>
 
       {!loading && !error && (
-        <section className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+        <section className="mx-auto max-w-6xl px-3 py-8 xs:px-4 xs:py-10 sm:px-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <div className="flex items-center gap-2 text-jevah-accent">

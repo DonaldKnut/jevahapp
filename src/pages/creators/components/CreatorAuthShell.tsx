@@ -95,7 +95,7 @@ export default function CreatorAuthShell({
       </aside>
 
       <div className="auth-form-panel jevah-auth-form flex min-w-0 flex-1 flex-col overflow-y-auto border-l border-jevah-border transition-colors duration-300">
-        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-jevah-border bg-[var(--jevah-auth-form-bg)]/95 px-5 py-4 backdrop-blur-sm">
+        <div className="sticky top-0 z-10 flex items-center justify-between gap-2 border-b border-jevah-border bg-[var(--jevah-auth-form-bg)]/95 px-3 py-3 backdrop-blur-sm xs:px-5 xs:py-4">
           <Link
             to="/creators"
             className="inline-flex rounded-xl bg-jevah-elevated px-2.5 py-1.5 ring-1 ring-jevah-border lg:hidden"
@@ -110,7 +110,7 @@ export default function CreatorAuthShell({
           </div>
         </div>
 
-        <div className="flex flex-1 flex-col items-center justify-center px-5 py-10 sm:px-8 md:px-12 lg:px-14 xl:px-16">
+        <div className="flex flex-1 flex-col items-center justify-center px-3 py-8 xs:px-5 xs:py-10 sm:px-8 md:px-12 lg:px-14 xl:px-16">
           <div className="w-full max-w-[420px]">
             <div className="mb-6 hidden lg:flex lg:items-center lg:justify-between">
               <Link

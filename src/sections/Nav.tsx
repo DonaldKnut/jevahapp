@@ -217,9 +217,13 @@ export default function Nav() {
             : "bg-gradient-to-r from-[var(--jevah-hero-from)] via-[var(--jevah-hero-via)] to-[var(--jevah-hero-to)] backdrop-blur-md"
         }`}
       >
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:h-20 sm:px-8 lg:px-12">
-          <Link to="/" className="z-10 shrink-0 transition-transform active:scale-95">
-            <JevahLogo width={112} height={52} />
+        <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-2 px-3 xs:h-16 xs:px-4 sm:h-20 sm:px-8 lg:px-12">
+          <Link to="/" className="z-10 min-w-0 shrink transition-transform active:scale-95">
+            <JevahLogo
+              width={112}
+              height={52}
+              className="w-[5.4rem] xs:w-[7rem] sm:w-[7.5rem]"
+            />
           </Link>
 
           {/* Four items: Music · Community · Creator · Bible */}
@@ -425,7 +429,7 @@ export default function Nav() {
             </NavLink>
           </div>
 
-          <div className="z-10 flex items-center gap-2 sm:gap-3">
+          <div className="z-10 flex shrink-0 items-center gap-1.5 xs:gap-2 sm:gap-3">
             <ThemeToggle variant="icon" />
             {dashboardPath ? (
               <Link
@@ -460,7 +464,7 @@ export default function Nav() {
             <button
               type="button"
               onClick={() => setMobileOpen((v) => !v)}
-              className="jevah-hamburger-btn relative z-50 flex h-11 w-11 items-center justify-center rounded-2xl transition active:scale-90 md:hidden"
+              className="jevah-hamburger-btn relative z-50 flex h-10 w-10 items-center justify-center rounded-2xl transition active:scale-90 xs:h-11 xs:w-11 md:hidden"
               aria-label={mobileOpen ? "Close menu" : "Open menu"}
             >
               <div className="flex h-5 w-5 flex-col justify-between">
@@ -497,7 +501,7 @@ export default function Nav() {
       />
 
       <div
-        className={`fixed left-3 right-3 top-20 z-50 max-h-[calc(100vh-6rem)] overflow-y-auto rounded-3xl border p-5 shadow-2xl backdrop-blur-2xl transition-all duration-300 ease-out md:hidden ${
+        className={`fixed left-2 right-2 top-[4.25rem] z-50 max-h-[calc(100dvh-5.25rem)] overflow-y-auto rounded-3xl border p-3 shadow-2xl backdrop-blur-2xl transition-all duration-300 ease-out xs:left-3 xs:right-3 xs:p-5 md:hidden ${
           mobileOpen
             ? "pointer-events-auto translate-y-0 scale-100 opacity-100"
             : "pointer-events-none -translate-y-6 scale-95 opacity-0"
@@ -525,7 +529,7 @@ export default function Nav() {
             <p className="px-2 pb-2 text-[10px] font-bold uppercase tracking-wider text-jevah-text-muted">
               Music
             </p>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-2 xs:grid-cols-3">
               {musicMenu.map((item) => {
                 const Icon = item.icon;
                 return (

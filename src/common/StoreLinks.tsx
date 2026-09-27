@@ -7,7 +7,7 @@ interface StoreLinksProps {
 }
 
 const badgeClass =
-  "h-12 w-auto transition-transform duration-300 md:h-14 dark:rounded-xl dark:bg-white/95 dark:p-1 dark:shadow-md";
+  "h-10 w-auto max-w-[46%] transition-transform duration-300 xs:h-12 md:h-14 dark:rounded-xl dark:bg-white/95 dark:p-1 dark:shadow-md";
 
 const badgeClassSm =
   "h-10 w-auto transition-transform duration-300 dark:rounded-lg dark:bg-white/95 dark:p-1 dark:shadow-md";
@@ -15,7 +15,7 @@ const badgeClassSm =
 function StoreLinks({ type }: StoreLinksProps) {
   if (type === BtnTypes.Standard) {
     return (
-      <div className="flex justify-center gap-4">
+      <div className="flex flex-wrap items-center justify-center gap-2 xs:gap-4">
         <a
           href="https://www.apple.com/app-store"
           target="_blank"

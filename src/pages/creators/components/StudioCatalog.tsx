@@ -24,6 +24,35 @@ import {
 } from "../../../lib/media";
 import { matchesSearch } from "../../../lib/searchMatch";
 import { useFeedback } from "../../../components/admin/Feedback";
+import {
+  SHELF_BADGE_CLASS,
+  studioTrackShelf,
+} from "../../../lib/studioTrackStatus";
+
+function ShelfBadge({
+  track,
+  showDetail = false,
+}: {
+  track: TrackCard;
+  showDetail?: boolean;
+}) {
+  const shelf = studioTrackShelf(track);
+  return (
+    <span className="inline-flex min-w-0 flex-col items-start gap-0.5">
+      <span
+        className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-extrabold ${SHELF_BADGE_CLASS[shelf.tone]}`}
+        title={shelf.detail}
+      >
+        {shelf.label}
+      </span>
+      {showDetail && shelf.detail ? (
+        <span className="max-w-[220px] text-[10px] font-medium leading-snug text-jevah-text-muted">
+          {shelf.detail}
+        </span>
+      ) : null}
+    </span>
+  );
+}
 
 function formatDate(iso?: string) {
   if (!iso) return "—";
@@ -69,9 +98,17 @@ export default function StudioCatalog({
 
   const rows = useMemo(() => {
     let next = tracks.filter((t) => {
-      if (visibility !== "all" && (t.visibility || "published") !== visibility) {
-        return false;
+      if (visibility !== "all") {
+        const shelf = studioTrackShelf(t);
+        if (visibility === "published" && shelf.key !== "live") return false;
+        if (visibility === "draft" && shelf.key === "live") return false;
+        if (visibility === "under_review" && shelf.key !== "under_review")
+          return false;
+        if (visibility === "rejected" && shelf.key !== "rejected") return false;
+        if (visibility === "archived" && t.visibility !== "archived")
+          return false;
       }
+      const shelf = studioTrackShelf(t);
       return matchesSearch(q, [
         t.title,
         trackArtist(t),
@@ -80,6 +117,8 @@ export default function StudioCatalog({
         t.release?.title,
         t.language,
         t.visibility,
+        t.moderationStatus,
+        shelf.label,
         t.playCount,
         trackId(t),
       ]);
@@ -156,8 +195,10 @@ export default function StudioCatalog({
               onChange={(e) => setVisibility(e.target.value)}
               className="h-10 rounded-2xl border border-jevah-border/80 bg-jevah-card/60 px-3 text-xs font-bold text-jevah-text focus:border-jevah-accent focus:outline-none"
             >
-              <option value="all">All Visibility</option>
-              <option value="published">Published</option>
+              <option value="all">All status</option>
+              <option value="published">Live</option>
+              <option value="under_review">In review</option>
+              <option value="rejected">Not published</option>
               <option value="draft">Draft</option>
               <option value="archived">Archived</option>
             </select>
@@ -271,6 +312,7 @@ export default function StudioCatalog({
                     <p className={`truncate font-black text-sm ${active ? "text-amber-500" : "text-jevah-text"}`}>
                       {t.title}
                     </p>
+                    <ShelfBadge track={t} />
                   </div>
                   <p className="truncate text-xs font-semibold text-jevah-text-muted">
                     {trackArtist(t)}
@@ -407,9 +449,7 @@ export default function StudioCatalog({
                           <div className="flex items-center gap-2 mt-0.5 text-xs text-jevah-text-muted font-semibold">
                             <span>{trackArtist(t)}</span>
                             <span className="opacity-40">·</span>
-                            <span className="inline-flex rounded-full bg-jevah-card px-2 py-0.2 text-[10px] font-extrabold capitalize text-jevah-text-muted ring-1 ring-jevah-border/60">
-                              {t.visibility || "published"}
-                            </span>
+                            <ShelfBadge track={t} showDetail />
                             {status !== "ready" && (
                               <span className="capitalize text-amber-600 dark:text-amber-400 font-bold">
                                 {status}

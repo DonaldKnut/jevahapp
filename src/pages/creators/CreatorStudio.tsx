@@ -281,7 +281,7 @@ export default function CreatorStudio() {
     setEditTitle(t.title || "");
     setEditArtist(t.artistName || t.singer || "");
     setEditGenre(t.genre || "");
-    setEditVisibility(t.visibility || "published");
+    setEditVisibility(t.visibility || "draft");
     setEditCoverFile(null);
     setEditCoverPreview(t.thumbnailUrl || null);
   }

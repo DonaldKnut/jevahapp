@@ -83,7 +83,7 @@ export default function Artists() {
   return (
     <div className="bg-jevah-bg pb-24 text-jevah-text">
       <section className="bg-[#060e18] text-white">
-        <div className="mx-auto max-w-6xl px-4 pb-10 pt-8 sm:px-6 sm:pb-12 sm:pt-10">
+        <div className="mx-auto max-w-6xl px-3 pb-8 pt-6 xs:px-4 xs:pb-10 xs:pt-8 sm:px-6 sm:pb-12 sm:pt-10">
           <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-white/65">
             <Link to="/music" className="hover:text-white">
               Gospel Music
@@ -101,7 +101,7 @@ export default function Artists() {
               On Jevah
             </span>
           </div>
-          <h1 className="mt-4 text-4xl font-black tracking-tight text-white sm:text-5xl">
+          <h1 className="mt-3 text-[1.75rem] font-black tracking-tight text-white xs:mt-4 xs:text-4xl sm:text-5xl">
             Gospel Artists
           </h1>
           <p className="mt-3 max-w-xl text-sm leading-relaxed text-white/80 sm:text-base">
@@ -134,7 +134,7 @@ export default function Artists() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+      <section className="mx-auto max-w-6xl px-3 py-8 xs:px-4 xs:py-10 sm:px-6">
         {genres.length > 0 && (
           <div className="mb-6 flex gap-2 overflow-x-auto pb-1">
             <button

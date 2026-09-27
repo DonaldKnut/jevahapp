@@ -1,4 +1,5 @@
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   createCopyrightFreeSong,
   createTrackUploadIntent,
@@ -7,6 +8,7 @@ import {
   listAdminTracks,
   listCategories,
   patchAdminTrack,
+  reviewTrackModeration,
   trackArtist,
   trackDuration,
   trackId,
@@ -16,6 +18,7 @@ import {
   putPresignedFile,
   type TrackCard,
 } from "../../services/adminApi";
+import { CREATOR_HOLD_COPY } from "../../lib/uploadPolicy";
 import { ApiError } from "../../lib/api";
 import {
   Alert,
@@ -69,6 +72,9 @@ export default function AudioLibraryPage() {
   const debouncedSearch = useDebouncedValue(search, 180);
   const loadedOnce = useRef(false);
   const [lane, setLane] = useState<"curated" | "artist">("curated");
+  const [trackFilter, setTrackFilter] = useState("under_review");
+  const [heardIds, setHeardIds] = useState<Set<string>>(() => new Set());
+  const [confirmHeard, setConfirmHeard] = useState<Record<string, boolean>>({});
   const [busy, setBusy] = useState(false);
   const [uploadOpen, setUploadOpen] = useState(false);
   const [mode, setMode] = useState<UploadMode>("file");
@@ -94,6 +100,8 @@ export default function AudioLibraryPage() {
         lane,
         search: debouncedSearch || undefined,
         limit: 50,
+        moderationStatus:
+          lane === "artist" && trackFilter !== "all" ? trackFilter : undefined,
       });
       setTracks(res.items);
       loadedOnce.current = true;
@@ -102,7 +110,7 @@ export default function AudioLibraryPage() {
     } finally {
       setLoading(false);
     }
-  }, [debouncedSearch, lane]);
+  }, [debouncedSearch, lane, trackFilter]);
 
   useEffect(() => {
     void load();
@@ -118,6 +126,7 @@ export default function AudioLibraryPage() {
           t.category,
           t.playCount,
           t.visibility,
+          t.moderationStatus,
           trackId(t),
         ])
       ),
@@ -305,6 +314,66 @@ export default function AudioLibraryPage() {
     }
   }
 
+  function markHeard(id: string) {
+    setHeardIds((prev) => {
+      if (prev.has(id)) return prev;
+      const next = new Set(prev);
+      next.add(id);
+      return next;
+    });
+  }
+
+  function canApprove(id: string) {
+    return heardIds.has(id) || Boolean(confirmHeard[id]);
+  }
+
+  async function onReview(
+    t: TrackCard,
+    status: "approved" | "rejected" | "under_review"
+  ) {
+    const id = trackId(t);
+    if (!id) return;
+    if (status === "approved" && !canApprove(id)) {
+      toast.error(
+        "Listen first",
+        "Play the song or confirm you listened before approving."
+      );
+      return;
+    }
+    if (status === "rejected") {
+      const ok = await confirm({
+        title: "Reject this track?",
+        message: CREATOR_HOLD_COPY,
+        confirmLabel: "Reject",
+        tone: "danger",
+      });
+      if (!ok) return;
+    }
+    setBusy(true);
+    try {
+      await reviewTrackModeration(id, {
+        status,
+        heardConfirmed: status === "approved" ? true : undefined,
+        reason: status === "rejected" ? CREATOR_HOLD_COPY : undefined,
+      });
+      toast.success(
+        status === "approved"
+          ? "Track approved — live on the Artists shelf"
+          : status === "rejected"
+            ? "Track rejected — stays draft"
+            : "Track held for review"
+      );
+      await load();
+    } catch (err) {
+      toast.error(
+        "Review failed",
+        err instanceof ApiError ? err.message : undefined
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function onDelete(t: TrackCard) {
     const id = trackId(t);
     if (!id) return;
@@ -346,7 +415,14 @@ export default function AudioLibraryPage() {
               <CloudArrowUpIcon className="h-4 w-4" />
               Upload New Track
             </Button>
-          ) : undefined
+          ) : (
+            <Link
+              to="/admin/audio/artist-review"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-jevah-accent px-4 py-2 text-xs font-extrabold text-white"
+            >
+              Open creator song inbox
+            </Link>
+          )
         }
       />
 
@@ -367,7 +443,10 @@ export default function AudioLibraryPage() {
             </button>
             <button
               type="button"
-              onClick={() => setLane("artist")}
+              onClick={() => {
+                setLane("artist");
+                setTrackFilter("under_review");
+              }}
               className={`rounded-xl px-5 py-2 text-xs font-extrabold transition ${
                 lane === "artist"
                   ? "bg-jevah-surface text-jevah-accent shadow-sm"
@@ -395,6 +474,31 @@ export default function AudioLibraryPage() {
             </Button>
           </div>
         </div>
+        {lane === "artist" && (
+          <div className="mt-4 flex flex-wrap gap-1.5">
+            {(
+              [
+                ["under_review", "Needs review"],
+                ["approved", "Approved"],
+                ["rejected", "Rejected"],
+                ["all", "All"],
+              ] as const
+            ).map(([value, label]) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setTrackFilter(value)}
+                className={`rounded-xl px-3 py-1.5 text-[11px] font-extrabold transition ${
+                  trackFilter === value
+                    ? "bg-jevah-accent text-white"
+                    : "bg-jevah-card text-jevah-text-muted hover:text-jevah-text"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
       </Panel>
 
       {error && !uploadOpen && (
@@ -412,7 +516,7 @@ export default function AudioLibraryPage() {
           description={
             lane === "curated"
               ? "Upload an audio file or import a URL to populate the curated library."
-              : "Artist tracks will appear here once creators publish music."
+              : "Creator songs waiting for a listen will appear here. They stay draft until you approve."
           }
           icon={MusicalNoteIcon}
           action={
@@ -424,11 +528,14 @@ export default function AudioLibraryPage() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {visibleTracks.map((t, i) => {
+            const id = trackId(t);
             const url = trackPlaybackUrl(t);
             const status = trackProcessing(t);
+            const mod = String(t.moderationStatus || "").toLowerCase();
+            const heard = Boolean(id && (heardIds.has(id) || confirmHeard[id]));
             return (
               <div
-                key={trackId(t)}
+                key={id}
                 className="admin-list-item group flex flex-col justify-between rounded-3xl border border-jevah-border/80 bg-jevah-surface p-5 shadow-sm transition hover:-translate-y-1 hover:border-jevah-accent/30 hover:shadow-md"
                 style={{ animationDelay: `${Math.min(i, 10) * 40}ms` }}
               >
@@ -470,40 +577,117 @@ export default function AudioLibraryPage() {
                         >
                           {status}
                         </Badge>
+                        {lane === "artist" && mod && (
+                          <Badge
+                            tone={
+                              mod === "approved"
+                                ? "success"
+                                : mod === "rejected"
+                                  ? "danger"
+                                  : "warning"
+                            }
+                            size="sm"
+                          >
+                            {mod === "under_review"
+                              ? "In review"
+                              : mod === "rejected"
+                                ? "Not published"
+                                : mod}
+                          </Badge>
+                        )}
                       </div>
                     </div>
                   </div>
 
                   {url && (
                     <div className="mt-4 rounded-xl bg-jevah-card p-2.5">
-                      <audio controls preload="none" className="w-full h-8" src={url}>
+                      <audio
+                        controls
+                        preload="none"
+                        className="w-full h-8"
+                        src={url}
+                        onEnded={() => id && markHeard(id)}
+                        onTimeUpdate={(e) => {
+                          const el = e.currentTarget;
+                          if (id && el.duration && el.currentTime / el.duration >= 0.2) {
+                            markHeard(id);
+                          }
+                        }}
+                      >
                         <track kind="captions" />
                       </audio>
                     </div>
                   )}
                 </div>
 
-                <div className="mt-4 flex gap-2.5 pt-3 border-t border-jevah-border/40">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    className="flex-1"
-                    disabled={busy}
-                    onClick={() => openEdit(t)}
-                  >
-                    <PencilSquareIcon className="h-3.5 w-3.5" />
-                    Edit
-                  </Button>
-                  <Button
-                    variant="danger"
-                    size="sm"
-                    className="flex-1"
-                    disabled={busy}
-                    onClick={() => void onDelete(t)}
-                  >
-                    <TrashIcon className="h-3.5 w-3.5" />
-                    Delete
-                  </Button>
+                <div className="mt-4 space-y-2.5 pt-3 border-t border-jevah-border/40">
+                  {lane === "artist" && (
+                    <>
+                      <label className="flex items-start gap-2 text-[11px] font-semibold text-jevah-text-muted">
+                        <input
+                          type="checkbox"
+                          checked={heard}
+                          disabled={!id}
+                          onChange={(e) => {
+                            if (!id) return;
+                            const on = e.target.checked;
+                            setConfirmHeard((prev) => ({ ...prev, [id]: on }));
+                            if (on) markHeard(id);
+                          }}
+                          className="mt-0.5 h-3.5 w-3.5 rounded border-jevah-border text-jevah-accent"
+                        />
+                        I listened to this track
+                      </label>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          className="flex-1"
+                          disabled={busy || !heard}
+                          onClick={() => void onReview(t, "approved")}
+                        >
+                          Approve
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          disabled={busy}
+                          onClick={() => void onReview(t, "under_review")}
+                        >
+                          Hold
+                        </Button>
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          disabled={busy}
+                          onClick={() => void onReview(t, "rejected")}
+                        >
+                          Reject
+                        </Button>
+                      </div>
+                    </>
+                  )}
+                  <div className="flex gap-2.5">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="flex-1"
+                      disabled={busy}
+                      onClick={() => openEdit(t)}
+                    >
+                      <PencilSquareIcon className="h-3.5 w-3.5" />
+                      Edit
+                    </Button>
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      className="flex-1"
+                      disabled={busy}
+                      onClick={() => void onDelete(t)}
+                    >
+                      <TrashIcon className="h-3.5 w-3.5" />
+                      Delete
+                    </Button>
+                  </div>
                 </div>
               </div>
             );

@@ -40,7 +40,7 @@ export default function JevahPreFooterCTA() {
 
       <div className="relative z-10 mx-auto max-w-7xl">
         <div
-          className={`overflow-hidden rounded-3xl border border-jevah-border bg-jevah-surface p-8 shadow-[0_20px_60px_var(--jevah-shadow)] sm:p-12 ${
+          className={`overflow-hidden rounded-3xl border border-jevah-border bg-jevah-surface p-5 shadow-[0_20px_60px_var(--jevah-shadow)] xs:p-8 sm:p-12 ${
             isIntersecting ? "studio-rise" : "opacity-0"
           }`}
         >
@@ -62,7 +62,7 @@ export default function JevahPreFooterCTA() {
 
           <div className="grid gap-10 lg:grid-cols-12 lg:items-center">
             <div className="space-y-6 lg:col-span-7">
-              <h2 className="text-3xl font-extrabold leading-tight tracking-tight text-jevah-text sm:text-4xl lg:text-5xl">
+              <h2 className="text-2xl font-extrabold leading-tight tracking-tight text-jevah-text xs:text-3xl sm:text-4xl lg:text-5xl">
                 Connect with God's word,{" "}
                 <span className="bg-gradient-to-r from-[#256E63] via-amber-500 to-teal-500 bg-clip-text text-transparent dark:from-amber-300 dark:via-jevah-accent dark:to-teal-200">
                   anytime, anywhere.

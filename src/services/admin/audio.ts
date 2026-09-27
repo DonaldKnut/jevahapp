@@ -1,6 +1,6 @@
 import { apiRequest, ApiError } from "../../lib/api";
 import { listFromUnknown, paginationFrom, unwrapData } from "../../lib/api/unwrap";
-import { copyrightFreeToTrack } from "../../lib/media";
+import { copyrightFreeToTrack, normalizeTrackCard, normalizeTrackList } from "../../lib/media";
 import type { ApiSuccess } from "../../types/admin";
 import type {
   CopyrightFreeSong,
@@ -53,6 +53,7 @@ export async function listAdminTracks(params: {
   search?: string;
   category?: string;
   visibility?: string;
+  moderationStatus?: string;
   page?: number;
   limit?: number;
 }) {
@@ -61,14 +62,22 @@ export async function listAdminTracks(params: {
   if (params.search) q.set("search", params.search);
   if (params.category) q.set("category", params.category);
   if (params.visibility) q.set("visibility", params.visibility);
+  if (params.moderationStatus) q.set("moderationStatus", params.moderationStatus);
   if (params.page) q.set("page", String(params.page));
   if (params.limit) q.set("limit", String(params.limit));
   try {
     const res = await apiRequest(`/admin/audio/tracks?${q.toString()}`);
     const data = unwrapData(res);
+    const pageMeta = paginationFrom(res);
+    const items = normalizeTrackList(
+      listFromUnknown<TrackCard>(data, ["items", "tracks", "data"])
+    );
     return {
-      items: listFromUnknown<TrackCard>(data, ["items", "tracks", "data"]),
-      total: paginationFrom(res).total,
+      items,
+      total: pageMeta.total ?? items.length,
+      page: pageMeta.page ?? params.page ?? 1,
+      pages: pageMeta.totalPages ?? 1,
+      limit: pageMeta.limit ?? params.limit ?? 20,
     };
   } catch {
     if (params.lane && params.lane !== "curated") {
@@ -78,6 +87,9 @@ export async function listAdminTracks(params: {
     return {
       items: legacy.map(copyrightFreeToTrack),
       total: legacy.length,
+      page: 1,
+      pages: 1,
+      limit: legacy.length,
     };
   }
 }
@@ -118,7 +130,12 @@ export async function finalizeTrack(
 }
 
 export async function getAdminTrack(id: string) {
-  return unwrapData(await apiRequest(`/admin/audio/tracks/${id}`));
+  const data = unwrapData(await apiRequest(`/admin/audio/tracks/${id}`));
+  const row =
+    data && typeof data === "object" && "track" in data
+      ? (data as { track: unknown }).track
+      : data;
+  return normalizeTrackCard(row);
 }
 
 export async function patchAdminTrack(
@@ -139,7 +156,11 @@ export async function patchAdminTrack(
 
 export async function reviewTrackModeration(
   id: string,
-  body: { status: "approved" | "rejected" | "under_review"; reason?: string }
+  body: {
+    status: "approved" | "rejected" | "under_review";
+    reason?: string;
+    heardConfirmed?: boolean;
+  }
 ) {
   return unwrapData(
     await apiRequest(`/admin/audio/tracks/${id}/moderation`, {

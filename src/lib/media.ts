@@ -6,7 +6,9 @@
 export {
   trackId,
   trackPlaybackUrl,
+  trackPlayableUrl,
   trackArtist,
+  trackArtistSlug,
   trackDuration,
   trackThumb,
   trackProcessing,

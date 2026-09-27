@@ -16,8 +16,11 @@ export { unwrapData } from "../../lib/api/unwrap";
 export {
   trackId,
   trackPlaybackUrl,
+  trackPlayableUrl,
   trackArtist,
+  trackArtistSlug,
   trackDuration,
+  trackThumb,
   trackProcessing,
   formatTrackDuration,
   putPresignedFile,

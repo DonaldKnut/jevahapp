@@ -50,7 +50,7 @@ Content-Type: application/json
 |-------|--------|
 | `segment` | See §2 |
 | `subject` | Optional; default subject if omitted |
-| `message` | Optional personal note in the template |
+| `message` | **Full letter body** from Admin → Welcome artists (plain text). Interpolate `{{firstName}}`. If this is a short note only (activate modal `onboardMessage`), insert it into the official template. If it looks like the full letter (`Hi {{firstName}}` / multiple paragraphs), **use it as the body** — do not wrap it again. |
 | `dryRun` | `true` = count / simulate only, no Resend |
 | `limit` | Cap batch (FE sends `100`) |
 | `artistIds` / `userIds` / `emails` | Only for matching segments |

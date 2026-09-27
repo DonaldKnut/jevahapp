@@ -19,7 +19,27 @@ export function trackPlaybackUrl(t: TrackCard) {
 }
 
 export function trackArtist(t: TrackCard) {
-  return t.artistName || t.singer || "Unknown";
+  if (t.artistName) return t.artistName;
+  if (t.singer) return t.singer;
+  if (typeof t.artist === "string" && t.artist.trim()) return t.artist;
+  if (t.artist && typeof t.artist === "object") {
+    return t.artist.displayName || t.artist.name || "Unknown";
+  }
+  return "Unknown";
+}
+
+export function trackArtistSlug(t: TrackCard) {
+  if (t.artistSlug) return t.artistSlug;
+  if (t.artist && typeof t.artist === "object") return t.artist.slug || null;
+  return null;
+}
+
+/** HTTP(S) file only — `pending://` means the creator PUT never finished. */
+export function trackPlayableUrl(t: TrackCard) {
+  const url = trackPlaybackUrl(t);
+  if (!url || /^pending:/i.test(url)) return null;
+  if (!/^https?:\/\//i.test(url)) return null;
+  return url;
 }
 
 export function trackDuration(t: TrackCard) {
@@ -32,6 +52,7 @@ export function trackDuration(t: TrackCard) {
 export function trackThumb(t: TrackCard) {
   return (
     t.thumbnailUrl ||
+    t.coverUrl ||
     t.artwork?.url ||
     t.artwork?.coverUrl ||
     t.artwork?.thumbnailUrl ||

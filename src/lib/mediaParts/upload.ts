@@ -11,13 +11,27 @@ function uploadTarget(putUrl: string) {
   }
 }
 
+function signedHeaderNames(putUrl: string) {
+  try {
+    const raw = new URL(putUrl).searchParams.get("X-Amz-SignedHeaders") || "";
+    return new Set(
+      raw
+        .split(";")
+        .map((s) => s.trim().toLowerCase())
+        .filter(Boolean)
+    );
+  } catch {
+    return new Set<string>();
+  }
+}
+
 export function uploadFailureMessage(err: unknown) {
   const msg = err instanceof Error ? err.message : "Upload failed";
   if (
     /cors|access-control|failed to fetch|network error/i.test(msg) ||
     msg === "Network error during upload"
   ) {
-    return "The file store blocked this browser upload. Refresh and try again. If it still fails, storage must allow this site.";
+    return "The file store blocked this browser upload. Refresh and try again. If it still fails, storage must allow this site (R2 CORS for www.jevahapp.com).";
   }
   return msg;
 }
@@ -31,15 +45,25 @@ export async function putPresignedFile(
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.open("PUT", uploadTarget(putUrl));
-    xhr.setRequestHeader(
-      "Content-Type",
-      file.type || "application/octet-stream"
-    );
-    if (headers) {
-      for (const [k, v] of Object.entries(headers)) {
-        xhr.setRequestHeader(k, v);
-      }
+    const signed = signedHeaderNames(putUrl);
+    const extras = headers || {};
+
+    const contentType =
+      extras["Content-Type"] ||
+      extras["content-type"] ||
+      (signed.has("content-type")
+        ? file.type || "application/octet-stream"
+        : "");
+    if (contentType) {
+      xhr.setRequestHeader("Content-Type", contentType);
     }
+
+    for (const [k, v] of Object.entries(extras)) {
+      if (k.toLowerCase() === "content-type") continue;
+      if (k.toLowerCase() === "host") continue;
+      xhr.setRequestHeader(k, v);
+    }
+
     if (xhr.upload && onByteProgress) {
       xhr.upload.onprogress = (e) => {
         if (e.lengthComputable && e.total > 0) {
@@ -54,8 +78,7 @@ export async function putPresignedFile(
         reject(new Error(`Upload failed (${xhr.status})`));
       }
     };
-    xhr.onerror = () =>
-      reject(new Error(uploadFailureMessage(new Error("Network error during upload"))));
+    xhr.onerror = () => reject(new Error("Network error during upload"));
     xhr.send(file);
   });
 }
@@ -111,4 +134,3 @@ export async function runPresignedTrackUpload(options: {
   notify(100, "Uploaded & Published ✓");
   return res;
 }
-

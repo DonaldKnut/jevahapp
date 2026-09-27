@@ -114,6 +114,7 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    overflow-x: clip;
   }
 
   body,
@@ -126,10 +127,23 @@
     font-family: inherit;
   }
 
-  body {
+  body,
+  #root {
+    max-width: 100%;
+    overflow-x: clip;
     background-color: var(--jevah-bg);
     color: var(--jevah-text);
+  }
+
+  body {
     transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  img,
+  video,
+  canvas,
+  svg {
+    max-width: 100%;
   }
 }
 
@@ -2179,6 +2193,56 @@
   .word-insight-veil,
   .word-insight-card {
     transition: none;
+  }
+}
+
+/* Pocket phones (360 and below, including 320 Fold / SE). */
+@media (max-width: 359.98px) {
+  html {
+    font-size: 15px;
+  }
+
+  .text-7xl {
+    font-size: 1.85rem !important;
+    line-height: 1.15 !important;
+  }
+  .text-6xl {
+    font-size: 1.7rem !important;
+    line-height: 1.15 !important;
+  }
+  .text-5xl {
+    font-size: 1.6rem !important;
+    line-height: 1.2 !important;
+  }
+  .text-4xl {
+    font-size: 1.4rem !important;
+    line-height: 1.2 !important;
+  }
+
+  .px-8,
+  .lg\:px-12 {
+    padding-left: 0.85rem !important;
+    padding-right: 0.85rem !important;
+  }
+
+  .pt-\[15vh\],
+  .pt-\[20vh\] {
+    padding-top: 5.25rem !important;
+  }
+
+  .grid-cols-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .word-insight-card {
+    padding: 1.1rem 1rem 1rem;
+  }
+}
+
+@media (max-width: 399.98px) {
+  h1,
+  h2 {
+    overflow-wrap: break-word;
   }
 }
 

@@ -5,6 +5,7 @@ import {
   runPresignedTrackUpload,
   type TrackUploadIntent,
 } from "../lib/media";
+import type { RightsType } from "../types/creator";
 
 type IntentFactory = (meta: {
   title: string;
@@ -20,6 +21,10 @@ type IntentFactory = (meta: {
   coverFileSizeBytes?: number;
   releaseId?: string;
   trackNumber?: number;
+  rightsAttested?: boolean;
+  gospelAttested?: boolean;
+  rightsType?: RightsType;
+  licenseNote?: string | null;
 }) => Promise<TrackUploadIntent>;
 
 /**

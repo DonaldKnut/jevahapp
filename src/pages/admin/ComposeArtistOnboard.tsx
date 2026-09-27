@@ -25,8 +25,11 @@ import {
 import EmailComposeTabs from "./components/EmailComposeTabs";
 import CreatorWelcomeEmailPreview from "../../components/admin/CreatorWelcomeEmailPreview";
 import {
+  CREATOR_WELCOME_BODY,
   CREATOR_WELCOME_SUBJECT,
   CREATOR_WELCOME_TEMPLATE_ID,
+  readWelcomeDraft,
+  writeWelcomeDraft,
 } from "../../lib/creatorWelcomeEmail";
 
 const SEGMENTS: {
@@ -86,8 +89,11 @@ export default function ComposeArtistOnboardPage() {
     useState<ArtistOnboardSegment>("active_missing_onboard");
   const [idsRaw, setIdsRaw] = useState("");
   const [emailsRaw, setEmailsRaw] = useState("");
-  const [subject, setSubject] = useState("");
-  const [message, setMessage] = useState("");
+  const draft = readWelcomeDraft();
+  const [subject, setSubject] = useState(
+    draft?.subject || CREATOR_WELCOME_SUBJECT
+  );
+  const [body, setBody] = useState(draft?.body || CREATOR_WELCOME_BODY);
   const [testOnly, setTestOnly] = useState(true);
   const [preview, setPreview] = useState<number | null>(null);
   const [lastResult, setLastResult] = useState<string | null>(null);
@@ -117,6 +123,10 @@ export default function ComposeArtistOnboardPage() {
     setPreview(null);
     setLastResult(null);
   }, [segment, idsRaw, emailsRaw]);
+
+  useEffect(() => {
+    writeWelcomeDraft(subject, body);
+  }, [subject, body]);
 
   function validateWho() {
     if (segment === "artistIds" && ids.length === 0) {
@@ -176,7 +186,7 @@ export default function ComposeArtistOnboardPage() {
         userIds: segment === "userIds" ? ids : undefined,
         emails: segment === "emails" ? emails : undefined,
         subject: subject.trim() || CREATOR_WELCOME_SUBJECT,
-        message: message.trim() || undefined,
+        message: body.trim() || CREATOR_WELCOME_BODY,
         templateId: CREATOR_WELCOME_TEMPLATE_ID,
         dryRun: testOnly,
         limit: 100,
@@ -195,7 +205,6 @@ export default function ComposeArtistOnboardPage() {
         testOnly ? "Test complete" : "Invites sent",
         summary || (testOnly ? "No real emails went out" : undefined)
       );
-      if (!testOnly) setMessage("");
     } catch (err) {
       const msg =
         err instanceof ApiError
@@ -321,13 +330,29 @@ export default function ComposeArtistOnboardPage() {
             </section>
 
             <section className="space-y-3">
-              <h2 className="text-sm font-bold text-jevah-text">
-                2. What should the email say?
-              </h2>
-              <Field
-                label="Subject line"
-                helperText="Leave blank to use: Welcome to Jevah, {{firstName}}"
-              >
+              <div className="flex flex-wrap items-end justify-between gap-2">
+                <h2 className="text-sm font-bold text-jevah-text">
+                  2. Write the letter
+                </h2>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSubject(CREATOR_WELCOME_SUBJECT);
+                    setBody(CREATOR_WELCOME_BODY);
+                  }}
+                  className="text-[11px] font-extrabold uppercase tracking-wider text-jevah-accent hover:underline"
+                >
+                  Reset to official letter
+                </button>
+              </div>
+              <p className="text-xs text-jevah-text-muted">
+                This is the email people receive. Use{" "}
+                <code className="rounded bg-jevah-card px-1 py-0.5 font-mono text-[11px]">
+                  {"{{firstName}}"}
+                </code>{" "}
+                and it becomes Jizzy, Ibrahim, and so on for each person.
+              </p>
+              <Field label="Subject line">
                 <input
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
@@ -335,25 +360,23 @@ export default function ComposeArtistOnboardPage() {
                   placeholder={CREATOR_WELCOME_SUBJECT}
                 />
               </Field>
-              <Field
-                label="Optional note in the email"
-                helperText="Shown as a short personal line inside the welcome. Leave blank to send the template as-is."
-              >
+              <Field label="Letter">
                 <textarea
-                  rows={4}
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  className={inputClass}
-                  placeholder="Studio is unlocked — upload your first track when you’re ready."
+                  rows={18}
+                  value={body}
+                  onChange={(e) => setBody(e.target.value)}
+                  className={`${inputClass} min-h-[22rem] font-sans text-sm leading-relaxed`}
+                  placeholder={CREATOR_WELCOME_BODY}
                 />
               </Field>
               <div className="space-y-1.5">
                 <p className="text-[11px] font-semibold uppercase tracking-wide text-jevah-text-muted">
-                  Example preview · first name is filled per person
+                  Live preview · first name filled as Jizzy
                 </p>
                 <CreatorWelcomeEmailPreview
                   firstName="Jizzy"
-                  optionalNote={message}
+                  subject={subject}
+                  body={body}
                 />
               </div>
             </section>

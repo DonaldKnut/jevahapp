@@ -1,4 +1,5 @@
 import { unwrapData } from "../../lib/api/unwrap";
+import { normalizeUploadPolicy } from "../../lib/uploadPolicy";
 import type {
   ArtistCard,
   CreatorCapabilities,
@@ -96,5 +97,8 @@ export function normalizeCreatorMe(raw: unknown): CreatorMe {
     status,
     canUpload: Boolean(data?.canUpload ?? caps.canUploadTracks),
     nextStep: (data?.nextStep || caps.nextStep) as CreatorNextStep,
+    uploadPolicy: normalizeUploadPolicy(
+      (data as CreatorMe & { uploadPolicy?: unknown })?.uploadPolicy
+    ),
   };
 }
