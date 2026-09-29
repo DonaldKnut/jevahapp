@@ -1,302 +1,190 @@
-import { useIntersectionObserver } from "../hooks/useIntersectionObserver";
-import ButtonLink from "../common/ButtonLink";
+import { useCallback, useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import {
+  BookOpenIcon,
+  MagnifyingGlassIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
+import { EbookCardTile } from "../components/ebooks/EbookCardTile";
+import { useDocumentMeta } from "../hooks/useDocumentMeta";
+import { useDebouncedValue } from "../hooks/useDebouncedValue";
+import { useFeedback } from "../components/admin/Feedback";
+import { toastApiError } from "../lib/errors";
+import { fetchEbooks } from "../services/ebooks";
+import type { EbookCard } from "../types/ebook";
 
-function Ebooks() {
-  const { ref, isIntersecting } = useIntersectionObserver({ threshold: 0.1 });
+/**
+ * Public ebook catalog — approved PDFs only via `GET /api/ebooks`.
+ */
+export default function Ebooks() {
+  useDocumentMeta({
+    title: "Christian ebooks & devotionals — Jevah",
+    description:
+      "Browse and read faith-filled ebooks, devotionals, and teaching PDFs on Jevah.",
+    canonicalPath: "/ebooks",
+  });
 
-  const categories = [
-    { name: "All", count: 24 },
-    { name: "Devotionals", count: 8 },
-    { name: "Bible Study", count: 6 },
-    { name: "Christian Living", count: 5 },
-    { name: "Theology", count: 3 },
-    { name: "Biography", count: 2 },
-  ];
+  const { toast } = useFeedback();
+  const [items, setItems] = useState<EbookCard[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [pages, setPages] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const q = useDebouncedValue(search, 280);
 
-  const featuredBooks = [
-    {
-      title: "Walking in Faith: A Daily Devotional",
-      author: "Pastor Michael Johnson",
-      category: "Devotionals",
-      pages: 365,
-      rating: 4.8,
-      description:
-        "A year-long journey through Scripture with daily reflections and prayers to strengthen your walk with God.",
-      image:
-        "https://images.unsplash.com/photo-1542816417-0983c9c9ad53?q=80&w=300&auto=format&fit=crop",
-    },
-    {
-      title: "Understanding the Bible",
-      author: "Dr. Sarah Williams",
-      category: "Bible Study",
-      pages: 420,
-      rating: 4.9,
-      description:
-        "A comprehensive guide to understanding Scripture, its history, context, and application to modern life.",
-      image:
-        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=300&auto=format&fit=crop",
-    },
-    {
-      title: "The Power of Prayer",
-      author: "Rev. David Thompson",
-      category: "Christian Living",
-      pages: 280,
-      rating: 4.7,
-      description:
-        "Discover the transformative power of prayer and learn practical ways to deepen your communication with God.",
-      image:
-        "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?q=80&w=300&auto=format&fit=crop",
-    },
-    {
-      title: "Living with Purpose",
-      author: "Bishop Lisa Chen",
-      category: "Christian Living",
-      pages: 320,
-      rating: 4.6,
-      description:
-        "Find your God-given purpose and learn how to live a life of meaning and impact in today's world.",
-      image:
-        "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?q=80&w=300&auto=format&fit=crop",
-    },
-    {
-      title: "Systematic Theology",
-      author: "Dr. James Wilson",
-      category: "Theology",
-      pages: 650,
-      rating: 4.9,
-      description:
-        "An in-depth exploration of Christian doctrine and theology for serious students of the faith.",
-      image:
-        "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?q=80&w=300&auto=format&fit=crop",
-    },
-    {
-      title: "The Life of C.S. Lewis",
-      author: "Biographer Team",
-      category: "Biography",
-      pages: 380,
-      rating: 4.8,
-      description:
-        "An inspiring biography of one of the greatest Christian writers and thinkers of the 20th century.",
-      image:
-        "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?q=80&w=300&auto=format&fit=crop",
-    },
-  ];
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetchEbooks({
+        page,
+        limit: 20,
+        search: q.length >= 2 ? q : undefined,
+      });
+      setItems(res.items);
+      setTotal(res.total);
+      setPages(res.pages);
+    } catch (err) {
+      toastApiError(
+        toast,
+        "Could not load ebooks",
+        err,
+        "Could not load ebooks right now."
+      );
+      setItems([]);
+      setTotal(0);
+      setPages(1);
+    } finally {
+      setLoading(false);
+    }
+  }, [page, q, toast]);
 
-  const recentBooks = [
-    {
-      title: "Morning Devotions",
-      author: "Various Authors",
-      category: "Devotionals",
-      pages: 180,
-      rating: 4.5,
-    },
-    {
-      title: "Bible Study Guide: Romans",
-      author: "Study Group",
-      category: "Bible Study",
-      pages: 240,
-      rating: 4.7,
-    },
-    {
-      title: "Faith in Action",
-      author: "Pastor Johnson",
-      category: "Christian Living",
-      pages: 200,
-      rating: 4.6,
-    },
-  ];
+  useEffect(() => {
+    setPage(1);
+  }, [q]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-blue-100 via-teal-50 to-green-100 px-4 py-16 pt-24 xs:px-6 sm:px-8 sm:py-20 sm:pt-[20vh] lg:px-12">
-        <div className="mx-auto max-w-7xl">
-          <div
-            className={`text-center ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
-          >
-            <h1
-              className={`mb-4 text-[1.7rem] font-bold leading-tight text-gray-900 xs:mb-6 xs:text-4xl md:text-6xl lg:text-7xl ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
-              style={{ animationDelay: "0.2s" }}
-            >
-              Christian E-books Library
-            </h1>
-            <p
-              className={`mx-auto mb-8 max-w-3xl text-lg text-gray-700 md:text-xl ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
-              style={{ animationDelay: "0.4s" }}
-            >
-              Access thousands of Christian e-books, devotionals, Bible studies,
-              and theological works. Read on any device, anywhere, anytime.
-            </p>
-            <div
-              className={`${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
-              style={{ animationDelay: "0.6s" }}
-            >
-              <ButtonLink
-                href="#download"
-                className="inline-block rounded-full px-8 py-4 text-white transition-all duration-300 hover:opacity-90 hover:shadow-lg"
-                style={{ backgroundColor: "#090E24" }}
-              >
-                Browse Library
-              </ButtonLink>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Categories */}
-      <section className="bg-white py-8 px-8 lg:px-12">
-        <div className="mx-auto max-w-7xl">
-          <div className="flex flex-wrap justify-center gap-4">
-            {categories.map((category, index) => (
-              <button
-                key={index}
-                className={`rounded-full px-6 py-2 font-medium transition-all duration-300 ${
-                  index === 0
-                    ? "bg-[#090E24] text-white"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-              >
-                {category.name} ({category.count})
-              </button>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Featured Books */}
-      <section ref={ref} className="bg-gray-50 py-20 px-8 lg:px-12">
-        <div className="mx-auto max-w-7xl">
-          <h2
-            className={`mb-12 text-center text-4xl font-bold text-gray-900 ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
-          >
-            Featured Books
-          </h2>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {featuredBooks.map((book, index) => (
-              <div
-                key={index}
-                className={`overflow-hidden rounded-2xl bg-white shadow-md transition-all duration-300 hover:scale-105 hover:shadow-lg ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
-                style={{ animationDelay: `${0.1 * index}s` }}
-              >
-                <div className="flex">
-                  <img
-                    src={book.image}
-                    alt={book.title}
-                    className="h-48 w-32 object-cover"
-                  />
-                  <div className="flex-1 p-6">
-                    <div className="mb-2">
-                      <span
-                        className="rounded-full px-2 py-1 text-xs font-semibold text-white"
-                        style={{ backgroundColor: "#256E63" }}
-                      >
-                        {book.category}
-                      </span>
-                    </div>
-                    <h3 className="mb-2 text-lg font-bold text-gray-900">
-                      {book.title}
-                    </h3>
-                    <p className="mb-2 text-sm" style={{ color: "#256E63" }}>
-                      {book.author}
-                    </p>
-                    <p className="mb-3 text-sm text-gray-600">
-                      {book.description}
-                    </p>
-                    <div className="mb-4 flex items-center justify-between text-sm text-gray-500">
-                      <span>📄 {book.pages} pages</span>
-                      <span>⭐ {book.rating}</span>
-                    </div>
-                    <button
-                      className="w-full rounded-full px-4 py-2 text-white transition-all duration-300 hover:opacity-90"
-                      style={{ backgroundColor: "#090E24" }}
-                    >
-                      Read Now
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Recent Books */}
-      <section className="bg-white py-20 px-8 lg:px-12">
-        <div className="mx-auto max-w-7xl">
-          <h2
-            className={`mb-12 text-center text-4xl font-bold text-gray-900 ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
-          >
-            Recently Added
-          </h2>
-          <div className="grid gap-6 md:grid-cols-3">
-            {recentBooks.map((book, index) => (
-              <div
-                key={index}
-                className={`rounded-2xl bg-gray-50 p-6 shadow-md transition-all duration-300 hover:shadow-lg ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
-                style={{ animationDelay: `${0.1 * index}s` }}
-              >
-                <div className="mb-4 flex items-center justify-between">
-                  <span
-                    className="rounded-full px-3 py-1 text-xs font-semibold text-white"
-                    style={{ backgroundColor: "#256E63" }}
-                  >
-                    {book.category}
-                  </span>
-                  <span className="text-sm text-gray-500">⭐ {book.rating}</span>
-                </div>
-                <h3 className="mb-2 text-lg font-bold text-gray-900">
-                  {book.title}
-                </h3>
-                <p className="mb-3 text-sm" style={{ color: "#256E63" }}>
-                  {book.author}
-                </p>
-                <div className="mb-4 text-sm text-gray-500">
-                  📄 {book.pages} pages
-                </div>
-                <button
-                  className="w-full rounded-full px-4 py-2 text-white transition-all duration-300 hover:opacity-90"
-                  style={{ backgroundColor: "#090E24" }}
-                >
-                  Read Now
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="bg-gray-50 py-20 px-8 lg:px-12">
-        <div className="mx-auto max-w-4xl text-center">
-          <h2
-            className={`mb-6 text-4xl font-bold text-gray-900 ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
-          >
-            Start Reading Today
-          </h2>
-          <p
-            className={`mb-8 text-lg text-gray-700 ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
-            style={{ animationDelay: "0.2s" }}
-          >
-            Download the Jevah app to access our complete e-book library. Read
-            offline, bookmark your favorites, and take notes as you study.
+    <div className="jevah-dashboard-shell min-h-dvh pb-24 pt-24 font-sans antialiased">
+      <div className="mx-auto max-w-7xl px-4 sm:px-8 lg:px-12">
+        <header className="max-w-2xl">
+          <p className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-jevah-accent">
+            <BookOpenIcon className="h-4 w-4" />
+            Jevah Library
           </p>
-          <div
-            className={`${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
-            style={{ animationDelay: "0.4s" }}
-          >
-            <ButtonLink
-              href="#download"
-              className="inline-block rounded-full px-8 py-4 text-white transition-all duration-300 hover:opacity-90 hover:shadow-lg"
-              style={{ backgroundColor: "#090E24" }}
+          <h1 className="mt-3 text-3xl font-extrabold tracking-tight text-jevah-text sm:text-4xl lg:text-5xl">
+            Ebooks & teaching
+          </h1>
+          <p className="mt-3 text-sm leading-relaxed text-jevah-text-muted sm:text-base">
+            Read approved devotionals and Christian books in the browser —
+            covers from the live catalog, never drafts or pending uploads.
+          </p>
+        </header>
+
+        <div className="relative mt-8 max-w-md">
+          <MagnifyingGlassIcon className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-jevah-text-muted" />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            autoComplete="off"
+            spellCheck={false}
+            placeholder="Search title or topic…"
+            className="w-full rounded-full border border-jevah-border bg-jevah-surface/90 py-2.5 pl-10 pr-10 text-sm text-jevah-text outline-none backdrop-blur-md placeholder:text-jevah-text-muted focus:border-jevah-accent focus:ring-2 focus:ring-jevah-accent/15"
+          />
+          {search ? (
+            <button
+              type="button"
+              onClick={() => setSearch("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-jevah-text-muted hover:text-jevah-text"
+              aria-label="Clear search"
             >
-              Download App
-            </ButtonLink>
-          </div>
+              <XMarkIcon className="h-4 w-4" />
+            </button>
+          ) : null}
         </div>
-      </section>
+
+        <p className="mt-4 text-xs text-jevah-text-muted">
+          <span className="font-semibold text-jevah-text">
+            {loading ? "…" : total}
+          </span>{" "}
+          book{total === 1 ? "" : "s"}
+          {!loading && q.length >= 2 ? " matching" : ""}
+        </p>
+
+        <div className="mt-8">
+          {loading ? (
+            <ul className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+              {Array.from({ length: 10 }).map((_, i) => (
+                <li key={i} className="animate-pulse">
+                  <div className="aspect-[2/3] rounded-2xl bg-jevah-card" />
+                  <div className="mt-3 h-3 w-3/4 rounded-full bg-jevah-card" />
+                </li>
+              ))}
+            </ul>
+          ) : items.length === 0 ? (
+            <div className="rounded-[1.5rem] border border-jevah-border/80 bg-jevah-elevated/80 px-6 py-16 text-center shadow-sm">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-jevah-accent/10 text-jevah-accent">
+                <BookOpenIcon className="h-6 w-6" />
+              </div>
+              <p className="mt-4 font-semibold text-jevah-text">
+                No ebooks yet
+              </p>
+              <p className="mt-1 text-sm text-jevah-text-muted">
+                {q.length >= 2
+                  ? "Try a different search."
+                  : "Approved books will appear here when published."}
+              </p>
+            </div>
+          ) : (
+            <>
+              <ul className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+                {items.map((ebook) => (
+                  <li key={ebook.id}>
+                    <EbookCardTile ebook={ebook} />
+                  </li>
+                ))}
+              </ul>
+              {pages > 1 ? (
+                <div className="mt-10 flex items-center justify-center gap-3">
+                  <button
+                    type="button"
+                    disabled={page <= 1 || loading}
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                    className="rounded-full border border-jevah-border bg-jevah-surface px-5 py-2 text-sm font-bold text-jevah-text transition hover:bg-jevah-card disabled:opacity-50"
+                  >
+                    Previous
+                  </button>
+                  <span className="text-xs font-semibold text-jevah-text-muted">
+                    {page} / {pages}
+                  </span>
+                  <button
+                    type="button"
+                    disabled={page >= pages || loading}
+                    onClick={() => setPage((p) => p + 1)}
+                    className="rounded-full border border-jevah-border bg-jevah-surface px-5 py-2 text-sm font-bold text-jevah-text transition hover:bg-jevah-card disabled:opacity-50"
+                  >
+                    Next
+                  </button>
+                </div>
+              ) : null}
+            </>
+          )}
+        </div>
+
+        <p className="mt-12 text-center text-sm text-jevah-text-muted">
+          Prefer listening?{" "}
+          <Link
+            to="/sermons"
+            className="font-semibold text-jevah-accent hover:underline"
+          >
+            Browse sermons
+          </Link>
+          .
+        </p>
+      </div>
     </div>
   );
 }
-
-export default Ebooks;
-

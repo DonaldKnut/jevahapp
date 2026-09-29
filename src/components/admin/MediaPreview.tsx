@@ -21,6 +21,11 @@ import {
   ArrowPathIcon,
   ArrowTopRightOnSquareIcon,
 } from "@heroicons/react/24/outline";
+import {
+  MEDIA_PROTECT_ATTRS,
+  blockMediaContextMenu,
+  blockMediaDrag,
+} from "../../lib/mediaProtection";
 
 function formatClock(sec: number) {
   if (!Number.isFinite(sec) || sec < 0) return "0:00";
@@ -343,7 +348,12 @@ export default function MediaPreview({
             playsInline
             preload="metadata"
             controls={!showControls}
-            className="h-full w-full object-contain"
+            controlsList={MEDIA_PROTECT_ATTRS.controlsList}
+            disablePictureInPicture={MEDIA_PROTECT_ATTRS.disablePictureInPicture}
+            draggable={false}
+            className="h-full w-full object-contain select-none"
+            onContextMenu={blockMediaContextMenu}
+            onDragStart={blockMediaDrag}
             onClick={togglePlay}
             onPlay={() => setIsPlaying(true)}
             onPause={() => setIsPlaying(false)}
@@ -366,6 +376,10 @@ export default function MediaPreview({
               ref={audioRef}
               src={url}
               preload="metadata"
+              controlsList={MEDIA_PROTECT_ATTRS.controlsList}
+              draggable={false}
+              onContextMenu={blockMediaContextMenu}
+              onDragStart={blockMediaDrag}
               onPlay={() => setIsPlaying(true)}
               onPause={() => setIsPlaying(false)}
               onTimeUpdate={(e) => {

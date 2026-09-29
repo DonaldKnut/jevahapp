@@ -137,6 +137,7 @@ function Footer() {
                 { to: "/#features", label: "Features" },
                 { to: "/bible", label: "Jevah Bible" },
                 { to: "/sermons", label: "Sermons" },
+                { to: "/explore", label: "Latest" },
                 { to: "/music", label: "Music" },
                 { to: "/artists", label: "Gospel Artists" },
                 { to: "/ebooks", label: "E-books" },

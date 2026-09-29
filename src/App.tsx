@@ -11,6 +11,9 @@ import ContactUs from "./sections/ContactUs";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Sermons from "./pages/Sermons";
+import SermonWatch from "./pages/SermonWatch";
+import Explore from "./pages/Explore";
+import WatchMedia from "./pages/WatchMedia";
 import Music from "./pages/Music";
 import Artists from "./pages/Artists";
 import Privacy from "./pages/Privacy";
@@ -19,13 +22,16 @@ import Events from "./pages/Events";
 import Forum from "./pages/Forum";
 import Children from "./pages/Children";
 import Ebooks from "./pages/Ebooks";
+import EbookRead from "./pages/EbookRead";
 import Blog from "./pages/Blog";
 import Login from "./pages/Login";
 import ScrollToTop from "./components/ScrollToTop";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
 import { PlayerProvider } from "./context/PlayerContext";
+import { SermonDockProvider } from "./context/SermonDockContext";
 import NowPlayingBar from "./components/music/NowPlayingBar";
+import { GlobalSermonDock } from "./components/sermons/SermonPlayer";
 import { FeedbackProvider } from "./components/admin/Feedback";
 import AdminShell from "./pages/admin/AdminShell";
 import Overview from "./pages/admin/Overview";
@@ -113,9 +119,11 @@ function App() {
       <AuthProvider>
         <FeedbackProvider>
           <PlayerProvider>
+          <SermonDockProvider>
           <Router>
           <ScrollToTop />
           <NowPlayingBar />
+          <GlobalSermonDock />
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/creators/login" element={<Login />} />
@@ -189,6 +197,9 @@ function App() {
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/sermons" element={<Sermons />} />
+              <Route path="/sermons/:id" element={<SermonWatch />} />
+              <Route path="/explore" element={<Explore />} />
+              <Route path="/watch/:id" element={<WatchMedia />} />
               <Route path="/music" element={<Music />} />
               <Route path="/artists" element={<Artists />} />
               <Route path="/privacy" element={<Privacy />} />
@@ -197,6 +208,7 @@ function App() {
               <Route path="/forum" element={<Forum />} />
               <Route path="/children" element={<Children />} />
               <Route path="/ebooks" element={<Ebooks />} />
+              <Route path="/ebooks/:id" element={<EbookRead />} />
               <Route path="/blog" element={<Blog />} />
               <Route path="/bible" element={<BibleLayout />}>
                 <Route index element={<BibleHome />} />
@@ -214,6 +226,7 @@ function App() {
             </Route>
           </Routes>
         </Router>
+          </SermonDockProvider>
           </PlayerProvider>
       </FeedbackProvider>
     </AuthProvider>

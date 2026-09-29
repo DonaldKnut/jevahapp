@@ -16,6 +16,7 @@ import {
   type TrackCard,
 } from "../../services/adminApi";
 import { ApiError } from "../../lib/api";
+import { MEDIA_PROTECT_ATTRS } from "../../lib/mediaProtection";
 import {
   Alert,
   Badge,
@@ -490,9 +491,11 @@ export default function ArtistReviewPage() {
                   <audio
                     key={trackId(selected)}
                     controls
+                    controlsList={MEDIA_PROTECT_ATTRS.controlsList}
                     preload="metadata"
                     className="w-full"
                     src={playUrl || ""}
+                    onContextMenu={(e) => e.preventDefault()}
                     onEnded={() => setHeard(true)}
                     onTimeUpdate={(e) => {
                       const el = e.currentTarget;

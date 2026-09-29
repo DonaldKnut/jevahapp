@@ -1866,6 +1866,169 @@
 .animate-soundwave-3 { animation: soundwaveBar 0.9s ease-in-out 0.4s infinite; }
 .animate-soundwave-4 { animation: soundwaveBar 0.7s ease-in-out 0.15s infinite; }
 
+@keyframes sermonEqBar {
+  0%, 100% { height: 4px; }
+  50% { height: 16px; }
+}
+.sermon-eq-bar {
+  height: 4px;
+  animation: sermonEqBar 0.7s ease-in-out infinite;
+}
+.sermon-volume {
+  height: 0.35rem;
+  cursor: pointer;
+  accent-color: #f59e0b;
+}
+
+/* Desktop: fit 16:9 stage inside the viewport (no scroll to see the video) */
+.sermon-watch-stage {
+  width: 100%;
+  max-width: min(100%, calc((100dvh - 7.5rem) * 16 / 9));
+  max-height: calc(100dvh - 7.5rem);
+  aspect-ratio: 16 / 9;
+}
+
+@media (max-width: 639px) {
+  .sermon-watch-stage {
+    max-width: 100%;
+    max-height: none;
+  }
+}
+
+/* —— Premium ebook reader (view-only) —— */
+.ebook-reader-shell {
+  background:
+    radial-gradient(120% 80% at 50% -10%, rgba(37, 110, 99, 0.35), transparent 55%),
+    linear-gradient(180deg, #06110e 0%, #0a1612 42%, #07100d 100%);
+  color: #f4f7f6;
+}
+
+.ebook-reader-veil {
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, #06110e 55%, transparent) 0%,
+      #06110e 48%,
+      #07100d 100%
+    );
+}
+
+.ebook-reader-chrome {
+  background: linear-gradient(
+    180deg,
+    rgba(4, 16, 13, 0.92) 0%,
+    rgba(4, 16, 13, 0.72) 70%,
+    transparent 100%
+  );
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.ebook-reader-stage {
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.06), transparent 40%),
+    #0c1814;
+  box-shadow:
+    0 28px 80px -28px rgba(0, 0, 0, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  ring: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.ebook-cover-frame {
+  background: #04110e;
+}
+
+.ebook-zoom-viewport {
+  height: min(78dvh, 860px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.ebook-zoom-viewport--text {
+  height: auto;
+  min-height: min(78dvh, 860px);
+  max-height: min(78dvh, 860px);
+}
+
+.ebook-zoom-canvas {
+  width: 100%;
+  will-change: transform;
+}
+
+.ebook-pdf-frame {
+  display: block;
+  pointer-events: auto;
+}
+
+.ebook-read-pane {
+  background:
+    radial-gradient(80% 60% at 50% 0%, rgba(245, 158, 11, 0.08), transparent 55%),
+    linear-gradient(180deg, #101c18 0%, #0c1613 100%);
+}
+
+.ebook-prose {
+  font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia,
+    "Times New Roman", serif;
+  font-size: calc(
+    clamp(1.05rem, 0.95rem + 0.45vw, 1.25rem) *
+      var(--ebook-text-scale, 1)
+  );
+  line-height: 1.85;
+  letter-spacing: 0.01em;
+  color: rgba(244, 247, 246, 0.92);
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.ebook-listen-dock audio {
+  height: 2.25rem;
+  filter: invert(0.92) hue-rotate(160deg);
+}
+
+@media (max-width: 639px) {
+  .ebook-reader-stage {
+    border-radius: 1.1rem;
+  }
+
+  .ebook-zoom-viewport {
+    height: min(72dvh, 720px);
+  }
+
+  .ebook-zoom-viewport--text {
+    min-height: min(72dvh, 720px);
+    max-height: min(72dvh, 720px);
+  }
+
+  .ebook-pdf-frame {
+    min-height: min(72dvh, 720px);
+    height: min(72dvh, 720px);
+  }
+}
+
+/* Hide native download / overflow controls where browsers expose them */
+audio::-webkit-media-controls-enclosure,
+video::-webkit-media-controls-enclosure {
+  overflow: hidden;
+}
+audio::-webkit-media-controls-download-button,
+video::-webkit-media-controls-download-button {
+  display: none !important;
+}
+audio::-internal-media-controls-download-button,
+video::-internal-media-controls-download-button {
+  display: none !important;
+}
+.media-no-download,
+.media-no-download * {
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
 @keyframes shimmerWave {
   0% { transform: translateX(-100%); }
   100% { transform: translateX(100%); }

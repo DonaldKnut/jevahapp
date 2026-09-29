@@ -92,7 +92,13 @@ export const MARKETING_SEO_PAGES: SeoPage[] = [
     path: "/sermons",
     title: "Christian sermons & teaching — Jevah",
     description:
-      "Scripture-rooted sermons and messages on faith, prayer, and hope. Listen on the Jevah Christian app.",
+      "Watch and listen to scripture-rooted sermons on faith, prayer, and hope. Browse the live Jevah sermon catalog.",
+  },
+  {
+    path: "/explore",
+    title: "Latest on Jevah — gospel videos & sermons",
+    description:
+      "Discover the latest live gospel videos, sermons, and media on Jevah.",
   },
   {
     path: "/creators",
@@ -144,9 +150,9 @@ export const MARKETING_SEO_PAGES: SeoPage[] = [
   },
   {
     path: "/ebooks",
-    title: "Christian e-books — Jevah",
+    title: "Christian ebooks & devotionals — Jevah",
     description:
-      "Faith-building Christian e-books and devotionals alongside gospel music and the Bible on Jevah.",
+      "Browse and read faith-filled ebooks, devotionals, and teaching PDFs on Jevah.",
   },
   {
     path: "/events",

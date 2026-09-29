@@ -17,6 +17,7 @@ import {
   InformationCircleIcon,
   EnvelopeIcon,
   BookOpenIcon,
+  DocumentTextIcon,
   ArrowUpTrayIcon,
   RectangleStackIcon,
   HeartIcon,
@@ -32,30 +33,61 @@ type MenuItem = {
   color: string;
 };
 
-const musicMenu: MenuItem[] = [
+type MenuSection = {
+  label: string;
+  items: MenuItem[];
+};
+
+const musicMenuSections: MenuSection[] = [
   {
-    title: "Gospel Music",
-    description: "Worship, praise, and Afro-gospel to stream now",
-    href: "/music",
-    icon: MusicalNoteIcon,
-    badge: "Play",
-    color: "bg-amber-50 text-amber-600 border-amber-200/60",
+    label: "Stream",
+    items: [
+      {
+        title: "Gospel Music",
+        description: "Worship, praise, and Afro-gospel",
+        href: "/music",
+        icon: MusicalNoteIcon,
+        badge: "Play",
+        color: "bg-amber-50 text-amber-600 border-amber-200/60",
+      },
+      {
+        title: "Gospel Artists",
+        description: "Verified ministers and worship leaders",
+        href: "/artists",
+        icon: UserGroupIcon,
+        badge: "Verified",
+        color: "bg-teal-50 text-teal-600 border-teal-200/60",
+      },
+    ],
   },
   {
-    title: "Gospel Artists",
-    description: "Verified ministers, worship leaders, and choirs",
-    href: "/artists",
-    icon: UserGroupIcon,
-    badge: "Verified",
-    color: "bg-teal-50 text-teal-600 border-teal-200/60",
-  },
-  {
-    title: "Sermons & Audio",
-    description: "Teaching and spiritual audio for the week",
-    href: "/sermons",
-    icon: AcademicCapIcon,
-    badge: null,
-    color: "bg-sky-50 text-sky-600 border-sky-200/60",
+    label: "Teach & discover",
+    items: [
+      {
+        title: "Sermons & Audio",
+        description: "Teaching and spiritual audio",
+        href: "/sermons",
+        icon: AcademicCapIcon,
+        badge: null,
+        color: "bg-sky-50 text-sky-600 border-sky-200/60",
+      },
+      {
+        title: "Christian Ebooks",
+        description: "Devotionals and faith-filled PDFs",
+        href: "/ebooks",
+        icon: DocumentTextIcon,
+        badge: "Read",
+        color: "bg-violet-50 text-violet-600 border-violet-200/60",
+      },
+      {
+        title: "Latest on Jevah",
+        description: "Fresh live videos, sermons, and media",
+        href: "/explore",
+        icon: SparklesIcon,
+        badge: "New",
+        color: "bg-emerald-50 text-emerald-600 border-emerald-200/60",
+      },
+    ],
   },
 ];
 
@@ -151,7 +183,7 @@ function MegaLink({
     <Link
       to={item.href}
       onClick={onClick}
-      className="jevah-mega-item group flex items-start gap-3.5 rounded-2xl p-3.5 transition-all duration-200 hover:shadow-sm"
+      className="jevah-mega-item group flex items-start gap-2.5 rounded-xl p-2.5 transition-all duration-200 hover:shadow-sm sm:gap-3.5 sm:rounded-2xl sm:p-3.5"
     >
       <div
         className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border ${item.color} transition-transform duration-200 group-hover:scale-105`}
@@ -259,17 +291,26 @@ export default function Nav() {
                     : "pointer-events-none translate-y-2 opacity-0"
                 }`}
               >
-                <div className="jevah-mega-panel w-[420px] overflow-hidden rounded-3xl border p-5 shadow-2xl shadow-black/10 ring-1 ring-black/5 backdrop-blur-xl">
-                  <p className="px-1 pb-3 text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#9a7b3c]">
-                    Listen
+                <div className="jevah-mega-panel w-[min(36rem,calc(100vw-2rem))] overflow-hidden rounded-3xl border p-5 shadow-2xl shadow-black/10 ring-1 ring-black/5 backdrop-blur-xl">
+                  <p className="px-1 pb-4 text-[10px] font-extrabold uppercase tracking-[0.18em] text-[#9a7b3c]">
+                    Listen & grow
                   </p>
-                  <div className="grid gap-1.5">
-                    {musicMenu.map((item) => (
-                      <MegaLink
-                        key={item.title}
-                        item={item}
-                        onClick={() => setActiveMega(null)}
-                      />
+                  <div className="grid grid-cols-2 gap-4">
+                    {musicMenuSections.map((section) => (
+                      <div key={section.label} className="min-w-0">
+                        <p className="mb-2 px-1 text-[9px] font-bold uppercase tracking-[0.14em] text-jevah-text-muted">
+                          {section.label}
+                        </p>
+                        <div className="flex flex-col gap-1">
+                          {section.items.map((item) => (
+                            <MegaLink
+                              key={item.title}
+                              item={item}
+                              onClick={() => setActiveMega(null)}
+                            />
+                          ))}
+                        </div>
+                      </div>
                     ))}
                   </div>
                   <div className="mt-4 flex items-center justify-between rounded-2xl bg-gradient-to-r from-[#0B1A1F] to-[#12263a] p-4 text-white">
@@ -527,38 +568,47 @@ export default function Nav() {
         <div className="mt-3 space-y-2">
           <div className="jevah-mobile-section my-2 rounded-2xl p-3 ring-1 ring-jevah-border">
             <p className="px-2 pb-2 text-[10px] font-bold uppercase tracking-wider text-jevah-text-muted">
-              Music
+              Listen & grow
             </p>
-            <div className="grid grid-cols-2 gap-2 xs:grid-cols-3">
-              {musicMenu.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <Link
-                    key={item.title}
-                    to={item.href}
-                    onClick={() => setMobileOpen(false)}
-                    className="flex flex-col gap-1.5 rounded-xl bg-jevah-card p-2.5 shadow-sm transition active:scale-95"
-                  >
-                    <div
-                      className={`flex h-8 w-8 items-center justify-center rounded-lg border ${item.color}`}
-                    >
-                      <Icon className="h-4 w-4" />
-                    </div>
-                    <span className="line-clamp-2 text-[11px] font-bold text-jevah-text">
-                      {item.title}
-                    </span>
-                  </Link>
-                );
-              })}
+            <div className="space-y-3">
+              {musicMenuSections.map((section) => (
+                <div key={section.label}>
+                  <p className="px-2 pb-1.5 text-[9px] font-bold uppercase tracking-wider text-jevah-text-muted/80">
+                    {section.label}
+                  </p>
+                  <div className="grid grid-cols-2 gap-2 xs:grid-cols-3">
+                    {section.items.map((item) => {
+                      const Icon = item.icon;
+                      return (
+                        <Link
+                          key={item.title}
+                          to={item.href}
+                          onClick={() => setMobileOpen(false)}
+                          className="flex flex-col gap-1.5 rounded-xl bg-jevah-card p-2.5 shadow-sm transition active:scale-95"
+                        >
+                          <div
+                            className={`flex h-8 w-8 items-center justify-center rounded-lg border ${item.color}`}
+                          >
+                            <Icon className="h-4 w-4" />
+                          </div>
+                          <span className="line-clamp-2 text-[11px] font-bold text-jevah-text">
+                            {item.title}
+                          </span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 
           <div className="jevah-mobile-section my-2 rounded-2xl p-3 ring-1 ring-jevah-border">
             <p className="px-2 pb-2 text-[10px] font-bold uppercase tracking-wider text-jevah-text-muted">
-              About & community
+              Creator
             </p>
             <div className="grid grid-cols-2 gap-2">
-              {moreMenu.map((item) => {
+              {creatorMenu.map((item) => {
                 const Icon = item.icon;
                 return (
                   <Link
@@ -583,10 +633,10 @@ export default function Nav() {
 
           <div className="jevah-mobile-section my-2 rounded-2xl p-3 ring-1 ring-jevah-border">
             <p className="px-2 pb-2 text-[10px] font-bold uppercase tracking-wider text-jevah-text-muted">
-              Creator
+              About & community
             </p>
             <div className="grid grid-cols-2 gap-2">
-              {creatorMenu.map((item) => {
+              {moreMenu.map((item) => {
                 const Icon = item.icon;
                 return (
                   <Link

@@ -102,13 +102,17 @@ const quickFeatures = [
 ];
 
 function PowerfulFeatures() {
-  const { ref, isIntersecting } = useIntersectionObserver({ threshold: 0.1 });
+  // threshold 0: tall feature blocks must reveal on short mobile viewports
+  const { ref, isIntersecting } = useIntersectionObserver({
+    threshold: 0,
+    rootMargin: "80px 0px -5% 0px",
+  });
 
   return (
     <section
       ref={ref}
       id="features"
-      className="jevah-section py-20 px-8 transition-colors duration-300 lg:px-12"
+      className="jevah-section px-4 py-16 transition-colors duration-300 xs:px-6 sm:px-8 sm:py-20 lg:px-12"
     >
       <div className="mx-auto max-w-7xl">
         <div
@@ -117,14 +121,14 @@ function PowerfulFeatures() {
           <div className="mb-6 inline-block rounded-full bg-jevah-accent px-6 py-2 text-sm font-semibold text-white">
             ✨ Powerful Features
           </div>
-          <h2 className="mb-6 text-4xl font-bold text-jevah-text md:text-5xl lg:text-6xl">
+          <h2 className="mb-4 text-3xl font-bold text-jevah-text xs:mb-6 xs:text-4xl md:text-5xl lg:text-6xl">
             Everything You Need to
             <br />
             <span className="bg-gradient-to-r from-jevah-accent to-jevah-accent-hover bg-clip-text text-transparent">
               Strengthen Your Faith
             </span>
           </h2>
-          <p className="mx-auto max-w-3xl text-lg text-jevah-text-muted md:text-xl">
+          <p className="mx-auto max-w-3xl text-base text-jevah-text-muted sm:text-lg md:text-xl">
             Jevah brings together all the tools and resources you need for
             spiritual growth, community connection, and daily faith practice in
             one beautiful, easy-to-use platform.
@@ -134,32 +138,32 @@ function PowerfulFeatures() {
         {mainFeatures.map((feature, index) => (
           <div
             key={feature.id}
-            className={`mb-24 grid gap-12 md:grid-cols-2 md:items-center ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
+            className={`mb-14 grid gap-8 sm:mb-20 sm:gap-12 md:mb-24 md:grid-cols-2 md:items-center ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
             style={{ animationDelay: `${0.2 * index}s` }}
           >
             <div
               className={`order-2 ${feature.textSide === "left" ? "md:order-1" : "md:order-2"}`}
             >
               <div className="mb-4 flex items-center gap-3">
-                <span className="text-4xl">{feature.icon}</span>
+                <span className="text-3xl sm:text-4xl">{feature.icon}</span>
                 <div className="h-1 w-12 rounded-full bg-jevah-accent" />
               </div>
-              <h3 className="mb-4 text-3xl font-bold text-jevah-text md:text-4xl">
+              <h3 className="mb-3 text-2xl font-bold text-jevah-text sm:mb-4 sm:text-3xl md:text-4xl">
                 {feature.title}
               </h3>
-              <p className="mb-6 text-lg leading-relaxed text-jevah-text-muted">
+              <p className="mb-5 text-base leading-relaxed text-jevah-text-muted sm:mb-6 sm:text-lg">
                 {feature.description}
               </p>
               <Link
                 to={feature.buttonHref}
-                className="jevah-btn-dark inline-block rounded-full px-8 py-4 transition-all duration-300 hover:opacity-90 hover:shadow-lg"
+                className="jevah-btn-dark inline-block rounded-full px-6 py-3 text-sm transition-all duration-300 hover:opacity-90 hover:shadow-lg sm:px-8 sm:py-4 sm:text-base"
               >
                 {feature.buttonText}
               </Link>
             </div>
 
             <div
-              className={`order-1 ${feature.textSide === "left" ? "md:order-2" : "md:order-1"} flex justify-center rounded-3xl p-8 shadow-2xl transition-all duration-300 hover:scale-[1.02] ${feature.panelClass}`}
+              className={`order-1 ${feature.textSide === "left" ? "md:order-2" : "md:order-1"} flex justify-center rounded-2xl p-4 shadow-2xl transition-all duration-300 hover:scale-[1.02] sm:rounded-3xl sm:p-8 ${feature.panelClass}`}
             >
               <img
                 src={feature.phoneImage}

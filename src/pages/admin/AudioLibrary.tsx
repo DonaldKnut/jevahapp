@@ -36,6 +36,7 @@ import AdminModal from "../../components/admin/AdminModal";
 import { useFeedback } from "../../components/admin/Feedback";
 import { useDebouncedValue } from "../../hooks/useDebouncedValue";
 import { matchesSearch } from "../../lib/searchMatch";
+import { MEDIA_PROTECT_ATTRS } from "../../lib/mediaProtection";
 import {
   normalizeCategoryList,
   withCategoryFallbacks,
@@ -603,9 +604,11 @@ export default function AudioLibraryPage() {
                     <div className="mt-4 rounded-xl bg-jevah-card p-2.5">
                       <audio
                         controls
+                        controlsList={MEDIA_PROTECT_ATTRS.controlsList}
                         preload="none"
                         className="w-full h-8"
                         src={url}
+                        onContextMenu={(e) => e.preventDefault()}
                         onEnded={() => id && markHeard(id)}
                         onTimeUpdate={(e) => {
                           const el = e.currentTarget;

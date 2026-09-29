@@ -23,6 +23,8 @@ import {
 } from "../../lib/media";
 import VinylDisc from "./VinylDisc";
 import { usePlayer } from "../../context/PlayerContext";
+import { MEDIA_PROTECT_ATTRS } from "../../lib/mediaProtection";
+import { useMediaProtection } from "../../hooks/useMediaProtection";
 
 const MIN_W = 72;
 const MIN_H = 72;
@@ -136,6 +138,8 @@ export default function NowPlayingBar() {
   const url = track ? trackPlaybackUrl(track) : null;
   const metaDur = track ? trackDuration(track) : null;
   const displayDur = duration || metaDur || 0;
+
+  useMediaProtection(audioRef, undefined, url, Boolean(url));
 
   useEffect(() => {
     const el = audioRef.current;
@@ -281,6 +285,11 @@ export default function NowPlayingBar() {
     return { x, y };
   }
 
+  function restoreWindowSize() {
+    setWinSize({ w: DEFAULT_W, h: DEFAULT_H });
+    setSize("window");
+  }
+
   function onDragDown(e: PointerEvent<HTMLDivElement>) {
     if (resizing.current) return;
     if ((e.target as HTMLElement).closest("button, input, [data-resize]")) return;
@@ -345,7 +354,13 @@ export default function NowPlayingBar() {
 
   return (
     <>
-      <audio ref={audioRef} preload="metadata" className="hidden">
+      <audio
+        ref={audioRef}
+        preload="metadata"
+        className="hidden"
+        controlsList={MEDIA_PROTECT_ATTRS.controlsList}
+        draggable={false}
+      >
         <track kind="captions" />
       </audio>
 
@@ -359,15 +374,35 @@ export default function NowPlayingBar() {
           onPointerCancel={onDragUp}
         >
           {tiny && (
-            <button
-              type="button"
-              onClick={() => setSize("full")}
-              className="absolute right-1 top-1 z-10 inline-flex h-6 w-6 items-center justify-center rounded-full bg-jevah-accent text-white"
-              aria-label="Large player"
-              title="Large player"
-            >
-              <ArrowsPointingOutIcon className="h-3 w-3" />
-            </button>
+            <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-1 rounded-2xl bg-jevah-surface/95 p-1">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  restoreWindowSize();
+                }}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-jevah-accent text-white shadow-md"
+                aria-label="Expand now playing"
+                title="Expand now playing"
+              >
+                <ArrowsPointingOutIcon className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggle();
+                }}
+                className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-jevah-card text-jevah-text ring-1 ring-jevah-border"
+                aria-label={playing ? "Pause" : "Play"}
+              >
+                {playing ? (
+                  <PauseIcon className="h-3.5 w-3.5" />
+                ) : (
+                  <PlayIcon className="h-3.5 w-3.5 translate-x-px" />
+                )}
+              </button>
+            </div>
           )}
           {!tiny && (
             <div
@@ -397,6 +432,16 @@ export default function NowPlayingBar() {
                     className="rounded-full px-2.5 py-1 text-[11px] font-bold text-jevah-text hover:bg-jevah-elevated"
                   >
                     Bottom bar
+                  </button>
+                )}
+                {compact && (
+                  <button
+                    type="button"
+                    onClick={restoreWindowSize}
+                    className="rounded-full px-2 py-0.5 text-[10px] font-bold text-jevah-accent hover:bg-jevah-elevated"
+                    title="Restore default size"
+                  >
+                    Expand
                   </button>
                 )}
                 <button
@@ -588,10 +633,10 @@ export default function NowPlayingBar() {
             <div className="flex flex-wrap items-center justify-end gap-2 border-t border-jevah-border bg-jevah-card px-3 py-2">
               <button
                 type="button"
-                onClick={() => setSize("window")}
+                onClick={restoreWindowSize}
                 className="rounded-full border border-jevah-border bg-jevah-elevated px-3 py-1.5 text-[11px] font-bold text-jevah-text hover:bg-jevah-surface"
               >
-                Small window
+                Now playing
               </button>
               <button
                 type="button"
@@ -618,11 +663,13 @@ export default function NowPlayingBar() {
           <div className="flex flex-wrap items-center justify-between gap-2 xs:gap-3">
             <button
               type="button"
-              onClick={() => setSize("window")}
+              onClick={() => {
+                restoreWindowSize();
+              }}
               className="inline-flex items-center gap-1.5 rounded-full border border-jevah-border bg-jevah-card px-4 py-2 text-xs font-semibold text-jevah-text hover:bg-jevah-elevated"
             >
               <ChevronDownIcon className="h-4 w-4" />
-              Small window
+              Now playing
             </button>
 
             <span className="inline-flex items-center rounded-full border border-jevah-accent/30 bg-jevah-accent/10 px-3.5 py-1 text-[11px] font-semibold uppercase tracking-widest text-jevah-accent">
