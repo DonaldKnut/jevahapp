@@ -5,9 +5,9 @@ import { useDocumentMeta } from "../hooks/useDocumentMeta";
 
 function Contact() {
   useDocumentMeta({
-    title: "Contact Jevah",
+    title: "Contact Jevah — Tevadice Limited",
     description:
-      "Reach the Jevah team in Lagos for support, gospel artist partnerships, and faith-community questions.",
+      "Customer service for Jevah: support@jevahapp.com and +234 703 774 2764. Registered office of Tevadice Limited in Ogba, Lagos, Nigeria.",
     canonicalPath: "/contact",
   });
   const { ref, isIntersecting } = useIntersectionObserver({ threshold: 0.1 });
@@ -19,26 +19,13 @@ function Contact() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const contactInfo = [
-    {
-      icon: "📧",
-      title: "Email",
-      details: "support@jevahapp.com",
-      action: "mailto:support@jevahapp.com",
-    },
-    {
-      icon: "📞",
-      title: "Phone",
-      details: "+234 703 774 2764",
-      action: "tel:+2347037742764",
-    },
-    {
-      icon: "📍",
-      title: "Address",
-      details: "24a Bashorun Okunsanya Street, Off Admiralty Way, Lekki Phase 1, Lagos.",
-      action: "https://maps.google.com",
-    },
-  ];
+  const mapsSearch = (address: string) =>
+    `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+
+  const registeredAddress =
+    "1B Ondo Street, Okeira, Ogba, Lagos, Nigeria";
+  const secondaryAddress =
+    "23A, Bashorun Okusanya Street, Off Admiralty Road, Off Admiralty Way, Lekki Phase 1, Lagos, Nigeria";
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -87,8 +74,8 @@ function Contact() {
               className={`mx-auto mb-8 max-w-3xl text-lg text-gray-700 md:text-xl ${isIntersecting ? "animate-fade-in-up" : "opacity-0"}`}
               style={{ animationDelay: "0.4s" }}
             >
-              Have a question or need support? We're here to help. Reach out to
-              us and we'll get back to you as soon as possible.
+              Have a question or need support? This is the customer service
+              contact for Jevah, the platform operated by Tevadice Limited.
             </p>
           </div>
         </div>
@@ -172,33 +159,45 @@ function Contact() {
             >
               <div className="space-y-6">
                 <div className="rounded-2xl bg-gray-50 p-8">
-                  <h3 className="mb-6 text-2xl font-bold text-gray-900">
-                    Contact Information
+                  <h3 className="mb-2 text-2xl font-bold text-gray-900">
+                    Customer Support
                   </h3>
+                  <p className="mb-6 text-sm text-gray-600">
+                    Customer service contact for Jevah.
+                  </p>
                   <div className="space-y-6">
-                    {contactInfo.map((info, index) => (
-                      <div
-                        key={index}
-                        className="flex items-start gap-4 transition-all duration-300 hover:translate-x-2"
-                      >
-                        <div className="text-3xl">{info.icon}</div>
-                        <div>
-                          <div className="mb-1 font-semibold text-gray-900">
-                            {info.title}
-                          </div>
-                          {info.action ? (
-                            <a
-                              href={info.action}
-                              className="text-[#256E63] transition-colors duration-200 hover:text-[#1e5a52]"
-                            >
-                              {info.details}
-                            </a>
-                          ) : (
-                            <div className="text-gray-600">{info.details}</div>
-                          )}
-                        </div>
+                    <div className="flex items-start gap-4">
+                      <div className="text-3xl" aria-hidden="true">
+                        📞
                       </div>
-                    ))}
+                      <div>
+                        <div className="mb-1 font-semibold text-gray-900">
+                          Phone
+                        </div>
+                        <a
+                          href="tel:+2347037742764"
+                          className="text-[#256E63] transition-colors duration-200 hover:text-[#1e5a52]"
+                        >
+                          +234 703 774 2764
+                        </a>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-4">
+                      <div className="text-3xl" aria-hidden="true">
+                        📧
+                      </div>
+                      <div>
+                        <div className="mb-1 font-semibold text-gray-900">
+                          Email
+                        </div>
+                        <a
+                          href="mailto:support@jevahapp.com"
+                          className="text-[#256E63] transition-colors duration-200 hover:text-[#1e5a52]"
+                        >
+                          support@jevahapp.com
+                        </a>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -231,6 +230,70 @@ function Contact() {
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section className="bg-gray-50 px-4 py-16 xs:px-6 sm:px-8 lg:px-12">
+        <div className="mx-auto max-w-7xl">
+          <h2 className="text-3xl font-bold text-gray-900 md:text-4xl">
+            Our Offices
+          </h2>
+          <p className="mt-3 max-w-2xl text-gray-600">
+            Tevadice Limited operates Jevah from the offices below. The
+            registered office is the company’s registered address. The secondary
+            office is a separate location.
+          </p>
+          <div className="mt-8 grid gap-6 md:grid-cols-2">
+            <article className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+              <p className="text-xs font-bold uppercase tracking-wider text-[#256E63]">
+                Registered office
+              </p>
+              <h3 className="mt-2 text-xl font-bold text-gray-900">
+                Tevadice Limited
+              </h3>
+              <address className="mt-3 text-base not-italic leading-relaxed text-gray-700">
+                1B Ondo Street, Okeira, Ogba, Lagos, Nigeria
+              </address>
+              <a
+                href={mapsSearch(registeredAddress)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-4 inline-flex text-sm font-semibold text-[#256E63] hover:underline"
+              >
+                Search this address on Google Maps
+              </a>
+            </article>
+            <article className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+              <p className="text-xs font-bold uppercase tracking-wider text-amber-700">
+                Secondary office
+              </p>
+              <h3 className="mt-2 text-xl font-bold text-gray-900">
+                Tevadice Limited
+              </h3>
+              <address className="mt-3 text-base not-italic leading-relaxed text-gray-700">
+                23A, Bashorun Okusanya Street,
+                <br />
+                Off Admiralty Road, Off Admiralty Way,
+                <br />
+                Lekki Phase 1, Lagos, Nigeria
+              </address>
+              <p className="mt-3 text-sm text-gray-500">
+                This is not the registered address.
+              </p>
+              <a
+                href={mapsSearch(secondaryAddress)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-4 inline-flex text-sm font-semibold text-[#256E63] hover:underline"
+              >
+                Search this address on Google Maps
+              </a>
+            </article>
+          </div>
+          <p className="mt-4 text-xs text-gray-500">
+            Each map link opens a Google Maps search for the written address.
+            It is not an embedded or independently verified pin.
+          </p>
         </div>
       </section>
 

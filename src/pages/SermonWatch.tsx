@@ -87,15 +87,16 @@ export default function SermonWatch() {
   // Keep stage box measured for theater positioning
   useEffect(() => {
     if (!sermon) return;
-    dock.refreshStageBox();
-    const onResize = () => dock.refreshStageBox();
+    const refresh = dock.refreshStageBox;
+    refresh();
+    const onResize = () => refresh();
     window.addEventListener("resize", onResize);
     window.addEventListener("scroll", onResize, { passive: true });
     return () => {
       window.removeEventListener("resize", onResize);
       window.removeEventListener("scroll", onResize);
     };
-  }, [sermon, dock]);
+  }, [sermon, dock.refreshStageBox]);
 
   // Leaving the watch page while playing → stay in corner dock (YouTube-style)
   useEffect(() => {

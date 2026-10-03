@@ -110,8 +110,8 @@ export default function LegalDoc({
             <Link to="/contact" className="font-semibold text-[#256E63]">
               Contact
             </Link>
-            . Lagos office: 24a Bashorun Okunsanya Street, Off Admiralty Way,
-            Lekki Phase 1.
+            . Tevadice Limited (Jevah). Registered office: 1B Ondo Street,
+            Okeira, Ogba, Lagos, Nigeria.
           </p>
         </article>
       </div>

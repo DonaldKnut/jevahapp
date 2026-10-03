@@ -8,7 +8,7 @@ const sections: LegalSection[] = [
     title: "Who we are",
     paragraphs: [
       "Jevah (“we”, “us”) operates the Jevah mobile apps and website at jevahapp.com — a gospel community platform for Christian music, the Holy Bible, sermons, children’s faith learning, and creator tools.",
-      "Controller: Jevah, 24a Bashorun Okunsanya Street, Off Admiralty Way, Lekki Phase 1, Lagos, Nigeria. Email: support@jevahapp.com.",
+      "Controller: Tevadice Limited, which operates the Jevah platform. Registered office: 1B Ondo Street, Okeira, Ogba, Lagos, Nigeria. Email: support@jevahapp.com. Phone: +234 703 774 2764.",
     ],
   },
   {

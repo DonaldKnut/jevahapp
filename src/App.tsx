@@ -84,7 +84,7 @@ function HomePage() {
   useDocumentMeta({
     title: "Jevah — Gospel music, Bible, and Christian community app",
     description:
-      "Jevah is the gospel app for faith: stream worship and Afro-gospel, read the Holy Bible, hear sermons, and grow with a Christian community. Free on web and mobile.",
+      "Jevah is a gospel platform operated by Tevadice Limited: stream worship and Afro-gospel, read the Holy Bible, hear sermons, and grow with a Christian community.",
     canonicalPath: "/",
     jsonLd: [ORGANIZATION_JSON_LD, WEBSITE_JSON_LD, APP_JSON_LD],
   });

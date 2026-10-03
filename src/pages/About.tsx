@@ -9,9 +9,9 @@ import ForumImg from "../assets/logos/forum.png";
 
 function About() {
   useDocumentMeta({
-    title: "About Jevah — a gospel community platform",
+    title: "About Jevah — operated by Tevadice Limited",
     description:
-      "Jevah brings gospel music, the Bible, sermons, children’s faith learning, and Christian community into one sacred space.",
+      "Jevah is a digital platform operated by Tevadice Limited, a company registered in Nigeria.",
     canonicalPath: "/about",
   });
   const { ref, isIntersecting } = useIntersectionObserver({ threshold: 0.1 });
@@ -121,6 +121,55 @@ function About() {
               accessible, engaging, and interactive in today's digital world.
             </p>
           </div>
+        </div>
+      </section>
+
+      <section className="bg-white px-4 py-16 xs:px-6 sm:px-8 lg:px-12">
+        <div className="mx-auto max-w-5xl">
+          <h2 className="text-3xl font-bold text-gray-900 md:text-4xl">
+            The company behind Jevah
+          </h2>
+          <p className="mt-5 text-lg leading-relaxed text-gray-700">
+            Jevah is a digital platform operated by Tevadice Limited, a company
+            registered in Nigeria. We are focused on providing digital solutions
+            through the Jevah platform, connecting users with the services and
+            experiences available on our platform.
+          </p>
+          <p className="mt-4 text-lg leading-relaxed text-gray-700">
+            Our goal is to build a reliable and accessible digital experience
+            for our users while continually improving our services.
+          </p>
+
+          <dl className="mt-8 grid gap-4 sm:grid-cols-2">
+            {[
+              { label: "Legal entity", value: "Tevadice Limited" },
+              { label: "Platform", value: "Jevah" },
+              { label: "Country of registration", value: "Nigeria" },
+              {
+                label: "Registered office",
+                value: "1B Ondo Street, Okeira, Ogba, Lagos, Nigeria",
+              },
+            ].map((row) => (
+              <div
+                key={row.label}
+                className="rounded-2xl border border-gray-200 bg-gray-50 p-5"
+              >
+                <dt className="text-xs font-bold uppercase tracking-wider text-[#256E63]">
+                  {row.label}
+                </dt>
+                <dd className="mt-2 text-base font-semibold text-gray-900">
+                  {row.value}
+                </dd>
+              </div>
+            ))}
+          </dl>
+          <p className="mt-6 text-sm text-gray-600">
+            Customer service and office locations are on the{" "}
+            <Link to="/contact" className="font-semibold text-[#256E63] hover:underline">
+              Contact page
+            </Link>
+            .
+          </p>
         </div>
       </section>
 

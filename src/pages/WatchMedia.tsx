@@ -92,15 +92,16 @@ export default function WatchMedia() {
 
   useEffect(() => {
     if (!media) return;
-    dock.refreshStageBox();
-    const onResize = () => dock.refreshStageBox();
+    const refresh = dock.refreshStageBox;
+    refresh();
+    const onResize = () => refresh();
     window.addEventListener("resize", onResize);
     window.addEventListener("scroll", onResize, { passive: true });
     return () => {
       window.removeEventListener("resize", onResize);
       window.removeEventListener("scroll", onResize);
     };
-  }, [media, dock]);
+  }, [media, dock.refreshStageBox]);
 
   useEffect(() => {
     return () => {

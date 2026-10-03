@@ -205,7 +205,8 @@ function SermonPlayerChrome({
     }
   }, [onPlayingChange]);
 
-  // Resume + autoplay when dock opens / remounts
+  // Resume once + autoplay when src/autoPlay changes — do NOT depend on resumeAt
+  // (it updates on every timeupdate and would re-enter play/setState forever).
   useEffect(() => {
     const el = mediaRef.current;
     if (!el || !playable) return;
@@ -229,7 +230,8 @@ function SermonPlayerChrome({
         }
       );
     }
-  }, [src, playable, autoPlay, resumeAt, onPlayingChange]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- resumeAt is one-shot via resumed.current
+  }, [src, playable, autoPlay, onPlayingChange]);
 
   const seekBy = useCallback(
     (delta: number) => {
@@ -746,13 +748,14 @@ export function GlobalSermonDock() {
     const onScroll = () => refreshStageBox();
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onScroll);
-    const id = window.setInterval(refreshStageBox, 500);
+    const timer = window.setInterval(refreshStageBox, 500);
     return () => {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
-      window.clearInterval(id);
+      window.clearInterval(timer);
     };
-  }, [session, theater, refreshStageBox, location.pathname]);
+    // Depend on id/pathname, not the whole session (resumeAt thrash)
+  }, [id, theater, refreshStageBox, location.pathname]);
 
   if (!session) return null;
 

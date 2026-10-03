@@ -113,9 +113,9 @@ function ContactUs() {
               </a>
             </div>
 
-            <p className="text-xs text-jevah-text-muted">
-              Or leave us a message below and we'll get back to you within 24–48 hrs.
-            </p>
+              <p className="text-xs text-jevah-text-muted">
+                Customer service for Jevah, operated by Tevadice Limited. Or leave a message below.
+              </p>
           </div>
 
           <div

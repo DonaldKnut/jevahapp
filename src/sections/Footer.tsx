@@ -125,6 +125,28 @@ function Footer() {
             </div>
 
             <p className="text-sm text-white">
+              Tevadice Limited · Jevah
+            </p>
+            <p className="mt-2 text-xs leading-relaxed text-slate-300">
+              Customer support:{" "}
+              <a
+                href="mailto:support@jevahapp.com"
+                className="font-semibold text-emerald-300 hover:underline"
+              >
+                support@jevahapp.com
+              </a>
+              {" · "}
+              <a
+                href="tel:+2347037742764"
+                className="font-semibold text-emerald-300 hover:underline"
+              >
+                +234 703 774 2764
+              </a>
+            </p>
+            <p className="mt-2 text-xs leading-relaxed text-slate-400">
+              Registered office: 1B Ondo Street, Okeira, Ogba, Lagos, Nigeria
+            </p>
+            <p className="mt-3 text-sm text-white">
               © Jevah App 2024. All rights reserved.
             </p>
           </div>

@@ -20,17 +20,47 @@ export const DEFAULT_KEYWORDS = [
 export const ORGANIZATION_JSON_LD = {
   "@context": "https://schema.org",
   "@type": "Organization",
-  name: "Jevah",
+  name: "Tevadice Limited",
+  legalName: "Tevadice Limited",
+  alternateName: "Jevah",
   url: SITE_ORIGIN,
   logo: `${SITE_ORIGIN}/favicon.ico`,
   email: "support@jevahapp.com",
+  telephone: "+2347037742764",
   address: {
     "@type": "PostalAddress",
-    streetAddress: "24a Bashorun Okunsanya Street, Off Admiralty Way, Lekki Phase 1",
+    streetAddress: "1B Ondo Street, Okeira, Ogba",
     addressLocality: "Lagos",
+    addressRegion: "Lagos",
     addressCountry: "NG",
   },
-  sameAs: ["https://www.facebook.com"],
+  location: [
+    {
+      "@type": "Place",
+      name: "Registered Office",
+      address: {
+        "@type": "PostalAddress",
+        streetAddress: "1B Ondo Street, Okeira, Ogba",
+        addressLocality: "Lagos",
+        addressCountry: "NG",
+      },
+    },
+    {
+      "@type": "Place",
+      name: "Secondary Office",
+      address: {
+        "@type": "PostalAddress",
+        streetAddress:
+          "23A, Bashorun Okusanya Street, Off Admiralty Road, Off Admiralty Way, Lekki Phase 1",
+        addressLocality: "Lagos",
+        addressCountry: "NG",
+      },
+    },
+  ],
+  sameAs: [
+    "https://x.com/Jevah_hq",
+    "https://www.instagram.com/jevahhq/",
+  ],
 };
 
 export const WEBSITE_JSON_LD = {
@@ -53,7 +83,7 @@ export const APP_JSON_LD = {
   operatingSystem: "Android, iOS, Web",
   offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
   description:
-    "Gospel music, Holy Bible, sermons, and a Christian community — the Jevah app for faith, worship, and the Word.",
+    "Jevah is a gospel platform operated by Tevadice Limited: gospel music, the Holy Bible, sermons, and a Christian community.",
 };
 
 export type SeoPage = {
@@ -68,7 +98,7 @@ export const MARKETING_SEO_PAGES: SeoPage[] = [
     path: "/",
     title: "Jevah — Gospel music, Bible, and Christian community app",
     description:
-      "Jevah is the gospel app for faith: stream worship and Afro-gospel, read the Holy Bible, hear sermons, and grow with a Christian community. Free on web and mobile.",
+      "Jevah is a gospel platform operated by Tevadice Limited: stream worship and Afro-gospel, read the Holy Bible, hear sermons, and grow with a Christian community.",
   },
   {
     path: "/music",
@@ -120,9 +150,9 @@ export const MARKETING_SEO_PAGES: SeoPage[] = [
   },
   {
     path: "/about",
-    title: "About Jevah — a gospel community platform",
+    title: "About Jevah — operated by Tevadice Limited",
     description:
-      "Jevah brings gospel music, the Bible, sermons, children’s faith learning, and Christian community into one sacred space.",
+      "Jevah is a digital platform operated by Tevadice Limited, a company registered in Nigeria. Gospel music, the Bible, sermons, and Christian community.",
   },
   {
     path: "/privacy",
@@ -138,9 +168,9 @@ export const MARKETING_SEO_PAGES: SeoPage[] = [
   },
   {
     path: "/contact",
-    title: "Contact Jevah",
+    title: "Contact Jevah — Tevadice Limited",
     description:
-      "Reach the Jevah team in Lagos for support, gospel artist partnerships, and faith-community questions.",
+      "Customer service for Jevah: support@jevahapp.com and +234 703 774 2764. Registered office of Tevadice Limited in Ogba, Lagos, Nigeria.",
   },
   {
     path: "/children",

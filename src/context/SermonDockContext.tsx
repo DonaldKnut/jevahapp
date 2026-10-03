@@ -37,28 +37,49 @@ type SermonDockContextValue = {
 
 const SermonDockContext = createContext<SermonDockContextValue | null>(null);
 
+function sameBox(a: StageBox | null, b: StageBox | null) {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  return (
+    Math.abs(a.top - b.top) < 0.5 &&
+    Math.abs(a.left - b.left) < 0.5 &&
+    Math.abs(a.width - b.width) < 0.5 &&
+    Math.abs(a.height - b.height) < 0.5
+  );
+}
+
 export function SermonDockProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<SermonDockSession | null>(null);
   const [stageBox, setStageBox] = useState<StageBox | null>(null);
   const stageRef = useRef<HTMLDivElement | null>(null);
+  const stageBoxRef = useRef<StageBox | null>(null);
 
   const refreshStageBox = useCallback(() => {
     const el = stageRef.current;
     if (!el) {
-      setStageBox(null);
+      if (stageBoxRef.current !== null) {
+        stageBoxRef.current = null;
+        setStageBox(null);
+      }
       return;
     }
     const r = el.getBoundingClientRect();
     if (r.width < 8 || r.height < 8) {
-      setStageBox(null);
+      if (stageBoxRef.current !== null) {
+        stageBoxRef.current = null;
+        setStageBox(null);
+      }
       return;
     }
-    setStageBox({
+    const next: StageBox = {
       top: r.top,
       left: r.left,
       width: r.width,
       height: r.height,
-    });
+    };
+    if (sameBox(stageBoxRef.current, next)) return;
+    stageBoxRef.current = next;
+    setStageBox(next);
   }, []);
 
   const open = useCallback(
@@ -68,13 +89,18 @@ export function SermonDockProvider({ children }: { children: ReactNode }) {
     ) => {
       setSession((prev) => {
         if (prev?.sermon.id === sermon.id) {
-          return {
-            ...prev,
-            sermon,
-            mini: opts?.mini ?? prev.mini,
-            resumeAt: opts?.resumeAt ?? prev.resumeAt,
-            wantPlaying: opts?.wantPlaying ?? prev.wantPlaying,
-          };
+          const mini = opts?.mini ?? prev.mini;
+          const resumeAt = opts?.resumeAt ?? prev.resumeAt;
+          const wantPlaying = opts?.wantPlaying ?? prev.wantPlaying;
+          if (
+            prev.sermon === sermon &&
+            prev.mini === mini &&
+            prev.resumeAt === resumeAt &&
+            prev.wantPlaying === wantPlaying
+          ) {
+            return prev;
+          }
+          return { ...prev, sermon, mini, resumeAt, wantPlaying };
         }
         return {
           sermon,
@@ -88,19 +114,31 @@ export function SermonDockProvider({ children }: { children: ReactNode }) {
   );
 
   const setMini = useCallback((mini: boolean) => {
-    setSession((prev) => (prev ? { ...prev, mini } : prev));
+    setSession((prev) => {
+      if (!prev || prev.mini === mini) return prev;
+      return { ...prev, mini };
+    });
   }, []);
 
   const setResumeAt = useCallback((resumeAt: number) => {
-    setSession((prev) => (prev ? { ...prev, resumeAt } : prev));
+    setSession((prev) => {
+      if (!prev) return prev;
+      // Ignore tiny timeupdate jitter so we don't thrash context consumers
+      if (Math.abs(prev.resumeAt - resumeAt) < 0.5) return prev;
+      return { ...prev, resumeAt };
+    });
   }, []);
 
   const setWantPlaying = useCallback((wantPlaying: boolean) => {
-    setSession((prev) => (prev ? { ...prev, wantPlaying } : prev));
+    setSession((prev) => {
+      if (!prev || prev.wantPlaying === wantPlaying) return prev;
+      return { ...prev, wantPlaying };
+    });
   }, []);
 
   const close = useCallback(() => {
     setSession(null);
+    stageBoxRef.current = null;
     setStageBox(null);
   }, []);
 
